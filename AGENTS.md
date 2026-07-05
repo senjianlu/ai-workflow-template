@@ -7,11 +7,14 @@
 
 ## 技术栈
 
-<!-- TEMPLATE: 保留适用的行,删除其余。 -->
-- 前端:Node.js + TypeScript + Next.js + shadcn/ui
-- 后端:Python 3 + FastAPI
-- 爬虫:Python 3 + Scrapy
-- 部署:GitHub Actions(.github/workflows/)
+<!-- TEMPLATE: 按项目实际增删行。 -->
+
+| 层 | 技术选型 |
+|---|---|
+| 前端 | Node.js + TypeScript + Next.js + shadcn/ui |
+| 后端 | Python 3 + FastAPI |
+| 爬虫 | Python 3 + Scrapy |
+| 部署 | GitHub Actions(.github/workflows/) |
 
 ## 通用硬规则(对任何 AI 工具生效)
 
@@ -20,3 +23,10 @@
 - 开发必须走 rawf 工作流(由 Claude Code 驱动,细则见 CLAUDE.md),
   不得绕过其闸门与产物约定
 - 代码评审的角色约束、标准与严重度定义见 .ai-workflow/review-standards.md
+
+## Git 提交规范
+
+- 提交信息:`<type>: <一句话摘要>`,type 取 feat | fix | refactor | docs | test | chore
+- 摘要用祈使句,简明扼要;正文(如有)说明动机与影响
+- rawf 任务的提交在摘要后附 `(rawf: <yyyy-mm-dd>/<task-slug>)`
+- 一次提交一个主题;代码与其决策痕迹(.ai/ 任务目录)同一提交

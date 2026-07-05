@@ -26,8 +26,9 @@ implementation-round-NN.md、review-round-NN-<pass|fail>.md、summary.md,
 1. GitHub 上 Use this template,克隆到本地
 2. 全局搜索 `TEMPLATE:`,按各处注释裁剪(AGENTS.md 技术栈、
    .ai-workflow/review-standards.md 评审关注点)
-3. 删除不用的栈:.claude/skills/rawf-stack-* 与 .github/workflows/ci-*
-   (skill 与 review-standards.md 关注点、CI 三处同步删)
+3. 按需增删栈约定:模板自带 .claude/skills/rawf-stack-scrapy,可参照其
+   结构为你的栈新建 rawf-stack-*;.github/workflows/ 为空目录,按需添加
+   CI。栈调整时同步 .ai-workflow/review-standards.md 的技术栈关注点
 4. 按保留的 stack skill 中"初始化"一节生成应用骨架
 5. 开 Claude Code 会话,/rawf-plan 开始第一个任务
 

@@ -22,7 +22,12 @@ if ! mkdir "$lock" 2>/dev/null; then
 fi
 trap 'rm -rf "$lock"' EXIT
 
-count=$(ls "$task_dir"/implementation-round-*.md 2>/dev/null | wc -l | tr -d ' ')
+# nullglob 数组计数:无匹配为 0,避免 ls 管道在 set -e/pipefail 下以
+# 非预期退出码崩溃(会与"评审结论 fail"的退出码 1 冲突)
+shopt -s nullglob
+rounds=("$task_dir"/implementation-round-*.md)
+shopt -u nullglob   # 立即关闭:后续 review-round 存在性 glob 依赖非空语义
+count=${#rounds[@]}
 [ "$count" -gt 0 ] || { echo "尚无实现记录,先完成 /rawf-implement" >&2; exit 3; }
 nn=$(printf '%02d' "$count")
 

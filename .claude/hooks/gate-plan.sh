@@ -24,21 +24,28 @@ case "$file_path" in
   *)  abs="$proj/$file_path" ;;
 esac
 
-# 仅任务产物目录 .ai/ 永远可写。归属判定基于物理路径:对最近已存在的
-# 祖先目录做 pwd -P,可挡 .. 穿越与符号链接目录逃逸;目标已存在且本身
-# 是符号链接的,不走豁免。
-in_ai_dir() {
-  [ -L "$abs" ] && return 1
-  local d
-  d=$(dirname "$abs")
-  while [ ! -d "$d" ]; do d=$(dirname "$d"); done
-  d=$(cd "$d" && pwd -P) || return 1
-  case "$d/" in
-    "$proj_phys/.ai/"*) return 0 ;;
+# 归属判定基于物理路径:对最近已存在的祖先目录做 pwd -P,可挡 .. 穿越
+# 与符号链接目录逃逸;解析失败按项目内处理(fail-closed)。
+d=$(dirname "$abs")
+while [ ! -d "$d" ]; do d=$(dirname "$d"); done
+phys_dir=$(cd "$d" && pwd -P) || phys_dir="$proj_phys"
+
+# 符号链接一律走状态闸(防经链接绕道写入项目);普通路径按归属分流:
+# .ai/ 任务产物永远可写;项目内其它路径走 plan 状态闸;仅当词法与物理
+# **都**位于项目外时才不归本闸管(如会话记忆等本仓库之外的文件)——
+# 仓库内目录链接指向外部的路径词法在项目内,仍走状态闸,行为与既往一致
+if [ ! -L "$abs" ]; then
+  case "$phys_dir/" in
+    "$proj_phys/.ai/"*) exit 0 ;;
+    "$proj_phys/"*) ;;
+    *)
+      case "$abs" in
+        "$proj/"*|"$proj_phys/"*) ;;
+        *) exit 0 ;;
+      esac
+      ;;
   esac
-  return 1
-}
-in_ai_dir && exit 0
+fi
 
 # 没有进行中的任务:放行(琐碎改动路径,纪律靠 CLAUDE.md 硬规则)
 current_file="$proj/.ai/.current-task"
