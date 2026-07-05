@@ -117,13 +117,40 @@ asyncio.to_thread 下沉线程池,不得直接混入事件循环。
 
 - 永不主动 git commit / git push,必须用户明确确认
 - `.ai/` 下是开发过程产物(方案/实现记录/评审记录),历史轮次文件只增不改
+- `docs/` 下是持久设计真相(架构/决策),任务改变二者时须在收尾前回写,
+  与代码同一提交(分工详见 docs/README.md)
 - 开发必须走 rawf 工作流(由 Claude Code 驱动,细则见 CLAUDE.md),
   不得绕过其闸门与产物约定
 - 代码评审的角色约束、标准与严重度定义见 .ai-workflow/review-standards.md
 
 ## Git 提交规范
 
-- 提交信息:`<type>: <一句话摘要>`,type 取 feat | fix | refactor | docs | test | chore
-- 摘要用祈使句,简明扼要;正文(如有)说明动机与影响
-- rawf 任务的提交在摘要后附 `(rawf: <yyyy-mm-dd>/<task-slug>)`
+遵循 Conventional Commits,由 `.githooks/commit-msg` 钩子本地强制。
+启用(克隆后执行一次):
+
+```bash
+git config core.hooksPath .githooks
+git config commit.template .gitmessage
+```
+
+- header:`<type>(<scope>): <subject>`;scope 可选(小写短词,按项目
+  约定);subject 祈使句、≤72 字符、不以句号结尾
+- type 取 feat | fix | docs | refactor | perf | test | build | ci |
+  chore | style | revert
+- 正文(如有)说明动机与影响;不兼容变更用 `BREAKING CHANGE:` footer
+  或 type 后加 `!`
+- footer 约定:rawf 任务附 `Rawf: <yyyy-mm-dd>/<task-slug>`;引用权威
+  文档用 `Refs:`;结对代理保留 `Co-Authored-By:`
 - 一次提交一个主题;代码与其决策痕迹(.ai/ 任务目录)同一提交
+
+## Skill 基线
+
+<!-- TEMPLATE: 按项目填两份清单,空则写"(无)"。 -->
+
+Agent skills 分两类管理:
+
+- **项目内建**:随仓库提交在 `.agents/skills/`,由 `skills-lock.json`
+  按内容哈希锁定(skills.sh CLI 安装/更新),对进入本仓库的任何 AI
+  工具生效。当前:(无)
+- **每机自装**:装在本机全局(如 `~/.claude/skills/`),不入库;新
+  机器先按清单安装再开工。当前:(无)
