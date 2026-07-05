@@ -1,0 +1,20 @@
+# rawf:运行时状态不入库(产物入库,状态不入库)
+.ai/.current-task
+# rawf:评审异常时遗留的原始输出
+.ai/**/.review-raw-*.md
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+
+# Node
+node_modules/
+dist/
+.next/
+
+# 环境与系统
+.env
+.env.*
+.DS_Store
