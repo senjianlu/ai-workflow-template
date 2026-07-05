@@ -19,7 +19,7 @@
 3. `/rawf-implement` → 实现 + 自测,写 implementation-round-<NN>.md
 4. `/rawf-review` → 跑 Codex 评审,产出 review-round-<NN>-<pass|fail>.md
 5. fail → 按 rawf-review skill 的分流规则处理,实现层修复最多 3 轮
-6. 汇报结果;提交前必须获得用户确认
+6. `/rawf-report` → 汇报;提交须用户确认
 
 例外:纯文档、拼写级改动可跳过流程,但需先向用户声明。
 
