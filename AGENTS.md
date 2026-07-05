@@ -113,6 +113,50 @@ asyncio.to_thread 下沉线程池,不得直接混入事件循环。
 - Docker(Dockerfile,必要时 docker-compose)
 - GitHub Actions(.github/workflows/)
 
+## 目录约定
+
+<!-- TEMPLATE: 约定通用,无需裁剪;仅列承重目录,项目完整树见
+docs/architecture.md。 -->
+
+单应用仓库用扁平根布局(主流默认形)。**晋级规则**:出现第二个可
+部署单元的那一刻,全仓升级为 apps/ + packages/,不允许"根上一个、
+角落塞一个"的中间态。
+
+仓库根:
+
+| 目录 | 放什么 |
+|---|---|
+| `apps/<name>/` | 可部署单元(web、api、agent……) |
+| `packages/<name>/` | 跨应用共享库;没有则不建 |
+| `tests/` | 仅跨应用共享 fixtures;测试本体随各应用 |
+| `docs/`、`.ai/` | 持久真相 / 过程痕迹(分工见 docs/README.md) |
+| `deploy/` | Dockerfile 之外的编排(compose、反代配置) |
+| `scripts/` | 仓库级辅助脚本 |
+| `.github/workflows/`、`.agents/skills/` | CI / 项目内建 skill |
+
+扁平态没有前三行,唯一应用的内部结构直接坐在根上;其余目录两态皆同。
+
+应用内(扁平态与 apps/ 态规则一致,按应用类型取列):
+
+| 位置 | 前端应用 | 后端应用 |
+|---|---|---|
+| 源码 | `app/`(Next 路由,框架固定)+ `components/`(`ui/` shadcn 手写件、`features/` 业务件)+ `lib/`、`hooks/` | `<snake_name>/` 具名 Python 包,按领域分子模块(routes/、jobs/、models/……) |
+| 单元测试 | `__tests__/` 随源码同置 | `tests/` 与包平级,镜像包结构 |
+| 端到端 | `e2e/`(specs/ + helpers/) | —(集成测试并入 tests/) |
+| 数据迁移 | — | `migrations/` + alembic.ini(需要时) |
+| 静态资源 / 国际化 | `public/`;`i18n/` + `messages/`(next-intl 栈) | — |
+| 应用配置 | next.config.mjs、components.json | pyproject.toml |
+
+原则:
+
+- 应用一律平铺,不建 `src/`;packages/ 共享库可用 src-layout(打包
+  最佳实践),本模板各参考库当前平铺
+- `app/` 这个名字只属于 Next 路由目录;Python 包一律具名——多应用
+  同仓时 `import app` 会撞车
+- 多 Python 应用同仓时,根 pyproject.toml 只放共用 dev 工具配置
+  (pytest 聚合 testpaths + importlib mode、ruff),不是可安装包
+- 新顶级目录先记 docs/decisions/ 再开
+
 ## 通用硬规则(对任何 AI 工具生效)
 
 - 永不主动 git commit / git push,必须用户明确确认
