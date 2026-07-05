@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="./logo.svg" alt="ai-workflow-template logo" width="240">
+</p>
+
 # ai-workflow-template
 
 Claude Code 负责开发、OpenAI Codex 负责交叉评审的 AI 工作流模板。
