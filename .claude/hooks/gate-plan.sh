@@ -1,7 +1,14 @@
 #!/usr/bin/env bash
 # PreToolUse hook:plan 未获批时,拦截对源码与工作流控制文件的写入。
-# 退出码 0 = 放行;退出码 2 = 拒绝,stderr 会作为反馈返回给 Claude。
+# 放行 = 无输出退出 0(交还正常权限流,不输出 allow);
+# 拒绝 = stdout 输出 permissionDecision: deny 的 JSON 并退出 0。
 set -euo pipefail
+
+deny() {
+  jq -n --arg r "$1" \
+    '{hookSpecificOutput: {hookEventName: "PreToolUse", permissionDecision: "deny", permissionDecisionReason: $r}}'
+  exit 0
+}
 
 input=$(cat)
 file_path=$(echo "$input" | jq -r '.tool_input.file_path // empty')
@@ -42,7 +49,6 @@ plan="$proj/$(cat "$current_file")/plan.md"
 
 status=$(sed -n 's/^status:[[:space:]]*//p' "$plan" | head -1)
 if [ "$status" != "approved" ]; then
-  echo "rawf 工作流拦截:当前任务 plan 状态为 '$status',尚未获得用户确认。请先向用户呈现方案摘要并获得明确同意(/rawf-plan 第 6-7 步),再改动源码或工作流文件。" >&2
-  exit 2
+  deny "rawf 工作流拦截:当前任务 plan 状态为 '$status',尚未获得用户确认。请先向用户呈现方案摘要并获得明确同意(/rawf-plan 第 6-7 步),再改动源码或工作流文件。"
 fi
 exit 0
