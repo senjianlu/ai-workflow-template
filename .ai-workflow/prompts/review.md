@@ -5,7 +5,8 @@
 - 本轮实现记录:{{TASK_DIR}}/implementation-round-{{ROUND}}.md
 - 若轮次大于 01,请对照上一轮 review-round-*-fail.md 逐项核验修复是否到位
 
-评审标准与严重度定义以仓库根目录 AGENTS.md 为唯一权威。
+评审角色约束、标准与严重度定义以 .ai-workflow/review-standards.md 为
+唯一权威,评审前先完整阅读该文件。
 请实际运行 plan.md 中的测试用例,核验实现记录中报告的测试结果是否属实;
 虚报的测试结果按 blocker 处理。
 
@@ -22,4 +23,4 @@
 <两三句>
 
 VERDICT: pass
-(最后一行,单独一行,小写,pass 或 fail 二选一,按 AGENTS.md 判定规则给出)
+(最后一行,单独一行,小写,pass 或 fail 二选一,按 review-standards.md 判定规则给出)

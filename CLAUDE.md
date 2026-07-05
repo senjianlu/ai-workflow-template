@@ -1,14 +1,6 @@
-# 项目
+@AGENTS.md
 
-<!-- TEMPLATE: 一两句话描述本项目。 -->
-
-## 技术栈
-
-<!-- TEMPLATE: 保留适用的行,删除其余。 -->
-- 前端:Node.js + TypeScript + Next.js + shadcn/ui
-- 后端:Python 3 + FastAPI
-- 爬虫:Python 3 + Scrapy
-- 部署:GitHub Actions(.github/workflows/)
+# Claude Code 工作流
 
 ## 开发工作流(强制)
 
@@ -23,9 +15,9 @@
 
 例外:纯文档、拼写级改动可跳过流程,但需先向用户声明。
 
-## 硬规则
+## 硬规则(通用硬规则见 AGENTS.md,以下为 Claude Code 补充)
 
-- 永不主动 git commit / git push,必须用户明确确认
-- `.ai/` 下的历史轮次文件只增不改
 - 评审只能通过 `.ai-workflow/scripts/review.sh` 触发,不得自行替代
 - 开新任务前先检查 `.ai/` 下是否有同日同名任务目录,避免覆盖
+- 禁止用 Bash 重定向、临时脚本等方式绕过 gate-plan 对源码与工作流
+  控制文件的写入闸

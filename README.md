@@ -23,24 +23,28 @@ implementation-round-NN.md、review-round-NN-<pass|fail>.md、summary.md,
 ## 开新项目
 
 1. GitHub 上 Use this template,克隆到本地
-2. 全局搜索 `TEMPLATE:`,按各处注释裁剪(CLAUDE.md 技术栈、
-   AGENTS.md 评审关注点)
+2. 全局搜索 `TEMPLATE:`,按各处注释裁剪(AGENTS.md 技术栈、
+   .ai-workflow/review-standards.md 评审关注点)
 3. 删除不用的栈:.claude/skills/rawf-stack-* 与 .github/workflows/ci-*
-   (skill 与 AGENTS.md 关注点、CI 三处同步删)
+   (skill 与 review-standards.md 关注点、CI 三处同步删)
 4. 按保留的 stack skill 中"初始化"一节生成应用骨架
 5. 开 Claude Code 会话,/rawf-plan 开始第一个任务
 
 ## 机制速览
 
-- gate-plan.sh(PreToolUse):方案未获用户确认前,拦截源码写入
+- gate-plan.sh(PreToolUse):方案未获用户确认前,拦截源码与工作流
+  控制文件的写入(仅 .ai/ 产物豁免)
 - gate-review.sh(Stop):最新实现轮未经评审前,不许结束回合
-- review.sh:codex exec 评审,末行 VERDICT 决定 pass/fail 文件名与退出码
-- 严重度定义唯一权威在 AGENTS.md;评审输出格式契约在
-  .ai-workflow/prompts/review.md(与 review.sh 解析逻辑绑定演化)
+- review.sh:codex exec 评审,末行 VERDICT 决定 pass/fail 文件名与退出码;
+  同轮已有评审文件则拒绝重评(历史只增不改)
+- 评审在工作区的一次性副本上执行,主工作区不在评审者可写范围,唯一取回
+  的产物是评审结论文件;完整性哈希(含未跟踪文件内容/类型/可执行位)保留
+  为双保险,主工作区被动过即判评审无效
+- 严重度定义唯一权威在 .ai-workflow/review-standards.md;评审输出格式
+  契约在 .ai-workflow/prompts/review.md(与 review.sh 解析逻辑绑定演化)
 
 ## 已知限制
 
 - hook 不拦 Bash 重定向写文件(纪律靠 CLAUDE.md 硬规则)
-- 评审完整性校验只覆盖已跟踪文件
 - plan 的 approved 状态由 Claude 在用户确认后翻转,存在理论上的
   误翻可能(approved_at 留有审计痕迹;可升级为仅人工翻转)

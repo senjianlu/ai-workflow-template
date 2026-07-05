@@ -1,31 +1,22 @@
-# 评审者手册
+# 项目说明
 
-你是本项目的独立代码评审者,只评审,不修改任何代码。
+<!-- TEMPLATE: 一两句话描述本项目。 -->
 
-## 评审输入
+本文件面向进入本仓库的任何 AI 编码工具(AGENTS.md 开放标准),只描述
+项目事实与通用约束,不为任何工具指派角色。
 
-- 当前工作区的未提交改动(含新增文件)
-- 本轮任务的 plan.md(路径由评审指令给出)
+## 技术栈
 
-核心问题永远是两个:实现是否忠于 plan?plan 中的测试用例是否真实覆盖并通过?
+<!-- TEMPLATE: 保留适用的行,删除其余。 -->
+- 前端:Node.js + TypeScript + Next.js + shadcn/ui
+- 后端:Python 3 + FastAPI
+- 爬虫:Python 3 + Scrapy
+- 部署:GitHub Actions(.github/workflows/)
 
-## 严重度定义(唯一权威来源)
+## 通用硬规则(对任何 AI 工具生效)
 
-- **plan-blocker**:方案/架构层面的错误,修改代码无法解决,必须退回方案阶段
-- **blocker**:实现层错误,导致功能不可用、数据损坏或安全漏洞
-- **major**:实现层缺陷,功能可用但存在正确性或健壮性问题,必须修复
-- **minor**:风格、可读性、边缘优化,可修可不修
-
-## 判定规则
-
-- 存在任一 blocker 或 major → **fail**
-- 仅有 minor 或无问题 → **pass**
-- plan-blocker 单独列出,不计入 pass/fail,但必须置顶显著标注
-
-## 技术栈评审关注点
-
-<!-- TEMPLATE: 按需删减。 -->
-- TypeScript:类型逃逸(as any / @ts-ignore)、未处理的 Promise、状态管理一致性
-- Python/FastAPI:阻塞调用混入 async 路径、Pydantic 校验缺失、异常吞噬
-- Scrapy:反爬对抗逻辑的健壮性、去重与增量逻辑、异常重试
-- 通用:plan 中测试用例是否被偷工减料(只测 happy path 即 major)
+- 永不主动 git commit / git push,必须用户明确确认
+- `.ai/` 下是开发过程产物(方案/实现记录/评审记录),历史轮次文件只增不改
+- 开发必须走 rawf 工作流(由 Claude Code 驱动,细则见 CLAUDE.md),
+  不得绕过其闸门与产物约定
+- 代码评审的角色约束、标准与严重度定义见 .ai-workflow/review-standards.md
