@@ -10,17 +10,16 @@
 请实际运行 plan.md 中的测试用例,核验实现记录中报告的测试结果是否属实;
 虚报的测试结果按 blocker 处理。
 
-输出格式(严格遵守,末行将被脚本解析):
+输出要求:你的最终回复由 --output-schema 强制为 JSON,字段语义如下。
+verdict 必须按 review-standards.md 的判定规则给出——脚本会按严重度清单
+独立复核,自报结论与清单矛盾的评审直接判无效。
 
-# 评审:第 {{ROUND}} 轮
+- verdict:"pass" 或 "fail"
+- issues:问题数组,无问题时为空数组;每项:
+  - id:R-NN 两位递增编号(R-01、R-02……)
+  - severity:plan-blocker | blocker | major | minor(定义见 review-standards.md)
+  - summary:一句话结论
+  - detail:文件:行号 / 问题说明 / 修复建议
+- overall:两三句总评
 
-## 问题清单
-- [plan-blocker|blocker|major|minor] R-01 <一句话结论>
-  - 详情:<文件:行号 / 问题说明 / 修复建议>
-(每个问题一条,无问题写"无"。plan-blocker 置顶。)
-
-## 总评
-<两三句>
-
-VERDICT: pass
-(最后一行,单独一行,小写,pass 或 fail 二选一,按 review-standards.md 判定规则给出)
+plan-blocker 不计入 pass/fail 判定,但必须列出(渲染时置顶)。

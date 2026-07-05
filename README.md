@@ -7,8 +7,9 @@ Claude Code 负责开发、OpenAI Codex 负责交叉评审的 AI 工作流模板
 ## 依赖
 
 - Claude Code(主对话/开发者)
-- OpenAI Codex CLI(评审者,需已 `codex login`)
-- jq(hooks 解析用,`brew install jq`)
+- OpenAI Codex CLI(评审者,需已 `codex login`,版本需支持
+  `codex exec --output-schema`)
+- jq(hooks 与评审结论解析/渲染用,`brew install jq`)
 
 ## 工作流
 
@@ -35,13 +36,15 @@ implementation-round-NN.md、review-round-NN-<pass|fail>.md、summary.md,
 - gate-plan.sh(PreToolUse):方案未获用户确认前,拦截源码与工作流
   控制文件的写入(仅 .ai/ 产物豁免)
 - gate-review.sh(Stop):最新实现轮未经评审前,不许结束回合
-- review.sh:codex exec 评审,末行 VERDICT 决定 pass/fail 文件名与退出码;
-  同轮已有评审文件则拒绝重评(历史只增不改)
+- review.sh:codex exec --output-schema 结构化评审;脚本按严重度清单推导
+  pass/fail 并与评审自报结论交叉校验,JSON 渲染为评审文件;同轮已有评审
+  文件则拒绝重评(历史只增不改)
 - 评审在工作区的一次性副本上执行,主工作区不在评审者可写范围,唯一取回
   的产物是评审结论文件;完整性哈希(含未跟踪文件内容/类型/可执行位)保留
   为双保险,主工作区被动过即判评审无效
-- 严重度定义唯一权威在 .ai-workflow/review-standards.md;评审输出格式
-  契约在 .ai-workflow/prompts/review.md(与 review.sh 解析逻辑绑定演化)
+- 严重度定义唯一权威在 .ai-workflow/review-standards.md;评审输出契约在
+  .ai-workflow/schemas/review.schema.json 与 prompts/review.md 的字段语义
+  说明(二者与 review.sh 解析/渲染逻辑绑定演化)
 
 ## 已知限制
 

@@ -1,7 +1,7 @@
 # rawf:运行时状态不入库(产物入库,状态不入库)
 .ai/.current-task
 # rawf:评审异常时遗留的原始输出与原子发布临时文件
-.ai/**/.review-raw-*.md
+.ai/**/.review-raw-*
 .ai/**/.review-out-*
 
 # Python
