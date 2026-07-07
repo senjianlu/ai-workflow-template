@@ -164,7 +164,9 @@ docs/architecture.md。 -->
 - `docs/` 下是持久设计真相(架构/决策),任务改变二者时须在收尾前回写,
   与代码同一提交(分工详见 docs/README.md)
 - 开发必须走 rawf 工作流(由 Claude Code 驱动,细则见 CLAUDE.md),
-  不得绕过其闸门与产物约定
+  不得绕过其闸门与产物约定;预计触及文件 > 10 的改动,须在方案确认闸之前
+  先经 plan 阶段 Codex 评审(plan-review,最多 2 轮);≤ 10 不强制。
+  细则见 CLAUDE.md
 - 代码评审的角色约束、标准与严重度定义见 .ai-workflow/review-standards.md
 
 ## Git 提交规范

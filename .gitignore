@@ -3,6 +3,9 @@
 # rawf:评审异常时遗留的原始输出与原子发布临时文件
 .ai/**/.review-raw-*
 .ai/**/.review-out-*
+# rawf:plan 阶段评审的原始输出与原子发布临时文件
+.ai/**/.plan-review-raw-*
+.ai/**/.plan-review-out-*
 
 # Python
 __pycache__/

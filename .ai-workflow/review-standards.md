@@ -22,9 +22,23 @@
 
 ## 判定规则
 
+以下规则适用于**实现层评审**(review.sh,对已实现的代码 diff):
+
 - 存在任一 blocker 或 major → **fail**
 - 仅有 minor 或无问题 → **pass**
 - plan-blocker 单独列出,不计入 pass/fail,但必须置顶显著标注
+
+## plan 阶段评审(plan-review)语义
+
+**plan 阶段评审**(plan-review.sh,实现前审 plan.md)另用一套判定:此时尚无
+实现,**不使用 blocker**;判定规则为——
+
+- 存在任一 **plan-blocker 或 major → fail**(须就地修订 plan.md 后重评)
+- 仅有 minor 或无问题 → **pass**
+
+即:同一 plan-blocker 严重度,在实现层评审中不计入 pass/fail(单独升级),在
+plan 阶段评审中直接计入 fail——因为 plan 阶段的全部目的就是拦截 plan-blocker。
+两套规则分域适用,互不覆盖。
 
 ## 技术栈评审关注点
 
