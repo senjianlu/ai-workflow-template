@@ -46,16 +46,20 @@ prompt="${prompt//\{\{ROUND\}\}/$nn}"
 # diff 段与未跟踪段各自先哈希再合并,无分隔符歧义与跨段拼接歧义。
 # 未跟踪文件不按 .gitignore 排除(防 .env 等被忽略文件遭篡改而不被发现),
 # 只排除明确允许的评审/测试产物。
+# .claude/ 例外排除:评审强制后台运行,主会话在评审期间仍活跃,而 Claude
+# Code 会自动写 .claude/settings.local.json(记录权限授予,不经工具、无从拦截),
+# 若纳入指纹会把这类并发写入误判为"隔离失败"致评审无效。故整目录不计入。
 # TEMPLATE: 按项目构建产物增删排除项。
 hash_excludes=(
   --exclude='.review-raw-*'
+  --exclude='.claude/'
   --exclude='__pycache__/' --exclude='*.pyc' --exclude='.pytest_cache/'
   --exclude='.venv/' --exclude='node_modules/' --exclude='dist/' --exclude='.next/'
   --exclude='.DS_Store'
 )
 workspace_hash() {
   {
-    git diff HEAD | shasum
+    git diff HEAD -- . ':(exclude).claude' | shasum
     git ls-files --others -z "${hash_excludes[@]}" \
       | while IFS= read -r -d '' f; do
           if [ -L "$f" ]; then
