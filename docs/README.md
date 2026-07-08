@@ -13,7 +13,7 @@
 
 | 位置 | 内容 |
 |---|---|
-| `architecture.md` | 系统架构单页:形态、组件、数据、部署 |
+| `architecture/` | 架构目录:`README.md` 做汇总和导航,细节按主题下沉到同目录文件 |
 | `decisions/` | 决策记录,一事一文,`NNNN-<slug>.md` |
 
 ## 回写纪律

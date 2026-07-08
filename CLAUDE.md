@@ -33,4 +33,5 @@
 - 禁止用 Bash 重定向、临时脚本等方式绕过 gate-plan 对源码与工作流
   控制文件的写入闸
 - 任务改变架构或关键决策时,收尾(/rawf-report)前把变化回写 docs/
-  (architecture.md 或 decisions/),与代码同一提交
+  (architecture/ 或 decisions/),与代码同一提交;architecture/README.md
+  只做汇总和导航,详细主题下沉到同目录其他文件

@@ -39,7 +39,8 @@ implementation-round-NN.md、review-round-NN-<pass|fail>.md、summary.md,
    按需添加 CI。栈调整时同步 .ai-workflow/review-standards.md 的
    技术栈关注点
 6. 生成应用骨架(若建了 stack skill,按其"初始化"一节执行),架构
-   落入 docs/architecture.md
+   落入 docs/architecture/;其中 README.md 只做汇总和导航,细节下沉
+   到同目录其他文件
 7. 开 Claude Code 会话,/rawf-plan 开始第一个任务
 
 ## 存量项目迁移
@@ -47,7 +48,7 @@ implementation-round-NN.md、review-round-NN-<pass|fail>.md、summary.md,
 把既有项目切到本模板时分层处理,顺序不可倒:
 
 1. **迁知识层(逐条搬家,不可随文件替换丢弃)**:老 CLAUDE.md 里的
-   已确认决策、硬约束、现状描述,先搬入 docs/architecture.md 与
+   已确认决策、硬约束、现状描述,先搬入 docs/architecture/ 与
    docs/decisions/;老项目已有 docs/ 的,模板骨架并入而非覆盖。
 2. **换工作流层(可整体替换)**:拷入 .ai-workflow/、.claude/、
    .githooks/、.gitmessage,CLAUDE.md 换为模板版,AGENTS.md 按模板

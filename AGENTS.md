@@ -116,7 +116,7 @@ asyncio.to_thread 下沉线程池,不得直接混入事件循环。
 ## 目录约定
 
 <!-- TEMPLATE: 约定通用,无需裁剪;仅列承重目录,项目完整树见
-docs/architecture.md。 -->
+docs/architecture/README.md。 -->
 
 单应用仓库用扁平根布局(主流默认形)。**晋级规则**:出现第二个可
 部署单元的那一刻,全仓升级为 apps/ + packages/,不允许"根上一个、
