@@ -1,0 +1,24 @@
+REPO=/Users/xujinpeng/Projects/2026/ai-workflow-template
+=== TC-01 全仓一致性:轮次闸为 -ge 3,无指向 plan 评审的「2 轮」残留 ===
+  ✅ plan-review.sh 轮次闸为 -ge 3
+  ✅ 无 plan 评审「最多 2 轮/2 轮上限/-ge 2」残留
+=== TC-02 建目录生成 evidence/.gitkeep、assets/.gitkeep 且可入库 ===
+  ✅ 两 .gitkeep 已建
+  ✅ evidence/.gitkeep 未被忽略(可入库)
+  ✅ assets/.gitkeep 未被忽略(可入库)
+=== TC-06 CLAUDE.md 含简体中文沟通硬规则 ===
+  ✅ 硬规则区命中简体中文条款
+=== TC-05 gate-plan 对 .ai/<task>/evidence/ 写入放行(status 非 approved 场景) ===
+  ✅ hook 对 .ai/ 下 evidence 写入放行(无 deny 输出)
+=== TC-03 / TC-04 隔离临时工作区 + 假 codex 桩 ===
+  [TC-04] exit=plan-review-round-03-pass.md
+0; stderr=''
+  ✅ TC-04 codex 被调用(第 3 轮放行)
+  ✅ TC-04 产出 plan-review-round-03-pass.md
+  ✅ TC-04 未误报上限
+  [TC-03] exit=3; stderr='plan 评审已达 3 轮上限,仍未收敛;停止自动评审,交人工判断'
+  ✅ TC-03 exit 3
+  ✅ TC-03 打印「3 轮上限」
+  ✅ TC-03 codex 未被调用
+
+=== 汇总:PASS=13 FAIL=0 ===

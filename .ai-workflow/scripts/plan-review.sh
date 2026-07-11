@@ -68,13 +68,13 @@ fi
 trap 'rm -rf "$lock"' EXIT
 
 # 轮次:count=已有 plan-review-round-*.md 数量;nn=count+1。
-# 2 轮机器上限:count>=2 直接拒绝,交人工。
+# 3 轮机器上限:count>=3 直接拒绝,交人工。
 shopt -s nullglob
 rounds=("$task_dir"/plan-review-round-*.md)
 shopt -u nullglob
 count=${#rounds[@]}
-if [ "$count" -ge 2 ]; then
-  echo "plan 评审已达 2 轮上限,仍未收敛;停止自动评审,交人工判断" >&2
+if [ "$count" -ge 3 ]; then
+  echo "plan 评审已达 3 轮上限,仍未收敛;停止自动评审,交人工判断" >&2
   exit 3
 fi
 nn=$(printf '%02d' "$((count + 1))")

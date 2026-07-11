@@ -129,7 +129,7 @@ docs/architecture/README.md。 -->
 | `apps/<name>/` | 可部署单元(web、api、agent……) |
 | `packages/<name>/` | 跨应用共享库;没有则不建 |
 | `tests/` | 仅跨应用共享 fixtures;测试本体随各应用 |
-| `docs/`、`.ai/` | 持久真相 / 过程痕迹(分工见 docs/README.md) |
+| `docs/`、`.ai/` | 持久真相 / 过程痕迹(分工见 docs/README.md;`.ai/` 每个任务目录含 `evidence/` 证据与 `assets/` 资源子目录) |
 | `deploy/` | Dockerfile 之外的编排(compose、反代配置) |
 | `scripts/` | 仓库级辅助脚本 |
 | `.github/workflows/`、`.agents/skills/` | CI / 项目内建 skill |
@@ -165,7 +165,7 @@ docs/architecture/README.md。 -->
   与代码同一提交(分工详见 docs/README.md)
 - 开发必须走 rawf 工作流(由 Claude Code 驱动,细则见 CLAUDE.md),
   不得绕过其闸门与产物约定;预计触及文件 > 10 的改动,须在方案确认闸之前
-  先经 plan 阶段 Codex 评审(plan-review,最多 2 轮);≤ 10 不强制。
+  先经 plan 阶段 Codex 评审(plan-review,最多 3 轮);≤ 10 不强制。
   细则见 CLAUDE.md
 - 代码评审的角色约束、标准与严重度定义见 .ai-workflow/review-standards.md
 

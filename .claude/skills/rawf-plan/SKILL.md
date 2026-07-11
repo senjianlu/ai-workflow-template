@@ -9,7 +9,10 @@ description: rawf 工作流第 1 步:为新开发任务产出实现方案 plan.m
 
 1. 与用户对齐需求。有歧义先问,不要带着猜测写方案。
 2. 创建任务目录 `.ai/<yyyy-mm-dd>/<task-slug>/`(日期用今天,slug 用简短
-   kebab-case 英文);若同名目录已存在,询问用户是续做还是换名。
+   kebab-case 英文);若同名目录已存在,询问用户是续做还是换名。同时在其下
+   建两个固定子目录并各放 `.gitkeep` 占位(空目录才能随任务入库):
+   `evidence/`(证据:测试输出、截图、验证记录)与 `assets/`(资源:Design
+   稿、参考图、外部素材)。
 3. 将任务目录相对路径(如 `.ai/2026-07-05/add-login`)写入 `.ai/.current-task`。
 4. 调研代码库后,复制 `.ai-workflow/templates/plan.md` 到任务目录并填写,
    保持 `status: draft`。
@@ -20,7 +23,7 @@ description: rawf 工作流第 1 步:为新开发任务产出实现方案 plan.m
    运行 `bash .ai-workflow/scripts/plan-review.sh`(**后台方式**并等待完成,
    评审耗时波动大)。退出码 3 = 执行异常,把 stderr 报用户后停下。按结果分流:
    - fail(有 plan-blocker 或 major)→ **就地修订 plan.md**(尽量一次改完),
-     重跑评审;脚本强制**最多 2 轮**,达上限(exit 3 提示"2 轮上限")仍不
+     重跑评审;脚本强制**最多 3 轮**,达上限(exit 3 提示"3 轮上限")仍不
      收敛 → 停止,把分歧交用户敲定,不自行绕过。
    - pass(仅 minor / 无问题)→ 继续。
    拿不准是否采纳某条意见时,不"解释掉"后静默忽略,原样呈用户定夺。

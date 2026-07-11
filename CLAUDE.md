@@ -8,7 +8,7 @@
 
 1. `/rawf-plan` → 产出 plan.md(必须含测试用例),向用户呈现摘要
 1b. 【plan 评审闸,仅 >10 文件】确认前先跑 `.ai-workflow/scripts/plan-review.sh`,
-    plan-blocker/major 就地改 plan 再重评,最多 2 轮,不决转人工
+    plan-blocker/major 就地改 plan 再重评,最多 3 轮,不决转人工
 2. 【人工闸】用户确认 plan 前,禁止改动源码(有 hook 拦截)
 3. `/rawf-implement` → 实现 + 自测,写 implementation-round-<NN>.md
 4. `/rawf-review` → 跑 Codex 评审,产出 review-round-<NN>-<pass|fail>.md
@@ -19,10 +19,12 @@
 
 ## 硬规则(通用硬规则见 AGENTS.md,以下为 Claude Code 补充)
 
+- 与用户沟通一律使用简体中文(对话、方案摘要、汇报等面向用户的自然语言);
+  代码、标识符、注释与既有产物的语言不受此约束
 - 评审只能通过 `.ai-workflow/scripts/review.sh` 触发,不得自行替代
 - **预计触及文件 > 10 的改动,方案确认闸之前必须先经 plan 阶段 Codex 评审**
   (`.ai-workflow/scripts/plan-review.sh`):plan-blocker/major 就地改 plan.md
-  后重评,脚本强制最多 2 轮,达上限仍不决则停下交用户。≤10 文件不强制。
+  后重评,脚本强制最多 3 轮,达上限仍不决则停下交用户。≤10 文件不强制。
   文件数为 plan 起草时的估计;实现中实际超阈,按 rawf-implement"偏差需停下
   问用户"处理
 - **评审进行中(review.sh 运行至返回,含后台等待期)禁止改动本项目任何
