@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # plan 阶段 Codex 评审:>10 文件改动在实现前先审方案(plan.md)。
-# 只读运行 codex(--sandbox read-only),不改工作区,故无需 review.sh 那套
-# 副本隔离与完整性哈希。退出码:0=pass 1=fail 3=评审执行异常。
+# 只读运行 codex(--sandbox read-only),与 review.sh 同构;因 plan 阶段
+# 无"评审期间禁改工作区"约束,不设 review.sh 那道完整性哈希双保险。
+# 退出码:0=pass 1=fail 3=评审执行异常。
 #
 # 判定语义以 .ai-workflow/review-standards.md「plan 阶段评审」小节为权威:
 # 存在任一 plan-blocker 或 major → fail;仅 minor 或无问题 → pass。

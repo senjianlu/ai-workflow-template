@@ -1,9 +1,58 @@
 #!/usr/bin/env bash
 # 调用 Codex 评审当前改动。退出码:0=pass 1=fail 3=评审执行异常
-# 评审在工作区的一次性副本上执行(主工作区不在评审者可写范围内),
-# 完整性哈希保留为双保险,隔离生效时理应永不触发。
+# 评审以只读沙箱(--sandbox read-only)直审原仓库,不建副本(与
+# plan-review.sh 同构;取消副本的决策见 docs/decisions/0005)。评审者不
+# 运行任何测试,测试核验走证据协议(review-standards.md「评审动作边界」)。
+# 完整性哈希保留为双保险:检测评审期间主工作区的并发写入,兜底沙箱失效;
+# 只读沙箱生效且无并发写入时理应永不触发。
 set -euo pipefail
 
+# --- 完整性指纹(封装于顶层,兼作可控测试点)-----------------------------
+# 快照口径:已跟踪改动 + 未跟踪文件逐条 NUL 定界记账
+# (类型\0路径\0载荷\0;符号链接记链接目标,普通文件记可执行位+内容哈希),
+# diff 段与未跟踪段各自先哈希再合并,无分隔符歧义与跨段拼接歧义。
+# 未跟踪文件不按 .gitignore 排除(防 .env 等被忽略文件遭篡改而不被发现),
+# 只排除明确允许的评审/测试产物。
+# .claude/ 例外排除:评审强制后台运行,主会话在评审期间仍活跃,而 Claude
+# Code 会自动写 .claude/settings.local.json(记录权限授予,不经工具、无从拦截),
+# 若纳入指纹会把这类并发写入误判为"隔离失败"致评审无效。故整目录不计入。
+# TEMPLATE: 按项目构建产物增删排除项。
+hash_excludes=(
+  --exclude='.review-raw-*'
+  --exclude='.claude/'
+  --exclude='__pycache__/' --exclude='*.pyc' --exclude='.pytest_cache/'
+  --exclude='.venv/' --exclude='node_modules/' --exclude='dist/' --exclude='.next/'
+  --exclude='.DS_Store'
+)
+workspace_hash() {
+  {
+    git diff HEAD -- . ':(exclude).claude' | shasum
+    git ls-files --others -z "${hash_excludes[@]}" \
+      | while IFS= read -r -d '' f; do
+          if [ -L "$f" ]; then
+            printf 'symlink\0%s\0' "$f"
+            readlink "$f"
+            printf '\0'
+          else
+            if [ -x "$f" ]; then m=x; else m=-; fi
+            printf 'file\0%s\0%s\0' "$f" "$m"
+            shasum < "$f"
+            printf '\0'
+          fi
+        done | shasum
+  } | shasum | cut -d' ' -f1
+}
+
+# 测试可控入口:脱离 codex 与主流程单测指纹敏感性(CLAUDE_PROJECT_DIR
+# 指向测试用临时工作区),循 plan-review.sh __publish_round 先例。
+if [ "${1:-}" = "__workspace_hash" ]; then
+  proj="${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel)}"
+  cd "$proj"
+  workspace_hash
+  exit $?
+fi
+
+# --- 主流程 ---------------------------------------------------------------
 command -v codex >/dev/null || { echo "codex CLI 未安装或不在 PATH" >&2; exit 3; }
 
 proj="${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel)}"
@@ -41,61 +90,24 @@ prompt=$(cat .ai-workflow/prompts/review.md)
 prompt="${prompt//\{\{TASK_DIR\}\}/$task_rel}"
 prompt="${prompt//\{\{ROUND\}\}/$nn}"
 
-# 完整性快照(双保险):已跟踪改动 + 未跟踪文件逐条 NUL 定界记账
-# (类型\0路径\0载荷\0;符号链接记链接目标,普通文件记可执行位+内容哈希),
-# diff 段与未跟踪段各自先哈希再合并,无分隔符歧义与跨段拼接歧义。
-# 未跟踪文件不按 .gitignore 排除(防 .env 等被忽略文件遭篡改而不被发现),
-# 只排除明确允许的评审/测试产物。
-# .claude/ 例外排除:评审强制后台运行,主会话在评审期间仍活跃,而 Claude
-# Code 会自动写 .claude/settings.local.json(记录权限授予,不经工具、无从拦截),
-# 若纳入指纹会把这类并发写入误判为"隔离失败"致评审无效。故整目录不计入。
-# TEMPLATE: 按项目构建产物增删排除项。
-hash_excludes=(
-  --exclude='.review-raw-*'
-  --exclude='.claude/'
-  --exclude='__pycache__/' --exclude='*.pyc' --exclude='.pytest_cache/'
-  --exclude='.venv/' --exclude='node_modules/' --exclude='dist/' --exclude='.next/'
-  --exclude='.DS_Store'
-)
-workspace_hash() {
-  {
-    git diff HEAD -- . ':(exclude).claude' | shasum
-    git ls-files --others -z "${hash_excludes[@]}" \
-      | while IFS= read -r -d '' f; do
-          if [ -L "$f" ]; then
-            printf 'symlink\0%s\0' "$f"
-            readlink "$f"
-            printf '\0'
-          else
-            if [ -x "$f" ]; then m=x; else m=-; fi
-            printf 'file\0%s\0%s\0' "$f" "$m"
-            shasum < "$f"
-            printf '\0'
-          fi
-        done | shasum
-  } | shasum | cut -d' ' -f1
-}
 pre_hash=$(workspace_hash)
 
-# 评审在一次性副本上执行,结束即销毁
-sandbox_root=$(mktemp -d "${TMPDIR:-/tmp}/rawf-review-XXXXXX") || { echo "创建评审副本目录失败" >&2; exit 3; }
-trap 'rm -rf "$sandbox_root" "$lock"' EXIT
-copy="$sandbox_root/repo"
-cp -Rp "$proj" "$copy" || { echo "复制工作区到评审副本失败" >&2; exit 3; }
-
+# 原始输出直接落任务目录(已由 .gitignore 忽略、hash_excludes 排除),
+# 由 codex CLI 进程自身写入,不经受沙箱约束(沙箱只管模型生成的 shell
+# 命令);非法/异常时原地保留供排查,无需任何回搬逻辑。
 raw_name=".review-raw-$nn.json"
-raw_copy="$copy/$task_rel/$raw_name"
-rm -f "$raw_copy"   # 清除随副本带入的历史遗留输出,防陈旧结论被误用
+raw="$task_dir/$raw_name"
+rm -f "$raw"   # 清除历史遗留输出,防陈旧结论被误用
 
 codex_rc=0
-codex exec --sandbox workspace-write -C "$copy" \
-  --output-schema "$copy/.ai-workflow/schemas/review.schema.json" \
-  --output-last-message "$raw_copy" "$prompt" || codex_rc=$?
+codex exec --sandbox read-only -C "$proj" \
+  --output-schema "$proj/.ai-workflow/schemas/review.schema.json" \
+  --output-last-message "$raw" "$prompt" || codex_rc=$?
 
-# 双保险:主工作区必须分毫未动(隔离生效时恒真)
+# 双保险:主工作区必须分毫未动(只读沙箱生效且无并发写入时恒真)
 post_hash=$(workspace_hash)
 if [ "$pre_hash" != "$post_hash" ]; then
-  echo "主工作区在评审期间发生改动(隔离未能阻止,或存在并发写入),本次评审无效。请 git status 检查后重跑。" >&2
+  echo "主工作区在评审期间发生改动(沙箱未能阻止,或存在并发写入),本次评审无效。请 git status 检查后重跑。" >&2
   exit 3
 fi
 
@@ -104,7 +116,7 @@ if [ "$codex_rc" -ne 0 ]; then
   exit 3
 fi
 
-if [ ! -f "$raw_copy" ]; then
+if [ ! -f "$raw" ]; then
   echo "codex 退出 0 但未产出评审输出文件,评审未完成;请重跑评审" >&2
   exit 3
 fi
@@ -112,23 +124,20 @@ fi
 # 结构化解析:JSON 合法性 → 字段提取 → 按判定规则推导并交叉校验。
 # 判定规则(review-standards.md)是严重度清单的纯函数,脚本推导后与评审者
 # 自报 verdict 比对,矛盾的评审直接判无效,不被采纳。
-if ! jq -e . "$raw_copy" >/dev/null 2>&1; then
-  cp "$raw_copy" "$task_dir/$raw_name" 2>/dev/null || true
+if ! jq -e . "$raw" >/dev/null 2>&1; then
   echo "评审输出不是合法 JSON,原始输出保留在 $task_rel/$raw_name" >&2
   exit 3
 fi
-verdict=$(jq -r '.verdict // empty' "$raw_copy")
+verdict=$(jq -r '.verdict // empty' "$raw")
 case "$verdict" in
   pass|fail) ;;
   *)
-    cp "$raw_copy" "$task_dir/$raw_name" 2>/dev/null || true
     echo "评审输出缺少合法 verdict 字段,原始输出保留在 $task_rel/$raw_name" >&2
     exit 3 ;;
 esac
-blocking=$(jq '[.issues // [] | .[] | select(.severity == "blocker" or .severity == "major")] | length' "$raw_copy")
+blocking=$(jq '[.issues // [] | .[] | select(.severity == "blocker" or .severity == "major")] | length' "$raw")
 if [ "$blocking" -gt 0 ]; then derived=fail; else derived=pass; fi
 if [ "$verdict" != "$derived" ]; then
-  cp "$raw_copy" "$task_dir/$raw_name" 2>/dev/null || true
   echo "评审自报结论($verdict)与严重度清单推导($derived)矛盾,按判定规则该评审无效,原始输出保留在 $task_rel/$raw_name" >&2
   exit 3
 fi
@@ -144,10 +153,9 @@ render_review() {
        | "- [\(.severity)] \(.id) \(.summary)\n  - 详情:\(.detail)")
      end),
     "\n## 总评\n\(.overall)\n\nVERDICT: \(.verdict)"
-  ' "$raw_copy"
+  ' "$raw"
 }
 
-# 唯一从副本取回主工作区的产物:评审结论文件。
 # 原子发布:先在同目录(同文件系统)写全临时文件,mv -n 原子改名发布;
 # 渲染中途失败只污染临时文件(随即清理),不会留下半成品结论、不阻断重试。
 final="$task_dir/review-round-$nn-$verdict.md"

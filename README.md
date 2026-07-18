@@ -68,9 +68,11 @@ implementation-round-NN.md、review-round-NN-<pass|fail>.md、summary.md,
 - review.sh:codex exec --output-schema 结构化评审;脚本按严重度清单推导
   pass/fail 并与评审自报结论交叉校验,JSON 渲染为评审文件;同轮已有评审
   文件则拒绝重评(历史只增不改)
-- 评审在工作区的一次性副本上执行,主工作区不在评审者可写范围,唯一取回
-  的产物是评审结论文件;完整性哈希(含未跟踪文件内容/类型/可执行位)保留
-  为双保险,主工作区被动过即判评审无效
+- 评审以只读沙箱直审原仓库(无副本,零复制开销;见 docs/decisions/0005);
+  评审者不运行任何测试,测试真实性走证据协议——实现者把全部用例的完整
+  原始输出落任务目录 evidence/,评审者只核证据,缺证据按 blocker 打回并
+  开出补交清单;完整性哈希(含未跟踪文件内容/类型/可执行位)保留为双保险,
+  评审期间主工作区被动过即判评审无效
 - 严重度定义唯一权威在 .ai-workflow/review-standards.md;评审输出契约在
   .ai-workflow/schemas/review.schema.json 与 prompts/review.md 的字段语义
   说明(二者与 review.sh 解析/渲染逻辑绑定演化)
@@ -80,3 +82,5 @@ implementation-round-NN.md、review-round-NN-<pass|fail>.md、summary.md,
 - hook 不拦 Bash 重定向写文件(纪律靠 CLAUDE.md 硬规则)
 - plan 的 approved 状态由 Claude 在用户确认后翻转,存在理论上的
   误翻可能(approved_at 留有审计痕迹;可升级为仅人工翻转)
+- 评审者不复跑测试(只读沙箱),测试真实性依赖证据协议与开发侧纪律;
+  若出现证据造假案例,可新增决策引入抽查机制(取舍见 docs/decisions/0005)
