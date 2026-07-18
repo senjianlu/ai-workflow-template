@@ -5,6 +5,8 @@
 #
 # 判定语义以 .ai-workflow/review-standards.md「plan 阶段评审」小节为权威:
 # 存在任一 plan-blocker 或 major → fail;仅 minor 或无问题 → pass。
+# 轮次上限默认 3;用户明确要求放宽时在 plan.md frontmatter 记
+# plan_review_max_rounds(正整数),以该值为准(见 docs/decisions/0003)。
 set -euo pipefail
 
 # --- 渲染与原子发布(封装为函数,兼作可控测试点)-------------------------
@@ -39,10 +41,42 @@ publish_round() {
   echo "plan-review-round-$n-$v.md"
 }
 
-# 测试可控入口:直接调用发布函数(绕过轮次计数),验证 mv -n 不覆盖行为。
+# resolve_max_rounds <plan.md>:解析轮次上限。只认首个 --- 块(frontmatter)
+# 内行首的 plan_review_max_rounds: 字段;字段未出现 → 缺省 3;字段出现但值
+# 非正整数(含空值)→ 报错返回 3(该字段仅在用户明确要求放宽时写入,不应
+# 出现拼写外的形态)。awk 以 "F=" 前缀标记"字段命中",与"未出现"区分——
+# 二者在裸值形态下同为空串,无法直接分辨。
+resolve_max_rounds() {
+  local hit val
+  hit=$(awk '/^---[[:space:]]*$/ { n++; next }
+             n == 1 && /^plan_review_max_rounds:/ {
+               sub(/^plan_review_max_rounds:/, "")
+               gsub(/^[[:space:]]+|[[:space:]]+$/, "")
+               print "F=" $0; exit }
+             n >= 2 { exit }' "$1")
+  if [ -z "$hit" ]; then
+    echo 3
+    return 0
+  fi
+  val=${hit#F=}
+  if [[ "$val" =~ ^[1-9][0-9]*$ ]]; then
+    echo "$val"
+  else
+    echo "plan.md 的 plan_review_max_rounds 非法(须为正整数,实际为:${val:-空})" >&2
+    return 3
+  fi
+}
+
+# 测试可控入口:直接调用发布函数(绕过轮次计数),验证 mv -n 不覆盖行为;
+# __resolve_max_rounds 同理,验证上限解析的缺省/合法/非法分支。
 if [ "${1:-}" = "__publish_round" ]; then
   shift
   publish_round "$@"
+  exit $?
+fi
+if [ "${1:-}" = "__resolve_max_rounds" ]; then
+  shift
+  resolve_max_rounds "$@"
   exit $?
 fi
 
@@ -68,13 +102,15 @@ fi
 trap 'rm -rf "$lock"' EXIT
 
 # 轮次:count=已有 plan-review-round-*.md 数量;nn=count+1。
-# 3 轮机器上限:count>=3 直接拒绝,交人工。
+# 机器上限:缺省 3,可被 plan.md frontmatter 的用户授权值放宽;
+# count>=上限直接拒绝,交人工。
+max_rounds=$(resolve_max_rounds "$plan") || exit 3
 shopt -s nullglob
 rounds=("$task_dir"/plan-review-round-*.md)
 shopt -u nullglob
 count=${#rounds[@]}
-if [ "$count" -ge 3 ]; then
-  echo "plan 评审已达 3 轮上限,仍未收敛;停止自动评审,交人工判断" >&2
+if [ "$count" -ge "$max_rounds" ]; then
+  echo "plan 评审已达 $max_rounds 轮上限,仍未收敛;停止自动评审,交人工判断" >&2
   exit 3
 fi
 nn=$(printf '%02d' "$((count + 1))")

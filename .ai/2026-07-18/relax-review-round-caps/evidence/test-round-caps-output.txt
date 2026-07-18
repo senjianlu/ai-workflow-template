@@ -1,0 +1,16 @@
+PASS TC-01 无字段缺省 3
+PASS TC-02 字段 5 生效
+PASS TC-03 非法值 0 拒绝
+  stderr: plan.md 的 plan_review_max_rounds 非法(须为正整数,实际为:0)
+PASS TC-03 非法值 abc 拒绝
+  stderr: plan.md 的 plan_review_max_rounds 非法(须为正整数,实际为:abc)
+PASS TC-04 正文伪造不生效
+PASS TC-05 缺省 3 轮闸拦截
+  msg: plan 评审已达 3 轮上限,仍未收敛;停止自动评审,交人工判断
+PASS TC-06 上限 5 放行第 4 轮(死于假 codex)
+  msg: codex exec 执行失败(退出码 1),评审未完成;检查 codex login/额度/网络后重跑
+PASS TC-07a bash -n 语法
+PASS TC-07b 无条件固定上限残留为零
+PASS TC-08 skill 三项断言(字段来源/缺省回退/停止动作)
+
+RESULT: pass=10 fail=0

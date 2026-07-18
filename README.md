@@ -18,7 +18,7 @@ Claude Code 负责开发、OpenAI Codex 负责交叉评审的 AI 工作流模板
 ## 工作流
 
 /rawf-plan → 【人工确认方案】→ /rawf-implement → /rawf-review
-  → fail:修复轮(最多 3 轮,plan 级问题直接升级人工)
+  → fail:修复轮(默认最多 3 轮,用户可明确放宽;plan 级问题直接升级人工)
   → pass:/rawf-report → 【人工确认提交】→ 任务关闭
 
 产物:.ai/<yyyy-mm-dd>/<task-slug>/ 下的 plan.md、

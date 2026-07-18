@@ -10,7 +10,9 @@ description: rawf 工作流第 3 步:按已确认的 plan.md 实现并自测,产
 1. 读 `.ai/.current-task` 定位任务目录;读 plan.md,确认 `status: approved`。
    不是 approved → 停,回到 /rawf-plan 的确认闸,不要试图绕过。
 2. 计算轮次:NN = 目录中已有 implementation-round-*.md 数量 + 1(两位数)。
-   若 NN > 3:停止实现,向用户说明已达修复轮上限,交人工判断。
+   修复轮上限:取 plan.md frontmatter 的 `impl_fix_max_rounds`;字段缺失
+   或非正整数一律按**默认 3**。该字段仅当用户明确要求放宽时写入,不得
+   自行添加。若 NN > 上限:停止实现,向用户说明已达修复轮上限,交人工判断。
 
 ## 实现
 

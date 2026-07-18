@@ -25,3 +25,6 @@
   `count -ge 3`)。动机:2 轮对 plan 层面的分歧偏紧,常在第 2 轮仍差一步收敛
   即被迫转人工;放到 3 轮给自动收敛多一次机会,达上限转人工的兜底不变。
   见 `.ai/2026-07-11/task-subdirs-3rounds/`。
+- 2026-07-18:固定上限改为**可配置默认值**——默认仍 3 轮,用户明确要求时
+  可经 plan.md frontmatter 的 `plan_review_max_rounds` 放宽,机制见
+  [0003](0003-configurable-review-round-caps.md)。
