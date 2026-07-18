@@ -5,10 +5,13 @@
 - 本轮实现记录:{{TASK_DIR}}/implementation-round-{{ROUND}}.md
 - 若轮次大于 01,请对照上一轮 review-round-*-fail.md 逐项核验修复是否到位
 
-评审角色约束、标准与严重度定义以 .ai-workflow/review-standards.md 为
-唯一权威,评审前先完整阅读该文件。
-请实际运行 plan.md 中的测试用例,核验实现记录中报告的测试结果是否属实;
-虚报的测试结果按 blocker 处理。
+评审角色约束、标准、严重度定义与可执行动作以 .ai-workflow/review-standards.md
+为唯一权威,评审前先完整阅读该文件。
+核验实现记录中报告的测试结果是否属实:在该文件「评审动作边界」允许的
+范围内重跑可运行的用例(静态检查、自终止且不起服务不访问网络的单元
+测试,单条命令默认 5 分钟超时);边界外的用例(build / E2E / 需启动
+服务类)不运行,改为审查 {{TASK_DIR}}/evidence/ 中的原始输出并与实现
+记录交叉比对。证据缺失、矛盾或虚报的测试结果按 blocker 处理。
 
 输出要求:你的最终回复由 --output-schema 强制为 JSON,字段语义如下。
 verdict 必须按 review-standards.md 的判定规则给出——脚本会按严重度清单

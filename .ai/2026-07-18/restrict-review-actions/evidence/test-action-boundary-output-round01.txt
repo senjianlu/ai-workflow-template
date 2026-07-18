@@ -1,0 +1,13 @@
+REPO: /Users/xujinpeng/Projects/2026/ai-workflow-template
+PASS TC-01 边界小节与允许/禁止清单齐备
+PASS TC-02a 旧表述'请实际运行 plan.md 中的测试用例'已消失
+PASS TC-02b 新表述引用动作边界且保留虚报按 blocker
+PASS TC-03 边界外用例的证据核验兜底表述存在于两文件
+PASS TC-04a 实现者侧边界外用例证据契约存在
+PASS TC-04b 旧表述'评审者会重跑验证'已更新
+PASS TC-04c 实现者留证↔评审者审证语义呼应
+PASS TC-05 按性质判定/三性质/超时中止/混合套件规则齐备
+PASS TC-06 全仓无矛盾残留(排除 .ai/、docs/decisions 沿革)
+PASS TC-07 0004 决策文件存在且四段齐备(含被否备选与证据契约)
+
+RESULT: pass=10 fail=0
