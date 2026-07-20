@@ -1,0 +1,8 @@
+### TC-06 — implementation-round 模板含档位列与 blocked 取值
+### 时间:2026-07-20 08:58:49 UTC
+### 命令:grep -n -e | 编号 | 档位 | 结果 | 证据 | -e blocked .ai-workflow/templates/implementation-round.md
+--- stdout/stderr ---
+21:     结果取值:pass / fail / blocked(blocked = 无法按 plan 声明的档位执行,
+22:     须停下向用户说明,不得自行降档;存在 blocked 项时不进入评审)。
+25:| 编号 | 档位 | 结果 | 证据 |
+--- 退出码:0 ---

@@ -1,0 +1,11 @@
+### TC-10 — 反向校验:三处旧一刀切原句均已消失(期望三条 rc=1)
+### 时间:2026-07-20 08:59:35 UTC
+### 命令:grep -n 全部测试用例统一适用 .ai-workflow/review-standards.md
+--- stdout/stderr ---
+--- 退出码:1 ---
+### 命令:grep -n 证据缺失或不完整按 blocker 处理 .ai-workflow/prompts/review.md
+--- stdout/stderr ---
+--- 退出码:1 ---
+### 命令:grep -n 所有测试用例的完整原始输出 .claude/skills/rawf-implement/SKILL.md
+--- stdout/stderr ---
+--- 退出码:1 ---

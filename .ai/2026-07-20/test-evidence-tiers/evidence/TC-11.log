@@ -1,0 +1,12 @@
+### TC-11 — 全域扫描:每处「完整原始输出」都在 A 档语境(期望筛出结果为空)
+### 时间:2026-07-20 08:59:36 UTC
+### 命令:grep -rn 完整原始输出 .ai-workflow/ .claude/skills/
+--- stdout/stderr ---
+.ai-workflow/templates/plan.md:22:           一律 A 档,不得降档;证据 = 命令 + 完整原始输出 + 退出码。
+.ai-workflow/review-standards.md:46:| **A** | 可由非交互命令判定的用例(单元测试、E2E runner、lint、tsc、grep/静态校验、脚本) | A 档须留完整原始输出:执行命令 + 完整 stdout/stderr + 退出码,落任务目录 `evidence/` |
+.ai-workflow/review-standards.md:67:- **A 档**:`evidence/` 中须有该用例的完整原始输出;**缺失或不完整 →
+.claude/skills/rawf-implement/SKILL.md:29:   - **A 档**:该用例的完整原始输出(命令、stdout/stderr、退出码)必须落
+--- 退出码:0 ---
+### 命令:grep -rn '完整原始输出' .ai-workflow/ .claude/skills/ | grep -v 'A 档'
+--- stdout/stderr ---
+--- 退出码:1(1 = 无未限定命中,即通过) ---
