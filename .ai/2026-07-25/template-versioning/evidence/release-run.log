@@ -1,0 +1,16 @@
+$ awk 提取 CHANGELOG 1.0.0 条目
+notes 非空 OK
+$ git push origin master
+To github.com:senjianlu/ai-workflow-template.git
+   48a435a..2aeab2e  master -> master
+exit=0
+$ git tag v1.0.0 && git push origin v1.0.0
+To github.com:senjianlu/ai-workflow-template.git
+ * [new tag]         v1.0.0 -> v1.0.0
+exit=0
+$ gh release create v1.0.0
+https://github.com/senjianlu/ai-workflow-template/releases/tag/v1.0.0
+exit=0
+$ gh release view v1.0.0
+v1.0.0 v1.0.0
+exit=0
