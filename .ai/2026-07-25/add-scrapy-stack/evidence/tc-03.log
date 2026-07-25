@@ -1,0 +1,11 @@
+== TC-03 ==
+-- command --
+M=.ai/2026-07-25/add-scrapy-stack/evidence/mig-sec.txt
+awk '/^## 存量项目迁移/,/^## 机制速览/' README.md > "$M"
+for kw in 剔除 AGENTS.md 技术栈表 review-standards 评审关注点 rawf-stack; do
+  if ! grep -q -- "$kw" "$M"; then echo "MISS: $kw"; exit 1; fi
+done
+echo OK
+-- output --
+OK
+-- exit code: 0 --

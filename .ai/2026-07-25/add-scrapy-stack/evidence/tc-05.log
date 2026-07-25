@@ -1,0 +1,18 @@
+== TC-05 ==
+-- command --
+grep -q '^- Python/FastAPI:' .ai-workflow/review-standards.md \
+  && grep -q '#### 栈 A' AGENTS.md \
+  && grep -q '#### 栈 B' AGENTS.md \
+  && grep -q '^### 部署' AGENTS.md \
+  && echo REGRESSION-OK || { echo REGRESSION-FAIL; exit 1; }
+G=.ai/2026-07-25/add-scrapy-stack/evidence/git-status.txt
+git status --short > "$G"
+extra=$(awk '{print $NF}' "$G" | grep -Ev \
+  '^(AGENTS\.md|README\.md|\.ai-workflow/review-standards\.md|\.claude/skills/rawf-stack-scrapy/|docs/decisions/0007-|\.ai/)' \
+  || true)
+if [ -n "$extra" ]; then echo "OUT-OF-SCOPE: $extra"; exit 1; fi
+echo SCOPE-OK
+-- output --
+REGRESSION-OK
+SCOPE-OK
+-- exit code: 0 --

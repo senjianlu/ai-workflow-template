@@ -109,4 +109,8 @@ plan 阶段评审中直接计入 fail——因为 plan 阶段的全部目的就�
 <!-- TEMPLATE: 按需删减。 -->
 - TypeScript:类型逃逸(as any / @ts-ignore)、未处理的 Promise、状态管理一致性
 - Python/FastAPI:阻塞调用混入 async 路径、Pydantic 校验缺失、异常吞噬
+- Scrapy:阻塞调用混入 reactor/事件循环、selector 取值无防御(裸下标/
+  无 default 导致页面结构变化即崩)、pipeline/middleware 异常吞噬致
+  item 静默丢失、去重/限速/重试配置被关闭或绕过、解析测试依赖真网
+  (须用本地 fixture 响应)
 - 通用:plan 中测试用例是否被偷工减料(只测 happy path 即 major)

@@ -52,7 +52,10 @@ implementation-round-NN.md、review-round-NN-<pass|fail>.md、summary.md,
    docs/decisions/;老项目已有 docs/ 的,模板骨架并入而非覆盖。
 2. **换工作流层(可整体替换)**:拷入 .ai-workflow/、.claude/、
    .githooks/、.gitmessage,CLAUDE.md 换为模板版,AGENTS.md 按模板
-   结构重写(技术栈表按该项目裁剪);退役旧的代理治理文档(如
+   结构重写。重写时**剔除与当前项目无关的技术栈**,且三处联动删除:
+   AGENTS.md 技术栈表、.ai-workflow/review-standards.md 对应的技术栈
+   评审关注点、.claude/skills/rawf-stack-* 对应的栈 skill——残留的
+   无关栈会误导评审与开发。退役旧的代理治理文档(如
    docs/agent-governance/)与旧 AGENTS.md 中的角色/流程章节;历史
    阶段产物(如 docs/phases/)原样保留。
 3. **前置依赖**:jq、codex CLI(须支持 --output-schema),并执行

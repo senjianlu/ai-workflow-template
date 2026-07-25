@@ -1,0 +1,13 @@
+== TC-07 ==
+-- command --
+f=docs/decisions/0007-scrapy-standard-stack.md
+for pat in '^# 0007' '^- 日期:2026-07-25' '^- 背景:' '^- 决定:' '^- 影响:'; do
+  if ! grep -q -- "$pat" "$f"; then echo "MISS: $pat"; exit 1; fi
+done
+grep -q 'scrapyd' "$f" \
+  && grep -Eq 'Postgres|SQLAlchemy' "$f" \
+  && grep -q '可选扩展' "$f" \
+  && echo OK
+-- output --
+OK
+-- exit code: 0 --

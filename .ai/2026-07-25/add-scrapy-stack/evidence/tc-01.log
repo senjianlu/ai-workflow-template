@@ -1,0 +1,21 @@
+== TC-01 ==
+-- command --
+S=.ai/2026-07-25/add-scrapy-stack/evidence/spider-sec.txt
+awk '/^### 爬虫/,/^### 部署/' AGENTS.md > "$S"
+for kw in AsyncioSelectorReactor \
+          SQLAlchemy 'psycopg[binary]' Postgres redis-py \
+          pydantic-settings httpx pyproject.toml \
+          scrapyd-deploy \
+          'entry_points={"scrapy": ["settings = <snake_name>.settings"]}' \
+          'GitHub Actions' 'GitHub Release' dopilot.toml \
+          addversion.json 'project/version/egg' \
+          schedule.json 'project/spider' '_version' \
+          '不直接 shell 执行' '[settings]' '[deploy]' \
+          '不安装依赖' 基础镜像 \
+          可选扩展 'TEMPLATE:'; do
+  if ! grep -F -q -- "$kw" "$S"; then echo "MISS: $kw"; exit 1; fi
+done
+echo OK
+-- output --
+OK
+-- exit code: 0 --

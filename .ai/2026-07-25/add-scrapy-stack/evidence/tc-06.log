@@ -1,0 +1,10 @@
+== TC-06 ==
+-- command --
+S=.ai/2026-07-25/add-scrapy-stack/evidence/spider-sec.txt
+grep -q '不得命名为' "$S" \
+  && grep -q 'snake_case' "$S" \
+  && grep -Eq 'to_thread|deferToThread' "$S" \
+  && echo OK
+-- output --
+OK
+-- exit code: 0 --

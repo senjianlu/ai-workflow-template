@@ -1,0 +1,9 @@
+== TC-08 ==
+-- command --
+git show HEAD:AGENTS.md | awk '/^### 爬虫/,/^### 部署/' \
+  | grep -c 'AsyncioSelectorReactor'
+echo "exit=$?"
+-- output --
+0
+exit=1
+-- exit code: 0 --

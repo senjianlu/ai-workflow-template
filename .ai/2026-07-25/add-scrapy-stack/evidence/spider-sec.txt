@@ -1,0 +1,63 @@
+### 爬虫
+
+<!-- TEMPLATE: 无爬虫需求则整节删除;删除时同步删
+     .ai-workflow/review-standards.md 的 Scrapy 关注点与
+     .claude/skills/rawf-stack-scrapy skill。 -->
+
+一套标准栈(数据层、配置与工具链尽量复用后端标准,降低维护心智负担)。
+
+| 类别 | 技术 | 版本 |
+|---|---|---|
+| 语言 | Python(同后端) | ≥3.11,新项目取 3.12 |
+| 爬虫框架 | Scrapy(2.13+ 默认启用 asyncio reactor,即 `TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"`;不得改回旧 reactor) | 2.13+ |
+| 解析 | parsel(Scrapy 内置 Selector);beautifulsoup4 按需 | — / 4.x |
+| 数据落地 | SQLAlchemy(asyncio)+ psycopg[binary],Postgres(同后端) | 2.0.x / 3.x |
+| 缓存/去重/队列 | redis-py(Valkey 兼容,同后端) | 5.x+ |
+| 配置 | pydantic-settings 管环境配置(同后端) | 2.x |
+| 辅助 HTTP | httpx(同后端) | 0.27+ |
+| 打包 | scrapyd-client(`scrapyd-deploy --build-egg` 构建 `.egg`);依赖约束仍写 pyproject.toml,setup.py 仅承担 .egg 打包,且**必须**声明 scrapyd 入口点 `entry_points={"scrapy": ["settings = <snake_name>.settings"]}`(scrapyd 靠它从 egg 定位 settings、发现 spider,缺失则注册后无法调度) | 2.x |
+
+部署链路(三段式,接口与责任归属明确):
+
+1. **构建**:CI(GitHub Actions)用 `scrapyd-deploy --build-egg` 产出
+   `.egg`(egg 内含上表的 `scrapy` settings 入口点);
+2. **发布**:CI 将 `.egg` 上传 GitHub Release;
+3. **注册与调度**:dopilot 按 `dopilot.toml` 声明拉取 Release 产物,调用
+   scrapyd `addversion.json`(必填 project/version/egg)注册;**定时与
+   手动触发一律经 scrapyd `schedule.json`**(必填 project/spider,按需带
+   `_version` 钉版本;爬虫参数 `-a key=value` 对应表单参数,设置覆盖
+   `-s KEY=VALUE` 对应 `setting` 参数)——不直接 shell 执行
+   `scrapy crawl`,否则绕开已注册的 egg 版本。
+
+不经 dopilot 直连 scrapyd 的项目,改在 `scrapy.cfg` 配置 `[deploy]`
+target(url/project),用 `scrapyd-deploy <target>` 完成构建+注册一步走,
+调度同样经 `schedule.json`。两条路径都以 scrapyd 为运行时,`scrapy.cfg`
+的 `[settings]` 段必须存在(本地 `scrapy crawl` 开发调试用)。
+
+**运行环境依赖供给**:scrapyd 注册 egg **不安装依赖**,egg 只运载项目
+代码;SQLAlchemy、psycopg、redis-py 等运行时依赖由 scrapyd 运行环境
+预装——dopilot 路径下即 dopilot 管理的 scrapyd 基础镜像按项目
+pyproject.toml 安装,项目依赖变更时镜像同步重建;直连路径下由 scrapyd
+宿主环境的运维方承担同一责任。依赖版本约束的唯一权威仍是 pyproject.toml。
+
+可选扩展(按需引入,引入时在项目 docs/decisions/ 记录理由;此处只列
+**类别**、不点名具体工具——按需引用的具体选型属项目私有,不在模板中
+暴露):浏览器渲染与指纹对抗、抓包代理、跨系统消息、AI 辅助解析、
+对象存储上传等。
+
+工程约定:
+
+- 包具名(如 `<snake_name>/`),**不得命名为 `app`**(`app/` 只属于
+  Next 路由目录,多应用同仓 `import app` 撞车);模块文件名 snake_case
+- 包内按 Scrapy 惯例分子模块:`spiders/`(含 base.py 基类)、
+  `pipelines/`、`middlewares/`、`extensions/`(按需)、`items.py`、
+  `settings.py`;`scrapy.cfg` 在应用根;`tests/` 与包平级镜像包结构
+  (同后端约定)
+- 阻塞调用不得混入 reactor/事件循环:下沉 `asyncio.to_thread` 或
+  Twisted `deferToThread`
+- spider 解析逻辑必须可离线测试:响应样本(HTML/JSON fixture)入
+  `tests/fixtures/`,用 `scrapy.http.HtmlResponse`/`TextResponse` 构造
+  离线响应喂给 parse 方法;单元测试不访问真网
+- 开发与测试工具同后端(pytest 8.x + ruff)
+
+### 部署

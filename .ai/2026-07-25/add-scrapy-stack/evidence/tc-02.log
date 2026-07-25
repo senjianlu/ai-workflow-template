@@ -1,0 +1,11 @@
+== TC-02 ==
+-- command --
+E=.ai/2026-07-25/add-scrapy-stack/evidence/scrapy-entry.txt
+grep -A6 '^- Scrapy:' .ai-workflow/review-standards.md > "$E"
+for kw in 阻塞 selector 吞噬 去重 限速 重试 fixture; do
+  if ! grep -q -- "$kw" "$E"; then echo "MISS: $kw"; exit 1; fi
+done
+echo OK
+-- output --
+OK
+-- exit code: 0 --
