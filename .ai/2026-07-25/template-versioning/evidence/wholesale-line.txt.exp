@@ -1,0 +1,6 @@
+.ai-workflow/
+.claude/hooks/
+.claude/settings.json
+.claude/skills/rawf-*
+.githooks/
+.gitmessage

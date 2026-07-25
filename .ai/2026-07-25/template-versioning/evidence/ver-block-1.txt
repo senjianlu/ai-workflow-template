@@ -1,0 +1,7 @@
+OLD=1.0.0 NEW=1.1.0   # 按实际版本替换;OLD 取自项目内 TEMPLATE-VERSION
+git clone https://github.com/senjianlu/ai-workflow-template /tmp/awt
+cd /tmp/awt
+git checkout --detach "v$NEW"   # 锚定 NEW 快照,diff/CHANGELOG/拷贝同源
+git diff "v$OLD..v$NEW" -- .ai-workflow .claude/hooks \
+  '.claude/skills/rawf-*' .claude/settings.json .githooks .gitmessage \
+  CLAUDE.md AGENTS.md README.md .agents/skills skills-lock.json

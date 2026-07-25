@@ -1,0 +1,12 @@
+== TC-06 ==
+-- command --
+if git show HEAD:README.md | grep -q '^## 版本与升级'; then
+  echo "UNEXPECTED: 改动前已存在「版本与升级」节"; exit 1
+fi
+if git show HEAD:README.md | grep -q 'TEMPLATE-VERSION'; then
+  echo "UNEXPECTED: 改动前已存在 TEMPLATE-VERSION"; exit 1
+fi
+echo NEGATIVE-OK
+-- output --
+NEGATIVE-OK
+-- exit code: 0 --

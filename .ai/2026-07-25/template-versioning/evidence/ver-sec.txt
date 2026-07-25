@@ -1,0 +1,38 @@
+## 版本与升级
+
+模板按 [SemVer](https://semver.org/lang/zh-CN/) 发版,版本语义按
+**闸门兼容性**分级:
+
+| 位 | 触发条件 |
+|---|---|
+| MAJOR | 闸门协议不兼容变更:hook 行为、评审 schema/产物命名、流程步骤 |
+| MINOR | 向后兼容的新增能力:新标准栈、新 skill、新评审关注点 |
+| PATCH | 向后兼容的缺陷修复(含脚本/hook 的 bug fix 与文案修正) |
+
+**发布纪律**:发版提交须同步更新 CHANGELOG.md 与
+`.ai-workflow/TEMPLATE-VERSION`,随后打 `v<版本>` tag 并创建同名
+GitHub Release(notes 取 CHANGELOG 对应条目)。
+
+**升级流程**(consumer 视角)。前提:consumer 经 Use this template
+创建,git 历史与模板不同源,本地没有模板的 tag——增量一律在模板
+仓库的单独克隆中读取;consumer 仓库**不添加模板 remote**、不 fetch
+模板 tag,避免 tag 冲突。旧版本号取自项目内
+`.ai-workflow/TEMPLATE-VERSION`:
+
+```bash
+OLD=1.0.0 NEW=1.1.0   # 按实际版本替换;OLD 取自项目内 TEMPLATE-VERSION
+git clone https://github.com/senjianlu/ai-workflow-template /tmp/awt
+cd /tmp/awt
+git checkout --detach "v$NEW"   # 锚定 NEW 快照,diff/CHANGELOG/拷贝同源
+git diff "v$OLD..v$NEW" -- .ai-workflow .claude/hooks \
+  '.claude/skills/rawf-*' .claude/settings.json .githooks .gitmessage \
+  CLAUDE.md AGENTS.md README.md .agents/skills skills-lock.json
+```
+
+随后三步:新版 CHANGELOG 的升级指引在该克隆中读取 → **可整体替换类**
+(清单见 CHANGELOG 头部归类行)从克隆整目录拷入覆盖,
+TEMPLATE-VERSION 随之更新 → **需人工合并类**按升级指引逐文件处理,
+最后回 consumer 仓库更新 adopted。存量项目的基线认领规则见
+「存量项目迁移」第 3 步。
+
+## 已知限制

@@ -1,0 +1,17 @@
+== TC-05 ==
+-- command --
+grep -q '^## 机制速览' README.md \
+  && grep -q '^## 已知限制' README.md \
+  && grep -q '^### 爬虫' AGENTS.md \
+  && echo REGRESSION-OK || { echo REGRESSION-FAIL; exit 1; }
+G=.ai/2026-07-25/template-versioning/evidence/git-status.txt
+git status --short > "$G"
+extra=$(awk '{print $NF}' "$G" | grep -Ev \
+  '^(CHANGELOG\.md|\.ai-workflow/TEMPLATE-VERSION|README\.md|docs/decisions/0008-|\.ai/)' \
+  || true)
+if [ -n "$extra" ]; then echo "OUT-OF-SCOPE: $extra"; exit 1; fi
+echo SCOPE-OK
+-- output --
+REGRESSION-OK
+SCOPE-OK
+-- exit code: 0 --

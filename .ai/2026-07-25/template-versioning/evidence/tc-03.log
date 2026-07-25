@@ -1,0 +1,42 @@
+== TC-03 ==
+-- command --
+V=.ai/2026-07-25/template-versioning/evidence/ver-sec.txt
+awk '/^## 版本与升级/,/^## 已知限制/' README.md > "$V"
+for kw in MAJOR MINOR PATCH 闸门 CHANGELOG 'GitHub Release' tag TEMPLATE-VERSION \
+          'git clone https://github.com/senjianlu/ai-workflow-template' \
+          '不添加模板 remote'; do
+  if ! grep -F -q -- "$kw" "$V"; then echo "MISS: $kw"; exit 1; fi
+done
+D=.ai/2026-07-25/template-versioning/evidence
+rm -f "$D"/ver-block-*.txt
+awk -v d="$D" '/^```/{f=!f; if(f){n++; file=d"/ver-block-"n".txt"} next} f{print > file}' "$V"
+hits=0; C=""
+for b in "$D"/ver-block-*.txt; do
+  [ -e "$b" ] || continue
+  if grep -F -q 'git diff' "$b"; then hits=$((hits+1)); C="$b"; fi
+done
+[ "$hits" -eq 1 ] || { echo "FAIL: 含 git diff 的代码块数=$hits"; exit 1; }
+[ "$(grep -c 'git diff' "$C")" -eq 1 ] || { echo "FAIL: git diff 须恰出现 1 次"; exit 1; }
+A=.ai/2026-07-25/template-versioning/evidence/diff-argv.txt
+awk '/git diff/{f=1} f{print; if(!/\\$/) exit}' "$C" > "$A"
+grep -F -q 'v$OLD..v$NEW' "$A" || { echo "FAIL: diff 未用变量形式引用版本"; exit 1; }
+grep -F -q 'git checkout --detach "v$NEW"' "$C" \
+  || { echo "FAIL: 命令块未锚定 NEW 快照(checkout --detach)"; exit 1; }
+grep -q '<' "$A" && { echo "FAIL: diff 命令含尖括号占位符,不可复制执行"; exit 1; }
+for p in .ai-workflow .claude/hooks '.claude/skills/rawf-*' \
+         .claude/settings.json .githooks .gitmessage \
+         CLAUDE.md AGENTS.md README.md .agents/skills skills-lock.json; do
+  if ! grep -F -q -- "$p" "$A"; then echo "MISS-IN-ARGV: $p"; exit 1; fi
+done
+N=.ai/2026-07-25/template-versioning/evidence/new-sec.txt
+awk '/^## 开新项目/,/^## 存量项目迁移/' README.md > "$N"
+grep -F -q 'TEMPLATE-VERSION' "$N" || { echo "MISS: 开新项目节"; exit 1; }
+M=.ai/2026-07-25/template-versioning/evidence/mig-sec.txt
+awk '/^## 存量项目迁移/,/^## 机制速览/' README.md > "$M"
+for kw in adopted 基线对齐 unknown 不得直接认领; do
+  if ! grep -F -q -- "$kw" "$M"; then echo "MISS: 迁移节 $kw"; exit 1; fi
+done
+echo OK
+-- output --
+OK
+-- exit code: 0 --

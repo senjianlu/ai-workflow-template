@@ -28,20 +28,22 @@ implementation-round-NN.md、review-round-NN-<pass|fail>.md、summary.md,
 ## 开新项目
 
 1. GitHub 上 Use this template,克隆到本地
-2. 启用提交约束(每克隆一次):`git config core.hooksPath .githooks
+2. 在 `.ai-workflow/TEMPLATE-VERSION` 填写 adopted 采用日期(新建
+   项目内容即模板全量,天然处于基线)
+3. 启用提交约束(每克隆一次):`git config core.hooksPath .githooks
    && git config commit.template .gitmessage`
-3. 全局搜索 `TEMPLATE:`,按各处注释裁剪(AGENTS.md 技术栈与 Skill
+4. 全局搜索 `TEMPLATE:`,按各处注释裁剪(AGENTS.md 技术栈与 Skill
    基线、.ai-workflow/review-standards.md 评审关注点、docs/ 骨架)
-4. 安装栈 skills:项目内建的入库 `.agents/skills/` + skills-lock.json,
+5. 安装栈 skills:项目内建的入库 `.agents/skills/` + skills-lock.json,
    每机自装的记入 AGENTS.md「Skill 基线」清单
-5. 按需增删栈约定:可为你的栈新建 .claude/skills/rawf-stack-*
+6. 按需增删栈约定:可为你的栈新建 .claude/skills/rawf-stack-*
    (SKILL.md 写初始化、编码与测试约定);.github/workflows/ 为空目录,
    按需添加 CI。栈调整时同步 .ai-workflow/review-standards.md 的
    技术栈关注点
-6. 生成应用骨架(若建了 stack skill,按其"初始化"一节执行),架构
+7. 生成应用骨架(若建了 stack skill,按其"初始化"一节执行),架构
    落入 docs/architecture/;其中 README.md 只做汇总和导航,细节下沉
    到同目录其他文件
-7. 开 Claude Code 会话,/rawf-plan 开始第一个任务
+8. 开 Claude Code 会话,/rawf-plan 开始第一个任务
 
 ## 存量项目迁移
 
@@ -58,9 +60,15 @@ implementation-round-NN.md、review-round-NN-<pass|fail>.md、summary.md,
    无关栈会误导评审与开发。退役旧的代理治理文档(如
    docs/agent-governance/)与旧 AGENTS.md 中的角色/流程章节;历史
    阶段产物(如 docs/phases/)原样保留。
-3. **前置依赖**:jq、codex CLI(须支持 --output-schema),并执行
-   「开新项目」第 2 步的两条 git config。
-4. **提交规范衔接**:模板规范是 Conventional Commits 的超集,存量
+3. **版本认领(基线对齐前不得写版本)**:既有(无版本记录的)项目
+   必须先完成对 v1.0.0 的**全量基线对齐**——工作流层(可整体替换类)
+   整体拷入 + 需人工合并类逐文件对照模板核对——之后才可在
+   `.ai-workflow/TEMPLATE-VERSION` 写入 version 与 adopted;对齐完成
+   前 version 一律记 `unknown`,升级继续走全量比较,**不得直接认领**
+   v1.0.0(对照物取模板克隆的 v1.0.0 checkout,见「版本与升级」)。
+4. **前置依赖**:jq、codex CLI(须支持 --output-schema),并执行
+   「开新项目」第 3 步的两条 git config。
+5. **提交规范衔接**:模板规范是 Conventional Commits 的超集,存量
    历史无需改写;此后新提交按 AGENTS.md 执行。
 
 ## 机制速览
@@ -79,6 +87,43 @@ implementation-round-NN.md、review-round-NN-<pass|fail>.md、summary.md,
 - 严重度定义唯一权威在 .ai-workflow/review-standards.md;评审输出契约在
   .ai-workflow/schemas/review.schema.json 与 prompts/review.md 的字段语义
   说明(二者与 review.sh 解析/渲染逻辑绑定演化)
+
+## 版本与升级
+
+模板按 [SemVer](https://semver.org/lang/zh-CN/) 发版,版本语义按
+**闸门兼容性**分级:
+
+| 位 | 触发条件 |
+|---|---|
+| MAJOR | 闸门协议不兼容变更:hook 行为、评审 schema/产物命名、流程步骤 |
+| MINOR | 向后兼容的新增能力:新标准栈、新 skill、新评审关注点 |
+| PATCH | 向后兼容的缺陷修复(含脚本/hook 的 bug fix 与文案修正) |
+
+**发布纪律**:发版提交须同步更新 CHANGELOG.md 与
+`.ai-workflow/TEMPLATE-VERSION`,随后打 `v<版本>` tag 并创建同名
+GitHub Release(notes 取 CHANGELOG 对应条目)。
+
+**升级流程**(consumer 视角)。前提:consumer 经 Use this template
+创建,git 历史与模板不同源,本地没有模板的 tag——增量一律在模板
+仓库的单独克隆中读取;consumer 仓库**不添加模板 remote**、不 fetch
+模板 tag,避免 tag 冲突。旧版本号取自项目内
+`.ai-workflow/TEMPLATE-VERSION`:
+
+```bash
+OLD=1.0.0 NEW=1.1.0   # 按实际版本替换;OLD 取自项目内 TEMPLATE-VERSION
+git clone https://github.com/senjianlu/ai-workflow-template /tmp/awt
+cd /tmp/awt
+git checkout --detach "v$NEW"   # 锚定 NEW 快照,diff/CHANGELOG/拷贝同源
+git diff "v$OLD..v$NEW" -- .ai-workflow .claude/hooks \
+  '.claude/skills/rawf-*' .claude/settings.json .githooks .gitmessage \
+  CLAUDE.md AGENTS.md README.md .agents/skills skills-lock.json
+```
+
+随后三步:新版 CHANGELOG 的升级指引在该克隆中读取 → **可整体替换类**
+(清单见 CHANGELOG 头部归类行)从克隆整目录拷入覆盖,
+TEMPLATE-VERSION 随之更新 → **需人工合并类**按升级指引逐文件处理,
+最后回 consumer 仓库更新 adopted。存量项目的基线认领规则见
+「存量项目迁移」第 3 步。
 
 ## 已知限制
 

@@ -1,0 +1,30 @@
+== TC-01 ==
+-- command --
+f=CHANGELOG.md
+for kw in keepachangelog semver '## [1.0.0]' 升级指引; do
+  if ! grep -F -q -- "$kw" "$f"; then echo "MISS: $kw"; exit 1; fi
+done
+W=.ai/2026-07-25/template-versioning/evidence/wholesale-line.txt
+M=.ai/2026-07-25/template-versioning/evidence/manual-line.txt
+grep '^- 可整体替换:' "$f" > "$W" || { echo "MISS: 可整体替换行"; exit 1; }
+grep '^- 需人工合并:' "$f" > "$M" || { echo "MISS: 需人工合并行"; exit 1; }
+# 集合严格等值比较:多列、漏列、双重归类均失败(回应新一轮 R-02)
+norm() { sed 's/^-[^:]*://' "$1" | tr '、' '\n' \
+  | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | grep -v '^$' | sort; }
+norm "$W" > "$W.set"
+printf '%s\n' '.ai-workflow/' '.claude/hooks/' '.claude/skills/rawf-*' \
+  '.claude/settings.json' '.githooks/' '.gitmessage' | sort > "$W.exp"
+diff "$W.exp" "$W.set" || { echo "FAIL: 可整体替换集合与规定不等"; exit 1; }
+norm "$M" > "$M.set"
+printf '%s\n' 'AGENTS.md' 'CLAUDE.md' 'README.md' '.agents/skills/' \
+  'skills-lock.json' | sort > "$M.exp"
+diff "$M.exp" "$M.set" || { echo "FAIL: 需人工合并集合与规定不等"; exit 1; }
+E1=.ai/2026-07-25/template-versioning/evidence/changelog-entry.txt
+awk '/^## \[1\.0\.0\]/{f=1;print;next} f && /^## \[/{exit} f' "$f" > "$E1"
+[ -s "$E1" ] || { echo "MISS: 1.0.0 条目为空"; exit 1; }
+grep -F -q '升级指引' "$E1" || { echo "MISS-ENTRY: 条目内无升级指引"; exit 1; }
+grep -F -q '基线版本' "$E1" || { echo "MISS-ENTRY: 条目内无基线说明"; exit 1; }
+echo OK
+-- output --
+OK
+-- exit code: 0 --

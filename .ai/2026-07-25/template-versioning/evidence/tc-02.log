@@ -1,0 +1,12 @@
+== TC-02 ==
+-- command --
+f=.ai-workflow/TEMPLATE-VERSION
+grep -Eq '^version: [0-9]+\.[0-9]+\.[0-9]+$' "$f" || { echo "MISS: version 格式"; exit 1; }
+grep -F -q 'version: 1.0.0' "$f" || { echo "MISS: 1.0.0"; exit 1; }
+grep -F -q 'source: https://github.com/senjianlu/ai-workflow-template' "$f" \
+  || { echo "MISS: source"; exit 1; }
+grep -q '^adopted:' "$f" || { echo "MISS: adopted"; exit 1; }
+echo OK
+-- output --
+OK
+-- exit code: 0 --

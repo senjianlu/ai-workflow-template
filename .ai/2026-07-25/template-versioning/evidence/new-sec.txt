@@ -1,0 +1,21 @@
+## 开新项目
+
+1. GitHub 上 Use this template,克隆到本地
+2. 在 `.ai-workflow/TEMPLATE-VERSION` 填写 adopted 采用日期(新建
+   项目内容即模板全量,天然处于基线)
+3. 启用提交约束(每克隆一次):`git config core.hooksPath .githooks
+   && git config commit.template .gitmessage`
+4. 全局搜索 `TEMPLATE:`,按各处注释裁剪(AGENTS.md 技术栈与 Skill
+   基线、.ai-workflow/review-standards.md 评审关注点、docs/ 骨架)
+5. 安装栈 skills:项目内建的入库 `.agents/skills/` + skills-lock.json,
+   每机自装的记入 AGENTS.md「Skill 基线」清单
+6. 按需增删栈约定:可为你的栈新建 .claude/skills/rawf-stack-*
+   (SKILL.md 写初始化、编码与测试约定);.github/workflows/ 为空目录,
+   按需添加 CI。栈调整时同步 .ai-workflow/review-standards.md 的
+   技术栈关注点
+7. 生成应用骨架(若建了 stack skill,按其"初始化"一节执行),架构
+   落入 docs/architecture/;其中 README.md 只做汇总和导航,细节下沉
+   到同目录其他文件
+8. 开 Claude Code 会话,/rawf-plan 开始第一个任务
+
+## 存量项目迁移

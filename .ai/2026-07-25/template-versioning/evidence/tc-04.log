@@ -1,0 +1,13 @@
+== TC-04 ==
+-- command --
+f=docs/decisions/0008-template-versioning.md
+for pat in '^# 0008' '^- 日期:2026-07-25' '^- 背景:' '^- 决定:' '^- 影响:'; do
+  if ! grep -q -- "$pat" "$f"; then echo "MISS: $pat"; exit 1; fi
+done
+for kw in SemVer tag Release TEMPLATE-VERSION copier; do
+  if ! grep -F -q -- "$kw" "$f"; then echo "MISS: $kw"; exit 1; fi
+done
+echo OK
+-- output --
+OK
+-- exit code: 0 --
