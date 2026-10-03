@@ -1,0 +1,62 @@
+# TC-16 文档与 skill 正反向 grep
+# 2026-10-04 00:52:13 PROJ=/home/rabbir/Projects/ai-workflow-template
+# env: IDLE=3 MAX=8 POLL=1
+$ grep -c '直接结束回合' .claude/skills/rawf-review/SKILL.md .claude/skills/rawf-plan/SKILL.md
+.claude/skills/rawf-review/SKILL.md:1
+.claude/skills/rawf-plan/SKILL.md:1
+[exit=0]
+[OK] ① 两个 SKILL 含 直接结束回合
+$ grep -n '并等待完成' .claude/skills/rawf-review/SKILL.md .claude/skills/rawf-plan/SKILL.md
+
+[exit=1]
+[OK] ① 反向:不含 并等待完成(退出码 1)
+$ grep -n '锁已存在' .claude/skills/rawf-review/SKILL.md .claude/skills/rawf-plan/SKILL.md
+
+[exit=1]
+[OK] ① 反向:不含 锁已存在(退出码 1)
+$ grep -n '删除锁目录后重跑' .claude/skills/rawf-review/SKILL.md .claude/skills/rawf-plan/SKILL.md
+
+[exit=1]
+[OK] ① 反向:不含 删除锁目录后重跑(退出码 1)
+$ grep -c -e '旧版锁目录' -e "pgrep -f 'codex exec'" -e rmdir .claude/skills/rawf-review/SKILL.md
+2
+[exit=0]
+[OK] ① 正向:rawf-review 含迁移段三要素
+$ grep -n '看门狗' README.md
+71:   看门狗依赖它们,缺失时明确报错退出),并执行「开新项目」第 3 步的
+86:  作进度信号,静默 15 分钟 / 总时长 60 分钟的看门狗按会话终止 codex 并
+[exit=0]
+[OK] ② README 机制速览含 看门狗
+$ grep -n -e '^- 日期' -e '^- 背景' -e '^- 决定' -e '^- 影响' docs/decisions/0009-review-watchdog-async.md
+3:- 日期:2026-10-04
+4:- 背景:Codex 评审反复"卡死":① codex 在 stdin 非终端时必读 stdin 到 EOF
+14:- 决定:
+40:- 影响:
+[exit=0]
+[OK] ③ 0009 存在且含四段
+$ grep -n -e '\[Unreleased\]' -e '升级指引' -e '旧版锁目录' CHANGELOG.md
+8:受管路径归类(每个版本条目的升级指引按此标注文件所属类别):
+17:每个版本条目必须含「升级指引」小节,逐文件标注归类与迁移动作。
+19:## [Unreleased]
+42:### 升级指引
+49:- **旧版锁目录迁移**:升级前若有评审被杀而遗留 `.review-lock/` 或
+50:  `.plan-review-lock/` **目录**,新脚本会报"旧版锁目录"并 exit 3;确认
+62:### 升级指引
+[exit=0]
+[OK] ④ CHANGELOG 三项
+$ grep -n -e '^.ai/\*\*/.review-lock$' -e '^.ai/\*\*/.plan-review-lock$' .gitignore
+10:.ai/**/.review-lock
+11:.ai/**/.plan-review-lock
+[exit=0]
+[OK] ⑤ .gitignore 两条锁文件模式
+$ grep -n "exclude='.review-lock'" .ai-workflow/scripts/review.sh
+30:  --exclude='.review-lock'
+[exit=0]
+[OK] ⑥ hash_excludes 含 .review-lock
+$ grep -n -e flock -e setsid -e pgrep README.md
+70:   Linux 的 util-linux(flock、setsid)与 procps(pgrep;评审脚本的锁与
+81:  (当前任务的 .review-lock 被 flock 持有)则放行——评审后台运行,完成通知
+88:  互斥锁为 flock 文件,随进程退出自动释放(见 docs/decisions/0009)
+[exit=0]
+[OK] ⑦ README 前置依赖含 flock/setsid/pgrep
+TC-16 RESULT: PASS

@@ -1,0 +1,19 @@
+# TC-04 墙钟兜底
+# 2026-10-04 00:51:11 PROJ=/home/rabbir/Projects/ai-workflow-template
+# env: IDLE=3 MAX=8 POLL=1
+$ bash /tmp/claude-1000/-home-rabbir-Projects-ai-workflow-template/33fe3994-31b4-4cb4-8c42-3f5146862277/scratchpad/tc-work/fx-04/.ai-workflow/scripts/review.sh
+评审超过墙钟上限 8 秒,已终止;请重跑评审
+[exit=3]
+elapsed=9s
+[OK] 退出码 3
+[OK] stderr 含 墙钟上限
+$ pgrep -f 'stub-codex-bin/code[x]' || echo none
+none
+[exit=0]
+[OK] 桩已被杀
+$ lock_free /tmp/claude-1000/-home-rabbir-Projects-ai-workflow-template/33fe3994-31b4-4cb4-8c42-3f5146862277/scratchpad/tc-work/fx-04/.ai/2026-10-04/t/.review-lock
+
+[exit=0]
+[OK] 锁存在且可立即获取
+[OK] 总耗时 < 20 s
+TC-04 RESULT: PASS

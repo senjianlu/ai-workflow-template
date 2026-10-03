@@ -1,0 +1,21 @@
+# TC-01 正常 pass
+# 2026-10-04 00:51:06 PROJ=/home/rabbir/Projects/ai-workflow-template
+# env: IDLE=3 MAX=8 POLL=1
+$ bash /tmp/claude-1000/-home-rabbir-Projects-ai-workflow-template/33fe3994-31b4-4cb4-8c42-3f5146862277/scratchpad/tc-work/fx-01/.ai-workflow/scripts/review.sh
+review-round-01-pass.md
+[exit=0]
+[OK] 退出码 0
+[OK] 生成 review-round-01-pass.md
+$ wc -l < '/tmp/claude-1000/-home-rabbir-Projects-ai-workflow-template/33fe3994-31b4-4cb4-8c42-3f5146862277/scratchpad/tc-work/fx-01/.ai/2026-10-04/t/.review-raw-01.events.jsonl'
+3
+[exit=0]
+[OK] 事件文件 3 行
+$ cat '/tmp/claude-1000/-home-rabbir-Projects-ai-workflow-template/33fe3994-31b4-4cb4-8c42-3f5146862277/scratchpad/tc-work/fx-01/.ai/2026-10-04/t/.review-lock'
+script=1574727
+[exit=0]
+[OK] 锁文件内容为 script=<pid> 一行
+$ lock_free /tmp/claude-1000/-home-rabbir-Projects-ai-workflow-template/33fe3994-31b4-4cb4-8c42-3f5146862277/scratchpad/tc-work/fx-01/.ai/2026-10-04/t/.review-lock
+
+[exit=0]
+[OK] 锁可立即获取
+TC-01 RESULT: PASS

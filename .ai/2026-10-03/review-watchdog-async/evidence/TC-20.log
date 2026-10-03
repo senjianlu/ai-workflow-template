@@ -1,0 +1,14 @@
+# TC-20 旧版锁目录迁移
+# 2026-10-04 00:52:24 PROJ=/home/rabbir/Projects/ai-workflow-template
+# env: IDLE=3 MAX=8 POLL=1
+$ bash /tmp/claude-1000/-home-rabbir-Projects-ai-workflow-template/33fe3994-31b4-4cb4-8c42-3f5146862277/scratchpad/tc-work/fx-20/.ai-workflow/scripts/review.sh
+检测到旧版锁目录 .ai/2026-10-04/t/.review-lock(升级前残留);确认 pgrep -f 'codex exec' 无旧评审进程后执行 rmdir 该目录再重跑
+[exit=3]
+[OK] review.sh 退出码 3 且含 旧版锁目录 与 rmdir
+$ bash /tmp/claude-1000/-home-rabbir-Projects-ai-workflow-template/33fe3994-31b4-4cb4-8c42-3f5146862277/scratchpad/tc-work/fx-20/.ai-workflow/scripts/plan-review.sh
+检测到旧版锁目录 .ai/2026-10-04/t/.plan-review-lock(升级前残留);确认 pgrep -f 'codex exec' 无旧评审进程后执行 rmdir 该目录再重跑
+[exit=3]
+[OK] plan-review.sh 退出码 3 且含 旧版锁目录 与 rmdir
+[OK] 未启动桩(无 events 文件)
+[OK] 目录原样保留
+TC-20 RESULT: PASS

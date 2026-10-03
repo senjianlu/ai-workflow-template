@@ -1,0 +1,15 @@
+# 探针:Linux 下 flock 持有者定位(/proc/locks 的 pid 是 flock 命令进程,已退出;fdinfo 的 lock: 行才标识真正持锁的 fd)
+$ (在 scratchpad 执行,锁文件 lk)
+inode=2757500
+child=1238079
+parent=1238076
+-- /proc/locks(pid 列为已退出的 flock 命令进程):
+44: FLOCK  ADVISORY  WRITE 1238078 103:02:2757500 0 EOF
+-- 继承 fd 的子进程 fdinfo:
+fd 9:
+lock:	1: FLOCK  ADVISORY  WRITE 1238078 103:02:2757500 0 EOF
+/bin/bash: 第 90 行： 1238076 已杀死               bash -c 'exec 9>>lk; flock -n -E 75 9 || exit 75; sleep 100 & echo "child=$!"; echo "parent=$$"; sleep 100' > info.txt 2> /dev/null
+-- 杀掉父进程后:子进程存活=yes;flock -n 探测退出码=75
+-- 仅打开未持锁的进程(exec 8>>lk)的 fdinfo lock 行数:
+0
+-- 清理后探测退出码=0

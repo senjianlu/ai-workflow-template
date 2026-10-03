@@ -1,0 +1,31 @@
+# TC-06 并发第二实例(确定性交错)
+# 2026-10-04 00:51:35 PROJ=/home/rabbir/Projects/ai-workflow-template
+# env: IDLE=3 MAX=8 POLL=1
+$ CLAUDE_PROJECT_DIR=/tmp/claude-1000/-home-rabbir-Projects-ai-workflow-template/33fe3994-31b4-4cb4-8c42-3f5146862277/scratchpad/tc-work/fx-06 STUB_MODE=slow bash /tmp/claude-1000/-home-rabbir-Projects-ai-workflow-template/33fe3994-31b4-4cb4-8c42-3f5146862277/scratchpad/tc-work/fx-06/.ai-workflow/scripts/review.sh > /tmp/claude-1000/-home-rabbir-Projects-ai-workflow-template/33fe3994-31b4-4cb4-8c42-3f5146862277/scratchpad/tc-work/fx-06/a.txt 2>&1 &
+[bg pid=1576104]
+A script pid=1576104
+锁已被 A 持有(flock 探测返回 75)
+$ bash /tmp/claude-1000/-home-rabbir-Projects-ai-workflow-template/33fe3994-31b4-4cb4-8c42-3f5146862277/scratchpad/tc-work/fx-06/.ai-workflow/scripts/review.sh
+已有评审在进行中,锁 .ai/2026-10-04/t/.review-lock 被以下进程持有:
+1576104 bash
+1576129 bash
+1576134 sleep
+待其结束后重跑
+[exit=3]
+[OK] B 退出码 3
+[OK] B stderr 含 进行中 与 A 的脚本 pid
+[OK] B stderr 为正常并发文案:不含 遗留 / kill -TERM
+$ wait 1576104   # A(slow)
+review-round-01-pass.md
+[exit=0]
+[OK] A 退出码 0
+$ ls '/tmp/claude-1000/-home-rabbir-Projects-ai-workflow-template/33fe3994-31b4-4cb4-8c42-3f5146862277/scratchpad/tc-work/fx-06/.ai/2026-10-04/t'/review-round-*
+/tmp/claude-1000/-home-rabbir-Projects-ai-workflow-template/33fe3994-31b4-4cb4-8c42-3f5146862277/scratchpad/tc-work/fx-06/.ai/2026-10-04/t/review-round-01-pass.md
+[exit=0]
+[OK] 唯一的 review-round-01-pass.md
+$ ls '/tmp/claude-1000/-home-rabbir-Projects-ai-workflow-template/33fe3994-31b4-4cb4-8c42-3f5146862277/scratchpad/tc-work/fx-06/.ai/2026-10-04/t'/.review-raw-*
+/tmp/claude-1000/-home-rabbir-Projects-ai-workflow-template/33fe3994-31b4-4cb4-8c42-3f5146862277/scratchpad/tc-work/fx-06/.ai/2026-10-04/t/.review-raw-01.events.jsonl
+/tmp/claude-1000/-home-rabbir-Projects-ai-workflow-template/33fe3994-31b4-4cb4-8c42-3f5146862277/scratchpad/tc-work/fx-06/.ai/2026-10-04/t/.review-raw-01.json
+[exit=0]
+[OK] 只有 A 的 raw 与 events 两个文件
+TC-06 RESULT: PASS

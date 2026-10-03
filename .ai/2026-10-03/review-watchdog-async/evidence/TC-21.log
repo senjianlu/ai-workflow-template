@@ -1,0 +1,19 @@
+# TC-21 codex 主进程先退出、后代继续持锁 fd(评审 R-03 回归)
+# 2026-10-04 00:52:24 PROJ=/home/rabbir/Projects/ai-workflow-template
+# env: IDLE=3 MAX=8 POLL=1
+$ bash /tmp/claude-1000/-home-rabbir-Projects-ai-workflow-template/33fe3994-31b4-4cb4-8c42-3f5146862277/scratchpad/tc-work/fx-21/.ai-workflow/scripts/review.sh
+警告:codex 已退出但受管后代仍存活,清理中
+主工作区在评审期间发生改动(沙箱未能阻止,或存在并发写入),本次评审无效。请 git status 检查后重跑。
+[exit=3]
+child pid=1578734
+[OK] 退出码 3(codex 退出 0 但无输出文件)
+[OK] stderr 含 后代仍存活,清理中
+$ kill -0 1578734
+.ai/2026-10-03/review-watchdog-async/assets/tests/run-tcs.sh: 第 17 行： kill: (1578734) - 没有那个进程
+[exit=1]
+[OK] 后代已被清理
+$ lock_free /tmp/claude-1000/-home-rabbir-Projects-ai-workflow-template/33fe3994-31b4-4cb4-8c42-3f5146862277/scratchpad/tc-work/fx-21/.ai/2026-10-04/t/.review-lock
+
+[exit=0]
+[OK] 锁可立即获取
+TC-21 RESULT: PASS

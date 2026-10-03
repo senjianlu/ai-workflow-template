@@ -1,0 +1,19 @@
+# TC-13 hook:原拦截回归
+# 2026-10-04 00:51:50 PROJ=/home/rabbir/Projects/ai-workflow-template
+# env: IDLE=3 MAX=8 POLL=1
+$ echo '{}' | bash '/tmp/claude-1000/-home-rabbir-Projects-ai-workflow-template/33fe3994-31b4-4cb4-8c42-3f5146862277/scratchpad/tc-work/fx-13/.claude/hooks/gate-review.sh'
+{
+  "decision": "block",
+  "reason": "rawf 工作流拦截:第 01 轮实现尚未经过 Codex 评审。请立即运行 /rawf-review;若因故必须先征询用户,说明原因后可再次结束。"
+}
+[exit=0]
+[OK] 锁空闲:输出 block JSON
+$ echo '{}' | bash '/tmp/claude-1000/-home-rabbir-Projects-ai-workflow-template/33fe3994-31b4-4cb4-8c42-3f5146862277/scratchpad/tc-work/fx-13/.claude/hooks/gate-review.sh'
+{
+  "decision": "block",
+  "reason": "rawf 工作流拦截:第 01 轮实现尚未经过 Codex 评审。请立即运行 /rawf-review;若因故必须先征询用户,说明原因后可再次结束。"
+}
+[exit=0]
+[OK] 锁不存在:输出 block JSON
+[OK] hook 未创建锁文件
+TC-13 RESULT: PASS

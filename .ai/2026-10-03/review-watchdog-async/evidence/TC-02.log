@@ -1,0 +1,15 @@
+# TC-02 stdin 为永不关闭的 fifo
+# 2026-10-04 00:51:07 PROJ=/home/rabbir/Projects/ai-workflow-template
+# env: IDLE=3 MAX=8 POLL=1
+producer pid=1574809 (sleep 300 > p)
+$ timeout 60 bash '/tmp/claude-1000/-home-rabbir-Projects-ai-workflow-template/33fe3994-31b4-4cb4-8c42-3f5146862277/scratchpad/tc-work/fx-02/.ai-workflow/scripts/review.sh' < '/tmp/claude-1000/-home-rabbir-Projects-ai-workflow-template/33fe3994-31b4-4cb4-8c42-3f5146862277/scratchpad/tc-work/fx-02/p'
+review-round-01-pass.md
+[exit=0]
+elapsed=0s
+[OK] 退出码 0 且 60 s 内返回
+[OK] 生成 pass 文件
+$ kill -0 1574809
+
+[exit=0]
+[OK] 断言时生产者仍存活(管道确未关闭)
+TC-02 RESULT: PASS

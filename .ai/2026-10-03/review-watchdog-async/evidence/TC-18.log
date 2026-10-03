@@ -1,0 +1,50 @@
+# TC-18 脚本被 KILL、桩遗留持锁、无元数据
+# 2026-10-04 00:52:22 PROJ=/home/rabbir/Projects/ai-workflow-template
+# env: IDLE=3 MAX=8 POLL=1
+$ CLAUDE_PROJECT_DIR=/tmp/claude-1000/-home-rabbir-Projects-ai-workflow-template/33fe3994-31b4-4cb4-8c42-3f5146862277/scratchpad/tc-work/fx-18 STUB_MODE=idle bash /tmp/claude-1000/-home-rabbir-Projects-ai-workflow-template/33fe3994-31b4-4cb4-8c42-3f5146862277/scratchpad/tc-work/fx-18/.ai-workflow/scripts/review.sh > /tmp/claude-1000/-home-rabbir-Projects-ai-workflow-template/33fe3994-31b4-4cb4-8c42-3f5146862277/scratchpad/tc-work/fx-18/a.txt 2>&1 &
+[bg pid=1578380]
+script=1578380 stub=1578407
+$ kill -KILL 1578380
+[exit=0]
+$ wait 1578380   # 首次评审(脚本被 KILL)
+
+[exit=137]
+$ kill -0 1578407
+
+[exit=0]
+[OK] 前置:桩仍存活
+$ lock_free /tmp/claude-1000/-home-rabbir-Projects-ai-workflow-template/33fe3994-31b4-4cb4-8c42-3f5146862277/scratchpad/tc-work/fx-18/.ai/2026-10-04/t/.review-lock
+
+[exit=75]
+[OK] 前置:锁被持有(75)
+锁文件已清空
+$ bash -c "exec 8>>'/tmp/claude-1000/-home-rabbir-Projects-ai-workflow-template/33fe3994-31b4-4cb4-8c42-3f5146862277/scratchpad/tc-work/fx-18/.ai/2026-10-04/t/.review-lock'; sleep 300" &
+opener pid=1578452
+$ bash review.sh (B pid=1578459)
+已有评审在进行中,锁 .ai/2026-10-04/t/.review-lock 被以下进程持有:
+1578407 bash
+1578412 sleep
+持有者中已无评审脚本进程(记录的脚本 pid 未知),上述为脚本被强杀后遗留的评审进程;确认后执行 kill -TERM 1578407 1578412 再重跑
+[exit=3]
+[OK] B 退出码 3
+[OK] 名单含桩 pid 与命令名(桩为 bash 脚本,comm=bash)、含 kill -TERM 指引
+[OK] 名单不含 B 自身 pid、不含 opener pid、不含自动清理字样
+$ kill -0 1578407
+
+[exit=0]
+[OK] 桩此时仍存活
+$ kill -0 1578452
+
+[exit=0]
+[OK] opener 此时仍存活
+$ kill -TERM 1578407 1578412 
+
+[exit=0]
+$ kill -TERM 1578452
+[exit=0]
+$ bash /tmp/claude-1000/-home-rabbir-Projects-ai-workflow-template/33fe3994-31b4-4cb4-8c42-3f5146862277/scratchpad/tc-work/fx-18/.ai-workflow/scripts/review.sh
+review-round-01-pass.md
+[exit=0]
+[OK] 按指引处置后第三次运行退出码 0
+[OK] 生成 pass 文件
+TC-18 RESULT: PASS

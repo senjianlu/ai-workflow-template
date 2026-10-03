@@ -1,0 +1,24 @@
+# TC-07 崩溃(KILL 脚本与桩会话)后无残留锁
+# 2026-10-04 00:51:42 PROJ=/home/rabbir/Projects/ai-workflow-template
+# env: IDLE=3 MAX=8 POLL=1
+$ CLAUDE_PROJECT_DIR=/tmp/claude-1000/-home-rabbir-Projects-ai-workflow-template/33fe3994-31b4-4cb4-8c42-3f5146862277/scratchpad/tc-work/fx-07 STUB_MODE=idle bash /tmp/claude-1000/-home-rabbir-Projects-ai-workflow-template/33fe3994-31b4-4cb4-8c42-3f5146862277/scratchpad/tc-work/fx-07/.ai-workflow/scripts/review.sh > /tmp/claude-1000/-home-rabbir-Projects-ai-workflow-template/33fe3994-31b4-4cb4-8c42-3f5146862277/scratchpad/tc-work/fx-07/a.txt 2>&1 &
+[bg pid=1576433]
+script=1576433 stub=1576457
+$ kill -KILL 1576433
+[exit=0]
+$ kill -KILL -- -1576457
+[exit=0]
+$ wait 1576433   # 首次评审(被 KILL)
+
+[exit=137]
+$ pgrep -s 1576457 || echo none
+none
+[exit=0]
+[OK] 前置:桩会话全部死亡
+$ bash /tmp/claude-1000/-home-rabbir-Projects-ai-workflow-template/33fe3994-31b4-4cb4-8c42-3f5146862277/scratchpad/tc-work/fx-07/.ai-workflow/scripts/review.sh
+review-round-01-pass.md
+[exit=0]
+[OK] 第二次运行退出码 0
+[OK] 不出现 进行中 / 回收 提示
+[OK] 生成 pass 文件
+TC-07 RESULT: PASS

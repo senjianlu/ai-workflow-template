@@ -1,0 +1,10 @@
+# TC-09 参数非法
+# 2026-10-04 00:51:45 PROJ=/home/rabbir/Projects/ai-workflow-template
+# env: IDLE=3 MAX=8 POLL=1
+$ bash /tmp/claude-1000/-home-rabbir-Projects-ai-workflow-template/33fe3994-31b4-4cb4-8c42-3f5146862277/scratchpad/tc-work/fx-09/.ai-workflow/scripts/review.sh
+RAWF_REVIEW_IDLE_SECONDS 须为正整数,实际为:abc
+[exit=3]
+[OK] 退出码 3
+[OK] stderr 指出变量名与 正整数
+[OK] 未启动桩(无 events 文件)
+TC-09 RESULT: PASS

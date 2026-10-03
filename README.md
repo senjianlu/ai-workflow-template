@@ -66,8 +66,10 @@ implementation-round-NN.md、review-round-NN-<pass|fail>.md、summary.md,
    `.ai-workflow/TEMPLATE-VERSION` 写入 version 与 adopted;对齐完成
    前 version 一律记 `unknown`,升级继续走全量比较,**不得直接认领**
    v1.0.0(对照物取模板克隆的 v1.0.0 checkout,见「版本与升级」)。
-4. **前置依赖**:jq、codex CLI(须支持 --output-schema),并执行
-   「开新项目」第 3 步的两条 git config。
+4. **前置依赖**:jq、codex CLI(须支持 --output-schema 与 --json)、
+   Linux 的 util-linux(flock、setsid)与 procps(pgrep;评审脚本的锁与
+   看门狗依赖它们,缺失时明确报错退出),并执行「开新项目」第 3 步的
+   两条 git config。
 5. **提交规范衔接**:模板规范是 Conventional Commits 的超集,存量
    历史无需改写;此后新提交按 AGENTS.md 执行。
 
@@ -75,10 +77,15 @@ implementation-round-NN.md、review-round-NN-<pass|fail>.md、summary.md,
 
 - gate-plan.sh(PreToolUse):方案未获用户确认前,拦截源码与工作流
   控制文件的写入(仅 .ai/ 产物豁免)
-- gate-review.sh(Stop):最新实现轮未经评审前,不许结束回合
+- gate-review.sh(Stop):最新实现轮未经评审前,不许结束回合;评审进行中
+  (当前任务的 .review-lock 被 flock 持有)则放行——评审后台运行,完成通知
+  唤回 Claude,不原地等待
 - review.sh:codex exec --output-schema 结构化评审;脚本按严重度清单推导
   pass/fail 并与评审自报结论交叉校验,JSON 渲染为评审文件;同轮已有评审
-  文件则拒绝重评(历史只增不改)
+  文件则拒绝重评(历史只增不改);codex 的 stdin 接 /dev/null,--json 事件流
+  作进度信号,静默 15 分钟 / 总时长 60 分钟的看门狗按会话终止 codex 并
+  exit 3(环境变量 RAWF_REVIEW_IDLE_SECONDS / RAWF_REVIEW_MAX_SECONDS 可调);
+  互斥锁为 flock 文件,随进程退出自动释放(见 docs/decisions/0009)
 - 评审以只读沙箱直审原仓库(无副本,零复制开销;见 docs/decisions/0005);
   评审者不运行任何测试,测试真实性走证据协议——实现者把全部用例的完整
   原始输出落任务目录 evidence/,评审者只核证据,缺证据按 blocker 打回并

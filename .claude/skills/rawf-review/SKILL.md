@@ -5,12 +5,20 @@ description: rawf 工作流第 4 步:通过 review.sh 调用 Codex 评审当前�
 
 # rawf-review:评审与分流
 
-1. 运行 `bash .ai-workflow/scripts/review.sh`。评审只能经此脚本,不得以
-   自查代替 Codex 评审。**必须以后台方式运行**并等待完成:评审耗时波动
-   大,前台命令的超时上限(约 10 分钟)扛不住,超时被杀会遗留
-   `.review-lock` 锁目录。退出码非 0/1(即 3)= 评审执行异常,把 stderr
-   报给用户后停下,不要自行绕过;唯一例外是报"锁已存在"且确认无并发
-   评审进程(如 `pgrep -fl 'codex exec'` 为空)时,删除锁目录后重跑一次。
+1. 以**后台方式**运行 `bash .ai-workflow/scripts/review.sh`(Claude Code 中
+   用 Bash 工具的 `run_in_background`,并把 `timeout` 设为不低于
+   4000000 ms,高于脚本 60 分钟的墙钟上限)。评审只能经此脚本,不得以
+   自查代替 Codex 评审。启动后**直接结束回合,不轮询、不 sleep 等待**:
+   脚本自带看门狗(事件流静默 15 分钟或总时长 60 分钟即终止 codex 并
+   exit 3),评审完成的后台任务通知会唤回你,届时再读结果分流;Stop hook
+   识别到评审进行中会放行。
+   退出码非 0/1(即 3)= 评审执行异常,按 stderr 处置:
+   - 含"已终止"(看门狗触发)→ 直接重跑一次;再次异常 → 报用户停下。
+   - 含"进行中"→ 确有评审进程存活(正常并发,或脚本被强杀后遗留的
+     codex),把 stderr 中的持有者列表与处置命令原样报用户,不自行 kill。
+   - 含"旧版锁目录"(仅升级后首次可能出现)→ 确认 `pgrep -f 'codex exec'`
+     为空后按提示 rmdir 该目录,重跑一次。
+   - 其它 → 把 stderr 报给用户后停下,不要自行绕过。
 2. 读取新生成的 review-round-<NN>-<pass|fail>.md,按顺序分流。修复轮
    上限取 plan.md frontmatter 的 `impl_fix_max_rounds`,字段缺失或非正
    整数一律按**默认 3**(取值规则与 rawf-implement 一致):

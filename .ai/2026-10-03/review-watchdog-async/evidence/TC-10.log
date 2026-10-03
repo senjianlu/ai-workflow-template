@@ -1,0 +1,14 @@
+# TC-10 plan-review 正常 pass
+# 2026-10-04 00:51:46 PROJ=/home/rabbir/Projects/ai-workflow-template
+# env: IDLE=3 MAX=8 POLL=1
+$ bash /tmp/claude-1000/-home-rabbir-Projects-ai-workflow-template/33fe3994-31b4-4cb4-8c42-3f5146862277/scratchpad/tc-work/fx-10/.ai-workflow/scripts/plan-review.sh
+plan-review-round-01-pass.md
+[exit=0]
+[OK] 退出码 0
+[OK] 生成 plan-review-round-01-pass.md
+[OK] events 文件存在
+$ lock_free /tmp/claude-1000/-home-rabbir-Projects-ai-workflow-template/33fe3994-31b4-4cb4-8c42-3f5146862277/scratchpad/tc-work/fx-10/.ai/2026-10-04/t/.plan-review-lock
+
+[exit=0]
+[OK] .plan-review-lock 存在且可立即获取
+TC-10 RESULT: PASS

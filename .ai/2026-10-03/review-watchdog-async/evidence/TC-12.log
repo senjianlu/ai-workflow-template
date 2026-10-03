@@ -1,0 +1,9 @@
+# TC-12 hook:评审进行中放行
+# 2026-10-04 00:51:50 PROJ=/home/rabbir/Projects/ai-workflow-template
+# env: IDLE=3 MAX=8 POLL=1
+holder pid=1577010
+$ echo '{}' | bash '/tmp/claude-1000/-home-rabbir-Projects-ai-workflow-template/33fe3994-31b4-4cb4-8c42-3f5146862277/scratchpad/tc-work/fx-12/.claude/hooks/gate-review.sh'
+
+[exit=0]
+[OK] 无 stdout 输出且退出码 0
+TC-12 RESULT: PASS

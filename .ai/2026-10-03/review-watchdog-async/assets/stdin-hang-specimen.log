@@ -1,0 +1,21 @@
+# 现场:第 5 轮 plan 评审的 codex 在启动前阻塞于 stdin(unix socket),0% CPU,无 rollout 会话
+采集时间:2026-10-03 23:56:07;codex 启动:六 10月  3 23:28:43 2026;已运行:      27:23
+## ps
+    PID    PPID     ELAPSED %CPU STAT
+1238135 1238124       27:23  0.0 Sl
+## stdin
+fd0 -> socket:[741592102]
+## 各线程 wchan(主线程阻塞在 unix 流 socket 读)
+      1 codex futex_do_wait
+      1 codex-main unix_stream_data_wait
+      1 codex-otel-shut futex_do_wait
+      1 OpenTelemetry.M futex_do_wait
+      1 tokio-rt-worker ep_poll
+      3 tokio-rt-worker futex_do_wait
+## 脚本 stdout 中 codex 的最后一行
+17:Reading additional input from stdin...
+## 启动后 ~/.codex/sessions 无该进程的 rollout(23:28 附近无文件)
+rollout-2026-10-03T23-36-12-01a10231-a5ba-7452-b980-b0b05ec58775.jsonl
+rollout-2026-10-03T23-25-26-01a10227-d0a1-7c50-b651-e1994b20ff06.jsonl
+rollout-2026-10-03T23-24-46-01a10227-2c8f-77e3-a409-8b0f16f31678.jsonl
+## 调用方式:Claude Code Bash 工具 run_in_background,未对 plan-review.sh 做 stdin 重定向(第 1~4 轮同样方式正常完成)

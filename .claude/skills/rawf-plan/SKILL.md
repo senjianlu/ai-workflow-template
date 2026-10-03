@@ -28,8 +28,10 @@ description: rawf 工作流第 1 步:为新开发任务产出实现方案 plan.m
    - 证据形态优先取日志/文本;截图不得作为任一用例的唯一证据。
 6. 【plan 评审闸,仅当本方案预计触及文件 > 10 时执行(≤ 10 不走此闸),
    在确认闸之前】
-   运行 `bash .ai-workflow/scripts/plan-review.sh`(**后台方式**并等待完成,
-   评审耗时波动大)。退出码 3 = 执行异常,把 stderr 报用户后停下。按结果分流:
+   以**后台方式**运行 `bash .ai-workflow/scripts/plan-review.sh`(Claude Code
+   中用 `run_in_background`,`timeout` 不低于 4000000 ms),启动后
+   **直接结束回合**、不轮询等待,完成通知唤回后再分流。退出码 3 = 执行异常:stderr 含
+   "已终止"(看门狗)→ 重跑一次;其它把 stderr 报用户后停下。按结果分流:
    - fail(有 plan-blocker 或 major)→ **就地修订 plan.md**(尽量一次改完),
      重跑评审;脚本强制轮次上限(**默认 3 轮**),达上限(exit 3 提示
      "N 轮上限")仍不收敛 → 停止,把分歧交用户敲定,不自行绕过。

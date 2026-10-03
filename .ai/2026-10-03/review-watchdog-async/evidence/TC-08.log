@@ -1,0 +1,22 @@
+# TC-08 外部 TERM 终止脚本
+# 2026-10-04 00:51:43 PROJ=/home/rabbir/Projects/ai-workflow-template
+# env: IDLE=3 MAX=8 POLL=1
+$ CLAUDE_PROJECT_DIR=/tmp/claude-1000/-home-rabbir-Projects-ai-workflow-template/33fe3994-31b4-4cb4-8c42-3f5146862277/scratchpad/tc-work/fx-08 STUB_MODE=idle bash /tmp/claude-1000/-home-rabbir-Projects-ai-workflow-template/33fe3994-31b4-4cb4-8c42-3f5146862277/scratchpad/tc-work/fx-08/.ai-workflow/scripts/review.sh > /tmp/claude-1000/-home-rabbir-Projects-ai-workflow-template/33fe3994-31b4-4cb4-8c42-3f5146862277/scratchpad/tc-work/fx-08/a.txt 2>&1 &
+[bg pid=1576573]
+script=1576573 stub=1576595
+$ kill -TERM 1576573
+[exit=0]
+$ wait 1576573   # review.sh(被 TERM)
+
+[exit=143]
+[OK] 退出码非 0
+$ pgrep -s 1576595 || echo none
+none
+[exit=0]
+[OK] 桩会话无存活进程
+$ lock_free /tmp/claude-1000/-home-rabbir-Projects-ai-workflow-template/33fe3994-31b4-4cb4-8c42-3f5146862277/scratchpad/tc-work/fx-08/.ai/2026-10-04/t/.review-lock
+
+[exit=0]
+[OK] 锁可立即获取
+[OK] 无 review-round 文件
+TC-08 RESULT: PASS

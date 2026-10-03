@@ -1,0 +1,45 @@
+# TC-05 多层后代 + 忽略 TERM 的清理
+# 2026-10-04 00:51:20 PROJ=/home/rabbir/Projects/ai-workflow-template
+# env: IDLE=3 MAX=8 POLL=1
+$ CLAUDE_PROJECT_DIR=/tmp/claude-1000/-home-rabbir-Projects-ai-workflow-template/33fe3994-31b4-4cb4-8c42-3f5146862277/scratchpad/tc-work/fx-05 STUB_MODE=tree bash /tmp/claude-1000/-home-rabbir-Projects-ai-workflow-template/33fe3994-31b4-4cb4-8c42-3f5146862277/scratchpad/tc-work/fx-05/.ai-workflow/scripts/review.sh > /tmp/claude-1000/-home-rabbir-Projects-ai-workflow-template/33fe3994-31b4-4cb4-8c42-3f5146862277/scratchpad/tc-work/fx-05/out.txt 2>&1 &
+[bg pid=1575431]
+grandchild=1575482 ignorer=1575483 stub.sid=1575476
+$ pgrep -f 'sleep 30[0] & echo' || echo none
+none
+[exit=0]
+[OK] 前置:中间 bash 已退出
+$ kill -0 1575482
+
+[exit=0]
+[OK] 前置:孙进程存活
+$ kill -0 1575483
+
+[exit=0]
+[OK] 前置:忽略 TERM 的进程存活
+$ ps -o sid= -p 1575482 | tr -d ' '; ps -o sid= -p 1575483 | tr -d ' '
+1575476
+1575476
+[exit=0]
+[OK] 前置:二者 sid 等于 stub.sid
+$ ps -o ppid= -p 1575482 | tr -d ' '
+1
+[exit=0]
+孙进程当前 ppid=1(已改挂)
+$ wait 1575431   # review.sh(tree)
+评审 3 秒无新事件,判定卡死,已终止;请重跑评审
+[exit=3]
+[OK] 退出码 3
+$ pgrep -s 1575476 || echo none
+none
+[exit=0]
+[OK] 受管会话无存活进程
+$ kill -0 1575482
+.ai/2026-10-03/review-watchdog-async/assets/tests/run-tcs.sh: 第 17 行： kill: (1575482) - 没有那个进程
+[exit=1]
+[OK] 孙进程已不存在
+$ kill -0 1575483
+.ai/2026-10-03/review-watchdog-async/assets/tests/run-tcs.sh: 第 17 行： kill: (1575483) - 没有那个进程
+[exit=1]
+[OK] 忽略 TERM 的进程已被 KILL
+[OK] 无 review-round 文件
+TC-05 RESULT: PASS
