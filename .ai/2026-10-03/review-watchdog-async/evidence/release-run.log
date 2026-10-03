@@ -7,5 +7,7 @@ $ git tag v1.0.1 && git push origin v1.0.1
  * [new tag]         v1.0.1 -> v1.0.1
 exit=0
 $ gh release create v1.0.1 --title "v1.0.1" --notes-file release-notes.md
-本机未安装 gh CLI(login shell 亦无),且无 GH_TOKEN/GITHUB_TOKEN;GitHub Release 由用户另行创建
-(安装 gh 后执行上述命令,或在 GitHub 网页基于 tag v1.0.1 创建、notes 粘贴 release-notes.md)
+本机当时无 gh CLI 与 token,Release 由用户在 GitHub 网页基于 tag v1.0.1 创建,notes 取 release-notes.md
+$ GET api.github.com/repos/senjianlu/ai-workflow-template/releases/tags/v1.0.1  (2026-10-04 核对)
+v1.0.1 v1.0.1 draft=False https://github.com/senjianlu/ai-workflow-template/releases/tag/v1.0.1 | body lines: 36
+exit=0
