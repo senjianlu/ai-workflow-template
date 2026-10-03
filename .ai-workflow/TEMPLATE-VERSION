@@ -1,3 +1,3 @@
-version: 1.0.0
+version: 1.0.1
 source: https://github.com/senjianlu/ai-workflow-template
 adopted: 拷入 consumer 项目时填写采用日期(yyyy-mm-dd);模板仓库内保持此占位

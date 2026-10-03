@@ -16,7 +16,7 @@ settings.local.json 属本机个人授权,不受管。)
 
 每个版本条目必须含「升级指引」小节,逐文件标注归类与迁移动作。
 
-## [Unreleased]
+## [1.0.1] - 2026-10-04
 
 ### Changed
 
@@ -28,8 +28,8 @@ settings.local.json 属本机个人授权,不受管。)
   `RAWF_REVIEW_POLL_SECONDS` 可调);codex 的 stdin 固定接 /dev/null。
   运行环境要求 Linux 的 util-linux(flock、setsid)与 procps(pgrep)。
 - gate-review.sh(Stop hook):当前任务的 `.review-lock` 被 flock 持有
-  (评审进行中)时放行;其它情形维持原拦截。**hook 行为变更**,发版时
-  建议按 MAJOR 处理。
+  (评审进行中)时放行;其它情形维持原拦截。**hook 行为变更**(仅放宽:
+  评审进行中不再拦截),按修复发布为 PATCH。
 - rawf-review / rawf-plan skill:评审改为后台启动后直接结束回合,由完成
   通知唤回再分流;删除手工 pgrep / 删锁流程。
 - 决策记录 docs/decisions/0009。
