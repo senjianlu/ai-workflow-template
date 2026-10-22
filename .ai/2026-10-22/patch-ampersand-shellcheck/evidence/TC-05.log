@@ -1,0 +1,174 @@
+# rawf-evidence v1
+tc: TC-05
+label: 
+cmd: bash .ai/2026-10-22/patch-ampersand-shellcheck/evidence/tc-05.sh
+cwd: /home/rabbir/Projects/ai-workflow-template
+git_head: de49ad8c05881e08f558c124b9eff27bacb08484 dirty
+started: 2026-10-22T12:12:16+09:00
+--- output ---
+===== plan-review-convergence tc-01.sh
+  ok   - 退出码 == 1
+  ok   - 存在 .ai/2026-10-22/t/plan-review-round-01-fail.md
+  ok   - 存在 .ai/2026-10-22/t/.plan-review-raw-01.plan.md
+  ok   - 快照与 plan.md 字节一致
+  ok   - 模式行 == 本轮模式:全量穷尽评审
+  ok   - prompt 不含 \`\`\`diff
+  ok   - prompt 不含 上一轮评审:
+  ok   - prompt 不含 \{\{
+--- 本轮上下文段:
+## 本轮上下文
+
+本轮模式:全量穷尽评审
+
+本轮为第 01 轮(首轮)。
+
+## 严重度判据(返工判据)
+
+RESULT: all assertions passed
+  ok   - plan-review-convergence tc-01.sh 退出码 == 0
+===== plan-review-convergence tc-02.sh
+  ok   - 第 01 轮退出码 == 1
+  ok   - 第 02 轮退出码 == 1
+  ok   - 模式行 == 本轮模式:全量穷尽评审
+  ok   - prompt 含 .ai/2026-10-22/t/plan-review-round-01-fail.md
+  ok   - prompt 含 \`\`\`diff
+  ok   - diff 含 -旧行
+  ok   - diff 含 +新行\ a\ \&\&\ b\ 2\>\&1
+  ok   - diff 不含 \{\{ROUND_CONTEXT\}\}
+  ok   - 第 02 轮快照 含 新行
+  ok   - prompt 不含 \{\{
+--- 本轮上下文段:
+## 本轮上下文
+
+本轮模式:全量穷尽评审
+
+本轮为第 02 轮。上一轮评审:.ai/2026-10-22/t/plan-review-round-01-fail.md——先逐项核验其中的 plan-blocker/major 是否已解决。
+
+自第 01 轮评审以来的修订如下(供定位;本轮仍全量评审):
+
+```diff
+--- 第 01 轮所审 plan.md
++++ 本轮所审 plan.md
+@@ -10,4 +10,4 @@
+ ## 非目标
+ 无
+ 
+-旧行
++新行 a && b 2>&1
+```
+
+## 严重度判据(返工判据)
+
+RESULT: all assertions passed
+  ok   - plan-review-convergence tc-02.sh 退出码 == 0
+===== plan-review-convergence tc-03.sh
+  ok   - 第 03 轮退出码 == 0
+  ok   - 模式行 == 本轮模式:收敛评审
+  ok   - prompt 含 .ai/2026-10-22/t/plan-review-round-02-fail.md
+  ok   - diff 含 -新行
+  ok   - diff 含 +第三行
+  ok   - diff 不含 -旧行
+  ok   - prompt 含 即本轮的\"修订部分\"
+  ok   - 存在 .ai/2026-10-22/t/plan-review-round-03-pass.md
+--- 本轮上下文段:
+## 本轮上下文
+
+本轮模式:收敛评审
+
+本轮为第 03 轮。上一轮评审:.ai/2026-10-22/t/plan-review-round-02-fail.md——先逐项核验其中的 plan-blocker/major 是否已解决。
+
+自第 02 轮评审以来的修订如下;diff 中的改动即本轮的"修订部分",其余为"未修订部分":
+
+```diff
+--- 第 02 轮所审 plan.md
++++ 本轮所审 plan.md
+@@ -10,4 +10,4 @@
+ ## 非目标
+ 无
+ 
+-新行
++第三行
+```
+
+## 严重度判据(返工判据)
+
+RESULT: all assertions passed
+  ok   - plan-review-convergence tc-03.sh 退出码 == 0
+===== plan-review-convergence tc-04.sh
+  ok   - 第 02 轮退出码 == 1
+  ok   - prompt 含 plan.md\ 自第\ 01\ 轮评审以来未修订
+  ok   - prompt 不含 \`\`\`diff
+
+RESULT: all assertions passed
+  ok   - plan-review-convergence tc-04.sh 退出码 == 0
+===== plan-review-convergence tc-05.sh
+  ok   - 第 03 轮退出码 == 0
+  ok   - 模式行 == 本轮模式:全量穷尽评审\(无上一轮快照\)
+  ok   - prompt 含 .ai/2026-10-22/t/plan-review-round-02-
+  ok   - prompt 含 无上一轮快照
+  ok   - prompt 不含 \`\`\`diff
+  ok   - ② 快照不可读:退出码 == 3
+  ok   - ② stderr 含 修订\ diff\ 生成失败
+  ok   - 不存在 /tmp/rawf-prout.iunTRN/invoked
+  ok   - 不存在 .ai/2026-10-22/t/plan-review-round-03-pass.md
+  ok   - ③ diff 失败:退出码 == 3
+  ok   - ③ stderr 含 diff\ 退出码\ 2
+  ok   - 不存在 /tmp/rawf-prout.iunTRN/invoked
+  ok   - 不存在 .ai/2026-10-22/t/plan-review-round-03-pass.md
+  ok   - ④ 重跑退出码 == 0
+  ok   - ④ 模式行 == 本轮模式:收敛评审
+  ok   - ④ diff 含 +第三行
+  ok   - 存在 .ai/2026-10-22/t/plan-review-round-03-pass.md
+--- ② stderr:
+diff: /tmp/rawf-pr.iCxY6D/.ai/2026-10-22/t/.plan-review-raw-02.plan.md: 权限不够
+修订 diff 生成失败(diff 退出码 2,上一轮快照 .ai/2026-10-22/t/.plan-review-raw-02.plan.md);评审未启动、不消耗轮次,排查后重跑
+
+RESULT: all assertions passed
+  ok   - plan-review-convergence tc-05.sh 退出码 == 0
+===== plan-review-convergence tc-06.sh
+  ok   - ① __resolve_max_rounds 缺省 == 5
+  ok   - ② 第 5 轮假 codex 被调用
+  ok   - 存在 .ai/2026-10-22/t/plan-review-round-05-fail.md
+  ok   - ③ 退出码 == 3
+  ok   - ③ stderr 含 已达\ 5\ 轮上限
+  ok   - 不存在 /tmp/rawf-prout.e3Q8wD/invoked
+  ok   - 不存在 .ai/2026-10-22/t/.plan-review-raw-06.plan.md
+  ok   - ④ 退出码 == 3
+  ok   - ④ stderr 含 已达\ 1\ 轮上限
+  ok   - 不存在 /tmp/rawf-prout.g9U1aM/invoked
+  ok   - ⑤ 快照被 .gitignore 忽略
+  ok   - ⑥ 退出码 == 0
+  ok   - ⑥ 产物 含 \##\ 范围核对
+
+RESULT: all assertions passed
+  ok   - plan-review-convergence tc-06.sh 退出码 == 0
+===== plan-review-convergence tc-10.sh
+  ok   - 第一次退出码 == 3
+  ok   - stderr 含 评审期间被修改
+  ok   - 无评审文件 == ''
+  ok   - 存在 .ai/2026-10-22/t/.plan-review-raw-01.json
+  ok   - 重跑退出码 == 0
+  ok   - 存在 .ai/2026-10-22/t/plan-review-round-01-pass.md
+  ok   - 重跑快照与当时 plan.md 一致
+--- 第一次 stderr:
+
+
+RESULT: all assertions passed
+  ok   - plan-review-convergence tc-10.sh 退出码 == 0
+===== plan-review-convergence tc-12.sh
+| 01/R-02 | 甲 |
+| 02/R-01 | 乙(收敛降级) |
+  ok   - ① 退出码 == 0
+  ok   - ① 输出 == $'| 01/R-02 | 甲 |\n| 02/R-01 | 乙(收敛降级) |'
+  ok   - ② 退出码 == 0
+  ok   - ② 输出 == 无
+
+RESULT: all assertions passed
+  ok   - plan-review-convergence tc-12.sh 退出码 == 0
+
+RESULT: all assertions passed
+
+--- end ---
+exit: 0
+finished: 2026-10-22T12:12:21+09:00
+bytes: 5569

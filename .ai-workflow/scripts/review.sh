@@ -71,15 +71,15 @@ managed_pids() {
 # kill_codex_tree <sid>:TERM 整组 + 逐 pid,等至多 10 s;仍存活则 KILL 升级
 # (按当时重新取得的集合),再等 3 s;残留只告警不阻断退出。
 kill_codex_tree() {
-  local sid=$1 p i alive
+  local sid=$1 p alive
   kill -TERM -- "-$sid" 2>/dev/null || true
   for p in $(managed_pids "$sid"); do kill -TERM "$p" 2>/dev/null || true; done
-  for i in $(seq 1 20); do
+  for _ in $(seq 1 20); do
     alive=$(managed_pids "$sid"); [ -z "$alive" ] && return 0; sleep 0.5
   done
   kill -KILL -- "-$sid" 2>/dev/null || true
   for p in $(managed_pids "$sid"); do kill -KILL "$p" 2>/dev/null || true; done
-  for i in $(seq 1 6); do
+  for _ in $(seq 1 6); do
     alive=$(managed_pids "$sid"); [ -z "$alive" ] && return 0; sleep 0.5
   done
   echo "警告:以下受管进程仍存活:$(echo "$alive" | tr '\n' ' ')" >&2
@@ -90,7 +90,7 @@ kill_codex_tree() {
 # 同样带该行,仅打开未持锁的 fd 没有;/proc/locks 里的 pid 是已退出的 flock
 # 命令进程,不可用。调用前须先关闭本实例自己的锁 fd。
 lock_holders() {
-  local real ino fd target pid
+  local real ino fd pid
   real=$(realpath "$lock" 2>/dev/null) || return 0
   ino=$(stat -c %i "$lock" 2>/dev/null) || return 0
   # find -lname 单进程完成全量匹配(逐 fd readlink 要 fork 数千次,快照会过期)
@@ -218,6 +218,10 @@ case "$ev_rc" in
   *) echo "evidence-check 执行异常(退出码 $ev_rc):$ev_report" >&2; exit 3 ;;
 esac
 
+# bash 5.2 起 patsub_replacement 默认开启:替换文本里的 & 会被换成匹配原文、\& 丢
+# 反斜杠,证据报告(B/C 档证据格原文、%q 转义的 cmd)会被改写。关闭后再做占位
+# 替换(与 plan-review.sh 同一处理,见 docs/decisions/0012)。
+shopt -u patsub_replacement 2>/dev/null || true
 prompt=$(cat .ai-workflow/prompts/review.md)
 prompt="${prompt//\{\{TASK_DIR\}\}/$task_rel}"
 prompt="${prompt//\{\{ROUND\}\}/$nn}"
@@ -241,7 +245,7 @@ codex_pid=$!
 # 子进程要先执行到 setsid(2) 才成为会话首进程,最多等 2 s;已退出(极快完成)
 # 则无需受管,直接放过。
 sid_ok=0
-for i in $(seq 1 20); do
+for _ in $(seq 1 20); do
   if ! kill -0 "$codex_pid" 2>/dev/null; then sid_ok=1; break; fi
   if [ "$(ps -o sid= -p "$codex_pid" 2>/dev/null | tr -d ' ')" = "$codex_pid" ]; then sid_ok=1; break; fi
   sleep 0.1

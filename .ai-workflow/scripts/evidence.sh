@@ -76,6 +76,7 @@ try_forward() {
   kill -s "$interrupted" -- "-$child" 2>/dev/null && forwarded=1
   return 0
 }
+# shellcheck disable=SC2329  # 经 trap 字符串调用,静态分析识别不到
 on_sig() {
   [ -n "$interrupted" ] && return
   interrupted=$1

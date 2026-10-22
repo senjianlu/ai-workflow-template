@@ -1,0 +1,51 @@
+# rawf-evidence v1
+tc: TC-01
+label: 
+cmd: bash .ai/2026-10-22/patch-ampersand-shellcheck/evidence/tc-01.sh
+cwd: /home/rabbir/Projects/ai-workflow-template
+git_head: de49ad8c05881e08f558c124b9eff27bacb08484 dirty
+started: 2026-10-22T12:11:33+09:00
+--- output ---
+  ok   - ① evidence-check 退出码 == 0
+--- ① evidence-check 原始输出:
+机器核验(evidence-check,.ai/2026-10-22/t,第 01 轮):
+
+| 编号 | 档位 | 结果 | 证据文件 | 机器核验 | exit | cmd |
+|---|---|---|---|---|---|---|
+| TC-01 | A | pass | TC-01.log | OK | 0 | bash -c true\ \&\&\ true |
+| TC-02 | B | pass | a.sh:12 & b.sh:3 | 评审核验 |  | 按档位由评审核验 |
+| TC-03 | C | pass | 目测 A&B 一致 | 评审核验 |  | 按档位由评审核验 |
+
+结论:全部 A 档证据结构完整,记录与 plan 用例清单一致。
+  ok   - ② review.sh 退出码 == 0
+  ok   - ② 报告 7 个非空行逐字出现在 prompt 中(缺失行数) == 0
+  ok   - ② prompt 含 a.sh:12\ \&\ b.sh:3
+  ok   - ② prompt 含 目测\ A\&B\ 一致
+  ok   - ② prompt 含 \\\&\\\&
+  ok   - ② prompt 不含 \{\{
+--- ② prompt 中的证据核验段:
+## 测试证据核验
+
+A 档证据的**格式**(命令是否记录、输出是否完整、退出码是否存在)已由
+evidence-check 脚本在本评审启动前机器核验,结果如下。**格式不再是评审
+意见:不要就"缺命令 / 缺退出码 / 输出被截断 / 证据不完整"提任何问题**;
+若下表注明"历史任务,未经机器核验",才按 review-standards.md 自行核对格式。
+
+机器核验(evidence-check,.ai/2026-10-22/t,第 01 轮):
+
+| 编号 | 档位 | 结果 | 证据文件 | 机器核验 | exit | cmd |
+|---|---|---|---|---|---|---|
+| TC-01 | A | pass | TC-01.log | OK | 0 | bash -c true\ \&\&\ true |
+| TC-02 | B | pass | a.sh:12 & b.sh:3 | 评审核验 |  | 按档位由评审核验 |
+| TC-03 | C | pass | 目测 A&B 一致 | 评审核验 |  | 按档位由评审核验 |
+
+结论:全部 A 档证据结构完整,记录与 plan 用例清单一致。
+
+对 A 档证据只核三件事,逐条用例进行(规则见 review-standards.md「逐档核验规则」):
+
+RESULT: all assertions passed
+
+--- end ---
+exit: 0
+finished: 2026-10-22T12:11:34+09:00
+bytes: 1891

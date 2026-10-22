@@ -1,0 +1,398 @@
+# rawf-evidence v1
+tc: TC-04
+label: 
+cmd: bash .ai/2026-10-22/patch-ampersand-shellcheck/evidence/tc-04.sh
+cwd: /home/rabbir/Projects/ai-workflow-template
+git_head: de49ad8c05881e08f558c124b9eff27bacb08484 dirty
+started: 2026-10-22T12:11:35+09:00
+--- output ---
+===== scope-guard tc-01.sh
+  ok   - 包装器退出码 == 0
+  ok   - 存在 /tmp/rawf-tc.p3DWVA/.ai/2026-10-22/t/evidence/TC-01.log
+  ok   - 首行 == \#\ rawf-evidence\ v1
+  ok   - 文件 含 tc:\ TC-01
+  ok   - 文件 含 cmd:\ bash\ -c
+  ok   - 文件 含 cwd:\ /tmp/rawf-tc.p3DWVA
+  ok   - 文件 含 git_head:\ 
+  ok   - 文件 含 started:\ 
+  ok   - 文件 含 ---\ output\ ---
+  ok   - 文件 含 ---\ end\ ---
+  ok   - 文件 含 exit:\ 0
+  ok   - 文件 含 finished:\ 
+  ok   - 文件 含 bytes:\ 8
+  ok   - 正文 含 out
+  ok   - 正文 含 err
+  ok   - 终端输出 含 out
+  ok   - 终端输出 含 err
+--- 文件全文:
+# rawf-evidence v1
+tc: TC-01
+label: 
+cmd: bash -c echo\ out\;\ echo\ err\ \>\&2\;\ exit\ 0
+cwd: /tmp/rawf-tc.p3DWVA
+git_head: 0d31ecebc6e5509cc0484763ecd4ae4fd2bf70b8
+started: 2026-10-22T12:11:35+09:00
+--- output ---
+out
+err
+
+--- end ---
+exit: 0
+finished: 2026-10-22T12:11:36+09:00
+bytes: 8
+
+RESULT: all assertions passed
+  ok   - scope-guard tc-01.sh 退出码 == 0
+===== scope-guard tc-02.sh
+证据已写入 .ai/2026-10-22/t/evidence/TC-02.log(exit 7,正文 0 字节)
+  ok   - 包装器退出码透传 == 7
+  ok   - 尾部 含 exit:\ 7
+
+RESULT: all assertions passed
+  ok   - scope-guard tc-02.sh 退出码 == 0
+===== scope-guard tc-03.sh
+  ok   - 重复编号退出码 == 3
+  ok   - stderr 含 已存在
+  ok   - 原文件 sha256 不变 == 5b203aa4d96684d92c6be222444600ad8d921ff735f1a69ddbb503341fb44c6b
+  ok   - 带 label 退出码 == 0
+  ok   - 存在 /tmp/rawf-tc.xe0v4j/.ai/2026-10-22/t/evidence/TC-01-rerun.log
+  ok   - label 文件正文 含 second
+
+RESULT: all assertions passed
+  ok   - scope-guard tc-03.sh 退出码 == 0
+===== scope-guard tc-04.sh
+  ok   - 包装器退出码 == 143
+  ok   - 尾部 含 ---\ end\ ---
+  ok   - 尾部 含 exit:\ 143
+  ok   - 尾部 含 bytes:\ 0
+  ok   - 子进程 sleep 不再存活 == ''
+--- 文件全文:
+# rawf-evidence v1
+tc: TC-04
+label: 
+cmd: bash -c sleep\ 37.3
+cwd: /tmp/rawf-tc.5wv7GR
+git_head: ad5fad16a49f585bc775a114b45e9b8bbbcea08f
+started: 2026-10-22T12:11:37+09:00
+--- output ---
+
+--- end ---
+exit: 143
+finished: 2026-10-22T12:11:38+09:00
+bytes: 0
+  ok   - 忽略 TERM:包装器退出码 == 143
+  ok   - 忽略 TERM:尾部 含 exit:\ 143
+  ok   - 忽略 TERM:在宽限后收尾(7s)
+  ok   - 忽略 TERM:sleep 41.3 不再存活 == ''
+  ok   - INT:包装器退出码 == 130
+  ok   - INT:尾部 含 exit:\ 130
+  ok   - INT:sleep 43.3 不再存活 == ''
+  ok   - 捕获 TERM 后 exit 0:包装器退出码 == 143
+  ok   - 捕获 TERM 后 exit 0:尾部 含 exit:\ 143
+  ok   - 捕获 TERM:sleep 45.3 不再存活 == ''
+  ok   - 整组 INT:包装器退出码 == 130
+  ok   - 整组 INT:正文恰为子进程收尾输出 == bye-after-int
+  ok   - 整组 INT:尾部 含 exit:\ 130
+  ok   - 整组 INT:子进程自行退出后即收尾(0s)
+  ok   - 整组 INT:sleep 0.473 不再存活 == ''
+  ok   - 无残留 sleep(37.3/41.3/43.3/45.3/0.473) == ''
+  ok   - 被包命令 pid=pgid=sid(2833997)
+  ok   - 组未建立时中断:包装器退出码 == 143
+  ok   - 组未建立时中断:尾部 含 exit:\ 143
+  ok   - 组未建立时中断:宽限后有界收尾(5875ms)
+  ok   - 组未建立时中断:sleep 51.3 不再存活 == ''
+  ok   - 转发重试:包装器退出码 == 143
+  ok   - 转发重试:正文含子进程收尾输出 含 got-term
+  ok   - 转发重试:组建立后即送达(2249ms)
+  ok   - 启动前中断:包装器退出码 == 143
+  ok   - 不存在 /tmp/rawf-fake.QdBBFB/should-not-exist
+  ok   - 启动前中断:尾部 含 exit:\ 143
+  ok   - 启动前中断:正文为空 含 bytes:\ 0
+  ok   - 启动前中断:写完头部即收尾(3031ms)
+  ok   - 各中断场景证据结构核验 == 0
+  ok   - 无残留 sleep(51.3/0.531) == ''
+--- 各中断场景文件尾部:
+[TC-04-ignore.log]
+--- end ---
+exit: 143
+finished: 2026-10-22T12:11:45+09:00
+bytes: 0
+[TC-04-int.log]
+--- end ---
+exit: 130
+finished: 2026-10-22T12:11:47+09:00
+bytes: 0
+[TC-04-pgint.log]
+--- end ---
+exit: 130
+finished: 2026-10-22T12:11:50+09:00
+bytes: 14
+[TC-04-pregroup.log]
+--- end ---
+exit: 143
+finished: 2026-10-22T12:11:57+09:00
+bytes: 0
+[TC-04-prelaunch.log]
+--- end ---
+exit: 143
+finished: 2026-10-22T12:12:03+09:00
+bytes: 0
+[TC-04-retry.log]
+--- end ---
+exit: 143
+finished: 2026-10-22T12:11:59+09:00
+bytes: 19
+[TC-04-sid.log]
+--- end ---
+exit: 0
+finished: 2026-10-22T12:11:51+09:00
+bytes: 24
+[TC-04-trap0.log]
+--- end ---
+exit: 143
+finished: 2026-10-22T12:11:48+09:00
+bytes: 0
+
+RESULT: all assertions passed
+  ok   - scope-guard tc-04.sh 退出码 == 0
+===== scope-guard tc-05.sh
+  ok   - 非法编号退出码 == 3
+  ok   - stderr 含 编号不合法
+  ok   - 缺 -- 退出码 == 3
+  ok   - stderr 含 用法
+  ok   - 无任务退出码 == 3
+  ok   - stderr 含 无进行中任务
+
+RESULT: all assertions passed
+  ok   - scope-guard tc-05.sh 退出码 == 0
+===== scope-guard tc-06.sh
+机器核验(evidence-check,.ai/2026-10-22/t,第 01 轮):
+
+| 编号 | 档位 | 结果 | 证据文件 | 机器核验 | exit | cmd |
+|---|---|---|---|---|---|---|
+| TC-01 | A | pass | TC-01.log | OK | 0 | bash -c echo\ one |
+| TC-02 | A | pass | TC-02.log | OK | 7 | bash -c echo\ two\;\ exit\ 7 |
+| TC-03 | B | pass | foo.sh:12 | 评审核验 |  | 按档位由评审核验 |
+| TC-04 | C | pass | 看到了 | 评审核验 |  | 按档位由评审核验 |
+
+结论:全部 A 档证据结构完整,记录与 plan 用例清单一致。
+  ok   - 退出码 == 0
+  ok   - TC-01 行 含 \|\ OK\ \|\ 0\ \|\ bash\ -c\ echo\\\ one\ \|
+  ok   - TC-02 行 含 \|\ OK\ \|\ 7\ \|
+  ok   - TC-03 行 含 评审核验
+  ok   - TC-04 行 含 评审核验
+
+RESULT: all assertions passed
+  ok   - scope-guard tc-06.sh 退出码 == 0
+===== scope-guard tc-07.sh
+--- stdout:
+机器核验(evidence-check,.ai/2026-10-22/t,第 01 轮):
+
+| 编号 | 档位 | 结果 | 证据文件 | 机器核验 | exit | cmd |
+|---|---|---|---|---|---|---|
+| TC-01 | A | pass | — | NO-REF |  | 证据单元格未引用 *.log 文件 |
+| TC-02 | A | pass | missing.log | MISSING |  |  |
+| TC-03 | A | pass | nohdr.log | NO-HEADER |  |  |
+| TC-04 | A | pass | noend.log | NO-FOOTER |  | x |
+| TC-05 | A | blocked | — | BLOCKED |  | 存在 blocked 项,须先经用户裁决 |
+
+结论:未通过(补交清单见 stderr)。
+--- stderr:
+补交清单:
+- TC-01:NO-REF 证据单元格未引用任何 evidence.sh 产出的 *.log 文件
+- TC-02:evidence/missing.log → MISSING
+- TC-03:evidence/nohdr.log → NO-HEADER
+- TC-04:evidence/noend.log → NO-FOOTER
+- TC-05:BLOCKED 结果为 blocked,不得进入评审
+  ok   - 退出码 == 1
+  ok   - TC-01 含 NO-REF
+  ok   - TC-02 含 MISSING
+  ok   - TC-03 含 NO-HEADER
+  ok   - TC-04 含 NO-FOOTER
+  ok   - TC-05 含 BLOCKED
+  ok   - stderr 有补交清单标题 含 补交清单:
+  ok   - stderr 补交清单 含 -\ TC-01
+  ok   - stderr 补交清单 含 -\ TC-02
+  ok   - stderr 补交清单 含 -\ TC-03
+  ok   - stderr 补交清单 含 -\ TC-04
+  ok   - stderr 补交清单 含 -\ TC-05
+  ok   - stderr 列出所缺项 含 NO-REF
+  ok   - stderr 列出所缺项 含 MISSING
+  ok   - stderr 列出所缺项 含 blocked
+  ok   - stdout 不含补交清单条目 不含 -\ TC-01
+
+RESULT: all assertions passed
+  ok   - scope-guard tc-07.sh 退出码 == 0
+===== scope-guard tc-08.sh
+plan 未声明 evidence_format: v1(历史任务),跳过机器核验;A 档格式由评审自行核对
+  ok   - 退出码 == 2
+  ok   - stdout 含 跳过机器核验
+
+RESULT: all assertions passed
+  ok   - scope-guard tc-08.sh 退出码 == 0
+===== scope-guard tc-09.sh
+证据核验未通过(evidence-check),评审未启动;按补交清单补齐证据或修正实现记录后重跑 review.sh(当前轮尚未评审,不开新轮):
+机器核验(evidence-check,.ai/2026-10-22/t,第 01 轮):
+
+| 编号 | 档位 | 结果 | 证据文件 | 机器核验 | exit | cmd |
+|---|---|---|---|---|---|---|
+| TC-01 | A | pass | TC-01.log | MISSING |  |  |
+| TC-02 | A | pass | TC-02.log | MISSING |  |  |
+| TC-03 | B | pass | foo.sh:12 | 评审核验 |  | 按档位由评审核验 |
+| TC-04 | C | pass | 看到了 | 评审核验 |  | 按档位由评审核验 |
+
+结论:未通过(补交清单见 stderr)。
+补交清单:
+- TC-01:evidence/TC-01.log → MISSING
+- TC-02:evidence/TC-02.log → MISSING
+  ok   - review.sh 退出码 == 3
+  ok   - stderr 含 证据核验未通过
+  ok   - stderr 含 补交清单
+  ok   - stderr 含 MISSING
+  ok   - 不存在 /tmp/rawf-fake.KG6WL0/invoked
+  ok   - 无评审文件 == ''
+
+RESULT: all assertions passed
+  ok   - scope-guard tc-09.sh 退出码 == 0
+===== scope-guard tc-10.sh
+review-round-01-pass.md
+  ok   - 第 1 轮退出码 == 0
+  ok   - 存在 /tmp/rawf-fake.Apffmi/invoked
+  ok   - prompt 含机器核验表 含 \|\ TC-01\ \|\ A\ \|\ pass\ \|\ TC-01.log\ \|\ OK\ \|\ 0\ \|
+  ok   - prompt 无残留占位 不含 \{\{
+  ok   - 存在 /tmp/rawf-tc.KFKrxQ/.ai/2026-10-22/t/review-round-01-pass.md
+  ok   - 评审文件 含 \##\ 范围核对
+  ok   - 评审文件 含 -\ X
+  ok   - 第 2 轮退出码 == 0
+  ok   - 存在 /tmp/rawf-tc.KFKrxQ/.ai/2026-10-22/t/review-round-02-pass.md
+  ok   - 范围核对节为无 == 无
+--- review-round-01-pass.md:
+# 评审:第 01 轮
+
+## 问题清单
+无
+
+## 范围核对
+- X
+
+## 总评
+ok
+
+VERDICT: pass
+
+RESULT: all assertions passed
+  ok   - scope-guard tc-10.sh 退出码 == 0
+===== scope-guard tc-11.sh
+  ok   - 退出码 == 0
+  ok   - 输出文件名 == plan-review-round-01-pass.md
+  ok   - 产物 含 \##\ 范围核对
+  ok   - 产物 含 -\ 方案多做了\ Y
+  ok   - 产物 含 -\ 非目标缺\ Z
+  ok   - 无字段时退出码 == 0
+  ok   - 无字段时该节为无 == 无
+# Plan 评审:第 01 轮
+
+## 问题清单
+无
+
+## 范围核对
+- 方案多做了 Y
+- 非目标缺 Z
+
+## 总评
+ok
+
+VERDICT: pass
+
+RESULT: all assertions passed
+  ok   - scope-guard tc-11.sh 退出码 == 0
+===== scope-guard tc-16.sh
+机器核验(evidence-check,.ai/2026-10-22/t,第 01 轮):
+
+| 编号 | 档位 | 结果 | 证据文件 | 机器核验 | exit | cmd |
+|---|---|---|---|---|---|---|
+| TC-01 | A | pass | nocmd.log | BAD-HEADER(缺 cmd) |  |  |
+| TC-02 | A | pass | badexit.log | BAD-EXIT | abc | x |
+| TC-03 | A | pass | trunc.log | TRUNCATED(正文 2 字节,bytes: 3) | 0 | x |
+| TC-04 | A | pass | TC-04.log | OK | 0 | bash -c printf\ \"x\\n---\ end\ ---\\nexit:\ 9\\n\" |
+
+结论:未通过(补交清单见 stderr)。
+补交清单:
+- TC-01:evidence/nocmd.log → BAD-HEADER(缺 cmd)
+- TC-02:evidence/badexit.log → BAD-EXIT
+- TC-03:evidence/trunc.log → TRUNCATED(正文 2 字节,bytes: 3)
+  ok   - 退出码 == 1
+  ok   - TC-01 含 BAD-HEADER\(缺\ cmd\)
+  ok   - TC-02 含 BAD-EXIT
+  ok   - TC-03 含 TRUNCATED
+  ok   - TC-04 含 \|\ OK\ \|\ 0\ \|
+  ok   - review.sh 退出码 == 3
+  ok   - stderr 含 证据核验未通过
+  ok   - 不存在 /tmp/rawf-fake.x67UGL/invoked
+
+RESULT: all assertions passed
+  ok   - scope-guard tc-16.sh 退出码 == 0
+===== scope-guard tc-17.sh
+| TC-01 | A | pass | TC-01.log | OK | 0 | bash -c echo\ one |
+| TC-02 | A | — | — | MISSING-ROW |  | plan 有此用例,记录无 |
+| TC-03 | B | pass | a.sh:1 | 评审核验 |  | 按档位由评审核验 |
+结论:未通过(补交清单见 stderr)。
+  ok   - ① 退出码 == 1
+  ok   - ① TC-02 含 MISSING-ROW
+| TC-01 | C | pass | — | TIER-MISMATCH |  | plan 为 A 档,记录写 C |
+| TC-02 | A | pass | TC-02.log | OK | 7 | bash -c echo\ two\;\ exit\ 7 |
+| TC-03 | B | pass | a.sh:1 | 评审核验 |  | 按档位由评审核验 |
+结论:未通过(补交清单见 stderr)。
+  ok   - ② 退出码 == 1
+  ok   - ② TC-01 含 TIER-MISMATCH
+| — | — | — | — | EMPTY-TABLE |  | implementation-round-01.md 无「测试结果」表或为空 |
+结论:未通过(补交清单见 stderr)。
+- EMPTY-TABLE implementation-round-01.md 的「## 测试结果」表缺失或为空
+  ok   - ③ 退出码 == 1
+  ok   - ③ 含 EMPTY-TABLE
+| TC-01 | A | pass | TC-01.log | OK | 0 | bash -c echo\ one |
+| TC-02 | A | pass | TC-02.log | OK | 7 | bash -c echo\ two\;\ exit\ 7 |
+| TC-03 | B | pass | a.sh:1 | 评审核验 |  | 按档位由评审核验 |
+| TC-09 | A | pass | TC-01.log | EXTRA-ROW |  | plan 无此用例,由评审做范围核对 |
+结论:全部 A 档证据结构完整,记录与 plan 用例清单一致。
+  ok   - ④ 退出码 == 0
+  ok   - ④ TC-09 含 EXTRA-ROW
+
+RESULT: all assertions passed
+  ok   - scope-guard tc-17.sh 退出码 == 0
+===== scope-guard tc-18.sh
+  ok   - A 退出码 == 0
+  ok   - B 退出码 == 5
+  ok   - A 正文 == A
+  ok   - B 正文 == B
+  ok   - A 尾部 含 exit:\ 0
+  ok   - B 尾部 含 exit:\ 5
+  ok   - A cwd 含 cwd:\ /tmp/rawf-tc.hHNCa9
+  ok   - B cwd 含 cwd:\ /tmp/rawf-tc.OnCjDA
+  ok   - A evidence/ 文件数 == 1
+  ok   - B evidence/ 文件数 == 1
+
+RESULT: all assertions passed
+  ok   - scope-guard tc-18.sh 退出码 == 0
+===== scope-guard tc-19.sh
+--- B review.sh stderr:
+评审 2 秒无新事件,判定卡死,已终止;请重跑评审
+  ok   - B review.sh 退出码 == 3
+  ok   - B stderr 含 已终止
+  ok   - 存在 /tmp/rawf-fake.syW8TB/invoked
+  ok   - B 的假 codex 子树(sleep 613)不再存活 == ''
+  ok   - A evidence.sh 退出码 == 0
+  ok   - A 证据尾部 含 exit:\ 0
+  ok   - A 证据正文 含 done
+  ok   - A evidence-check 退出码 == 0
+  ok   - A evidence-check 含 \|\ OK\ \|\ 0\ \|
+
+RESULT: all assertions passed
+  ok   - scope-guard tc-19.sh 退出码 == 0
+
+RESULT: all assertions passed
+
+--- end ---
+exit: 0
+finished: 2026-10-22T12:12:16+09:00
+bytes: 13344

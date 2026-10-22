@@ -130,15 +130,15 @@ managed_pids() {
     | sort -un | while read -r p; do kill -0 "$p" 2>/dev/null && echo "$p" || true; done
 }
 kill_codex_tree() {
-  local sid=$1 p i alive
+  local sid=$1 p alive
   kill -TERM -- "-$sid" 2>/dev/null || true
   for p in $(managed_pids "$sid"); do kill -TERM "$p" 2>/dev/null || true; done
-  for i in $(seq 1 20); do
+  for _ in $(seq 1 20); do
     alive=$(managed_pids "$sid"); [ -z "$alive" ] && return 0; sleep 0.5
   done
   kill -KILL -- "-$sid" 2>/dev/null || true
   for p in $(managed_pids "$sid"); do kill -KILL "$p" 2>/dev/null || true; done
-  for i in $(seq 1 6); do
+  for _ in $(seq 1 6); do
     alive=$(managed_pids "$sid"); [ -z "$alive" ] && return 0; sleep 0.5
   done
   echo "警告:以下受管进程仍存活:$(echo "$alive" | tr '\n' ' ')" >&2
@@ -146,7 +146,7 @@ kill_codex_tree() {
 # lock_holders:只列真正持有 flock 的进程(判据与 review.sh 相同:fdinfo 的
 # lock: 行 + 锁文件 inode);调用前须先关闭本实例自己的锁 fd。
 lock_holders() {
-  local real ino fd target pid
+  local real ino fd pid
   real=$(realpath "$lock" 2>/dev/null) || return 0
   ino=$(stat -c %i "$lock" 2>/dev/null) || return 0
   # find -lname 单进程完成全量匹配(逐 fd readlink 要 fork 数千次,快照会过期)
@@ -338,7 +338,7 @@ codex_pid=$!
 # 子进程要先执行到 setsid(2) 才成为会话首进程,最多等 2 s;已退出(极快完成)
 # 则无需受管,直接放过。
 sid_ok=0
-for i in $(seq 1 20); do
+for _ in $(seq 1 20); do
   if ! kill -0 "$codex_pid" 2>/dev/null; then sid_ok=1; break; fi
   if [ "$(ps -o sid= -p "$codex_pid" 2>/dev/null | tr -d ' ')" = "$codex_pid" ]; then sid_ok=1; break; fi
   sleep 0.1

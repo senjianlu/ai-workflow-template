@@ -1,0 +1,28 @@
+# rawf-evidence v1
+tc: TC-06
+label: 
+cmd: bash .ai/2026-10-22/patch-ampersand-shellcheck/evidence/tc-06.sh
+cwd: /home/rabbir/Projects/ai-workflow-template
+git_head: de49ad8c05881e08f558c124b9eff27bacb08484 dirty
+started: 2026-10-22T12:12:21+09:00
+--- output ---
+  ok   - bash -n review.sh
+  ok   - bash -n plan-review.sh
+  ok   - bash -n evidence.sh
+  ok   - CHANGELOG 含 [1.2.1]
+  ok   - 1.2.1 条目含升级指引
+  ok   - TEMPLATE-VERSION == 1.2.1
+--- git diff --name-only HEAD:
+.ai-workflow/TEMPLATE-VERSION
+.ai-workflow/scripts/evidence.sh
+.ai-workflow/scripts/plan-review.sh
+.ai-workflow/scripts/review.sh
+CHANGELOG.md
+  ok   - 改动文件清单 == $'.ai-workflow/TEMPLATE-VERSION\n.ai-workflow/scripts/evidence.sh\n.ai-workflow/scripts/plan-review.sh\n.ai-workflow/scripts/review.sh\nCHANGELOG.md'
+
+RESULT: all assertions passed
+
+--- end ---
+exit: 0
+finished: 2026-10-22T12:12:21+09:00
+bytes: 577
