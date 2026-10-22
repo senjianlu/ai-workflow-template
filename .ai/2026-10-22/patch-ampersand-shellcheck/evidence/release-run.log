@@ -1,0 +1,35 @@
+$ git show c878d36:.ai-workflow/TEMPLATE-VERSION → version
+1.1.0
+版本号与 tag 一致 OK
+$ awk 提取 CHANGELOG [1.1.0] 条目 → release-notes-v1.1.0.md
+notes 44 行,1 个升级指引小节
+$ git tag v1.1.0 c878d36
+exit=0
+$ git show de49ad8:.ai-workflow/TEMPLATE-VERSION → version
+1.2.0
+版本号与 tag 一致 OK
+$ awk 提取 CHANGELOG [1.2.0] 条目 → release-notes-v1.2.0.md
+notes 37 行,1 个升级指引小节
+$ git tag v1.2.0 de49ad8
+exit=0
+$ git show 246db2a:.ai-workflow/TEMPLATE-VERSION → version
+1.2.1
+版本号与 tag 一致 OK
+$ awk 提取 CHANGELOG [1.2.1] 条目 → release-notes-v1.2.1.md
+notes 22 行,1 个升级指引小节
+$ git tag v1.2.1 246db2a
+exit=0
+$ git push origin v1.1.0 v1.2.0 v1.2.1
+To github.com:senjianlu/ai-workflow-template.git
+ * [new tag]         v1.1.0 -> v1.1.0
+ * [new tag]         v1.2.0 -> v1.2.0
+ * [new tag]         v1.2.1 -> v1.2.1
+exit=0
+$ git ls-remote --tags origin
+2aeab2eaca28b1364a46ec7cfc9195849cc61b68	refs/tags/v1.0.0
+f7c7bda89d430025710770d6638889883ffb4680	refs/tags/v1.0.1
+c878d36dc61d8b70b8dd1afb7bef2ed708f35fbc	refs/tags/v1.1.0
+de49ad8c05881e08f558c124b9eff27bacb08484	refs/tags/v1.2.0
+246db2af223f4279f2ddc3773c5c3171dc8096cc	refs/tags/v1.2.1
+$ gh release create v1.1.0 / v1.2.0 / v1.2.1 --notes-file release-notes-<tag>.md
+本机无 gh CLI,环境无 GH_TOKEN / GITHUB_TOKEN;Release 待用户在 GitHub 网页基于对应 tag 创建,notes 取同目录 release-notes-<tag>.md
