@@ -1,0 +1,35 @@
+# rawf-evidence v1
+tc: TC-09
+label: r03
+cmd: bash .ai/2026-10-22/scope-guard-and-evidence-format/evidence/tc-09.sh
+cwd: /home/rabbir/Projects/ai-workflow-template
+git_head: 22151a754f1eaa211c03d6de5bbea8980123d148 dirty
+started: 2026-10-22T11:13:57+09:00
+--- output ---
+证据核验未通过(evidence-check),评审未启动;按补交清单补齐证据或修正实现记录后重跑 review.sh(当前轮尚未评审,不开新轮):
+机器核验(evidence-check,.ai/2026-10-22/t,第 01 轮):
+
+| 编号 | 档位 | 结果 | 证据文件 | 机器核验 | exit | cmd |
+|---|---|---|---|---|---|---|
+| TC-01 | A | pass | TC-01.log | MISSING |  |  |
+| TC-02 | A | pass | TC-02.log | MISSING |  |  |
+| TC-03 | B | pass | foo.sh:12 | 评审核验 |  | 按档位由评审核验 |
+| TC-04 | C | pass | 看到了 | 评审核验 |  | 按档位由评审核验 |
+
+结论:未通过(补交清单见 stderr)。
+补交清单:
+- TC-01:evidence/TC-01.log → MISSING
+- TC-02:evidence/TC-02.log → MISSING
+  ok   - review.sh 退出码 == 3
+  ok   - stderr 含 证据核验未通过
+  ok   - stderr 含 补交清单
+  ok   - stderr 含 MISSING
+  ok   - 不存在 /tmp/rawf-fake.CA2dVq/invoked
+  ok   - 无评审文件 == ''
+
+RESULT: all assertions passed
+
+--- end ---
+exit: 0
+finished: 2026-10-22T11:13:58+09:00
+bytes: 959

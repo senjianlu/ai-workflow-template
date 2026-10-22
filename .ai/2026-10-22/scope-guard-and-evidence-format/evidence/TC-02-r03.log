@@ -1,0 +1,18 @@
+# rawf-evidence v1
+tc: TC-02
+label: r03
+cmd: bash .ai/2026-10-22/scope-guard-and-evidence-format/evidence/tc-02.sh
+cwd: /home/rabbir/Projects/ai-workflow-template
+git_head: 22151a754f1eaa211c03d6de5bbea8980123d148 dirty
+started: 2026-10-22T11:13:28+09:00
+--- output ---
+证据已写入 .ai/2026-10-22/t/evidence/TC-02.log(exit 7,正文 0 字节)
+  ok   - 包装器退出码透传 == 7
+  ok   - 尾部 含 exit:\ 7
+
+RESULT: all assertions passed
+
+--- end ---
+exit: 0
+finished: 2026-10-22T11:13:29+09:00
+bytes: 175

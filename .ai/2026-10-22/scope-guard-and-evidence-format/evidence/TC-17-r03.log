@@ -1,0 +1,39 @@
+# rawf-evidence v1
+tc: TC-17
+label: r03
+cmd: bash .ai/2026-10-22/scope-guard-and-evidence-format/evidence/tc-17.sh
+cwd: /home/rabbir/Projects/ai-workflow-template
+git_head: 22151a754f1eaa211c03d6de5bbea8980123d148 dirty
+started: 2026-10-22T11:14:01+09:00
+--- output ---
+| TC-01 | A | pass | TC-01.log | OK | 0 | bash -c echo\ one |
+| TC-02 | A | — | — | MISSING-ROW |  | plan 有此用例,记录无 |
+| TC-03 | B | pass | a.sh:1 | 评审核验 |  | 按档位由评审核验 |
+结论:未通过(补交清单见 stderr)。
+  ok   - ① 退出码 == 1
+  ok   - ① TC-02 含 MISSING-ROW
+| TC-01 | C | pass | — | TIER-MISMATCH |  | plan 为 A 档,记录写 C |
+| TC-02 | A | pass | TC-02.log | OK | 7 | bash -c echo\ two\;\ exit\ 7 |
+| TC-03 | B | pass | a.sh:1 | 评审核验 |  | 按档位由评审核验 |
+结论:未通过(补交清单见 stderr)。
+  ok   - ② 退出码 == 1
+  ok   - ② TC-01 含 TIER-MISMATCH
+| — | — | — | — | EMPTY-TABLE |  | implementation-round-01.md 无「测试结果」表或为空 |
+结论:未通过(补交清单见 stderr)。
+- EMPTY-TABLE implementation-round-01.md 的「## 测试结果」表缺失或为空
+  ok   - ③ 退出码 == 1
+  ok   - ③ 含 EMPTY-TABLE
+| TC-01 | A | pass | TC-01.log | OK | 0 | bash -c echo\ one |
+| TC-02 | A | pass | TC-02.log | OK | 7 | bash -c echo\ two\;\ exit\ 7 |
+| TC-03 | B | pass | a.sh:1 | 评审核验 |  | 按档位由评审核验 |
+| TC-09 | A | pass | TC-01.log | EXTRA-ROW |  | plan 无此用例,由评审做范围核对 |
+结论:全部 A 档证据结构完整,记录与 plan 用例清单一致。
+  ok   - ④ 退出码 == 0
+  ok   - ④ TC-09 含 EXTRA-ROW
+
+RESULT: all assertions passed
+
+--- end ---
+exit: 0
+finished: 2026-10-22T11:14:02+09:00
+bytes: 1410

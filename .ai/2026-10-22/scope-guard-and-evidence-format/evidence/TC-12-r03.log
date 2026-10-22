@@ -1,0 +1,21 @@
+# rawf-evidence v1
+tc: TC-12
+label: r03
+cmd: bash .ai/2026-10-22/scope-guard-and-evidence-format/evidence/tc-12.sh
+cwd: /home/rabbir/Projects/ai-workflow-template
+git_head: 22151a754f1eaa211c03d6de5bbea8980123d148 dirty
+started: 2026-10-22T11:13:59+09:00
+--- output ---
+  ok   - review required 含 scope_findings == true
+  ok   - review scope_findings 为字符串数组 == array/string
+  ok   - review 合法 JSON == yes
+  ok   - plan-review required 含 scope_findings == true
+  ok   - plan-review scope_findings 为字符串数组 == array/string
+  ok   - plan-review 合法 JSON == yes
+
+RESULT: all assertions passed
+
+--- end ---
+exit: 0
+finished: 2026-10-22T11:14:00+09:00
+bytes: 352

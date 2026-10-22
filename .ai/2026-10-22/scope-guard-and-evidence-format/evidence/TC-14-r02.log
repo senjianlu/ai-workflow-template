@@ -1,0 +1,43 @@
+# rawf-evidence v1
+tc: TC-14
+label: r02
+cmd: bash .ai/2026-10-22/scope-guard-and-evidence-format/evidence/tc-14.sh
+cwd: /home/rabbir/Projects/ai-workflow-template
+git_head: 22151a754f1eaa211c03d6de5bbea8980123d148 dirty
+started: 2026-10-22T11:05:27+09:00
+--- output ---
+  ok   - review.md 含 \{\{EVIDENCE_REPORT\}\}
+  ok   - review.md 含 \##\ 范围核对\(固定问题\)
+  ok   - review.md 含 scope_findings
+  ok   - plan-review.md 含 范围自省\(固定问题\)
+  ok   - plan-review.md 含 scope_findings
+  ok   - review-standards.md 不含 中须有该用例的完整原始输出
+  ok   - review-standards.md 含 rawf-evidence\ v1\ 格式
+  ok   - review-standards.md 含 两种留证写法
+  ok   - review-standards.md 含 \##\ 范围核对\(不计入\ pass/fail\)
+  ok   - plan.md 含 evidence_format:\ v1
+  ok   - plan.md 含 \##\ 需求原文
+  ok   - plan.md 含 \##\ 非目标
+  ok   - implementation-round.md 含 收窄
+  ok   - implementation-round.md 含 替代
+  ok   - implementation-round.md 含 追加
+  ok   - implementation-round.md 含 \##\ 停车场
+  ok   - summary.md 含 \##\ 范围核对
+  ok   - SKILL.md 含 范围自省
+  ok   - SKILL.md 含 需求原文
+  ok   - SKILL.md 含 evidence.sh
+  ok   - SKILL.md 含 evidence-check
+  ok   - SKILL.md 含 停车场
+  ok   - SKILL.md 含 证据核验未通过
+  ok   - SKILL.md 含 范围核对
+  ok   - SKILL.md 含 停车场
+  ok   - SKILL.md 含 范围核对
+  ok   - CLAUDE.md 含 evidence.sh
+  ok   - CLAUDE.md 含 追加类偏差不得自行实现
+
+RESULT: all assertions passed
+
+--- end ---
+exit: 0
+finished: 2026-10-22T11:05:27+09:00
+bytes: 1289

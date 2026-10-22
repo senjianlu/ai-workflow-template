@@ -1,0 +1,20 @@
+# rawf-evidence v1
+tc: TC-13
+label: r03
+cmd: bash .ai/2026-10-22/scope-guard-and-evidence-format/evidence/tc-13.sh
+cwd: /home/rabbir/Projects/ai-workflow-template
+git_head: 22151a754f1eaa211c03d6de5bbea8980123d148 dirty
+started: 2026-10-22T11:14:00+09:00
+--- output ---
+  ok   - bash -n evidence.sh
+  ok   - bash -n evidence-check.sh
+  ok   - bash -n review.sh
+  ok   - bash -n plan-review.sh
+  info - shellcheck 未安装,跳过(plan 允许记录未安装)
+
+RESULT: all assertions passed
+
+--- end ---
+exit: 0
+finished: 2026-10-22T11:14:00+09:00
+bytes: 219

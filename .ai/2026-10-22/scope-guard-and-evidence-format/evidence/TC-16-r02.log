@@ -1,0 +1,37 @@
+# rawf-evidence v1
+tc: TC-16
+label: r02
+cmd: bash .ai/2026-10-22/scope-guard-and-evidence-format/evidence/tc-16.sh
+cwd: /home/rabbir/Projects/ai-workflow-template
+git_head: 22151a754f1eaa211c03d6de5bbea8980123d148 dirty
+started: 2026-10-22T11:05:27+09:00
+--- output ---
+机器核验(evidence-check,.ai/2026-10-22/t,第 01 轮):
+
+| 编号 | 档位 | 结果 | 证据文件 | 机器核验 | exit | cmd |
+|---|---|---|---|---|---|---|
+| TC-01 | A | pass | nocmd.log | BAD-HEADER(缺 cmd) |  |  |
+| TC-02 | A | pass | badexit.log | BAD-EXIT | abc | x |
+| TC-03 | A | pass | trunc.log | TRUNCATED(正文 2 字节,bytes: 3) | 0 | x |
+| TC-04 | A | pass | TC-04.log | OK | 0 | bash -c printf\ \"x\\n---\ end\ ---\\nexit:\ 9\\n\" |
+
+结论:未通过(补交清单见 stderr)。
+补交清单:
+- TC-01:evidence/nocmd.log → BAD-HEADER(缺 cmd)
+- TC-02:evidence/badexit.log → BAD-EXIT
+- TC-03:evidence/trunc.log → TRUNCATED(正文 2 字节,bytes: 3)
+  ok   - 退出码 == 1
+  ok   - TC-01 含 BAD-HEADER\(缺\ cmd\)
+  ok   - TC-02 含 BAD-EXIT
+  ok   - TC-03 含 TRUNCATED
+  ok   - TC-04 含 \|\ OK\ \|\ 0\ \|
+  ok   - review.sh 退出码 == 3
+  ok   - stderr 含 证据核验未通过
+  ok   - 不存在 /tmp/rawf-fake.6Pht3g/invoked
+
+RESULT: all assertions passed
+
+--- end ---
+exit: 0
+finished: 2026-10-22T11:05:28+09:00
+bytes: 988

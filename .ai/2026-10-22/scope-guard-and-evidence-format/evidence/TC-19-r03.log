@@ -1,0 +1,26 @@
+# rawf-evidence v1
+tc: TC-19
+label: r03
+cmd: bash .ai/2026-10-22/scope-guard-and-evidence-format/evidence/tc-19.sh
+cwd: /home/rabbir/Projects/ai-workflow-template
+git_head: 22151a754f1eaa211c03d6de5bbea8980123d148 dirty
+started: 2026-10-22T11:14:03+09:00
+--- output ---
+--- B review.sh stderr:
+评审 2 秒无新事件,判定卡死,已终止;请重跑评审
+  ok   - B review.sh 退出码 == 3
+  ok   - B stderr 含 已终止
+  ok   - 存在 /tmp/rawf-fake.6jtI37/invoked
+  ok   - B 的假 codex 子树(sleep 613)不再存活 == ''
+  ok   - A evidence.sh 退出码 == 0
+  ok   - A 证据尾部 含 exit:\ 0
+  ok   - A 证据正文 含 done
+  ok   - A evidence-check 退出码 == 0
+  ok   - A evidence-check 含 \|\ OK\ \|\ 0\ \|
+
+RESULT: all assertions passed
+
+--- end ---
+exit: 0
+finished: 2026-10-22T11:14:12+09:00
+bytes: 490

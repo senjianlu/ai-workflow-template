@@ -87,10 +87,17 @@ implementation-round-NN.md、review-round-NN-<pass|fail>.md、summary.md,
   exit 3(环境变量 RAWF_REVIEW_IDLE_SECONDS / RAWF_REVIEW_MAX_SECONDS 可调);
   互斥锁为 flock 文件,随进程退出自动释放(见 docs/decisions/0009)
 - 评审以只读沙箱直审原仓库(无副本,零复制开销;见 docs/decisions/0005);
-  评审者不运行任何测试,测试真实性走证据协议——实现者把全部用例的完整
-  原始输出落任务目录 evidence/,评审者只核证据,缺证据按 blocker 打回并
-  开出补交清单;完整性哈希(含未跟踪文件内容/类型/可执行位)保留为双保险,
-  评审期间主工作区被动过即判评审无效
+  评审者不运行任何测试,测试真实性走证据协议(档位制见 docs/decisions/0006):
+  A 档证据由 evidence.sh 包住命令产出 rawf-evidence v1 文件(命令 + 完整
+  输出 + 退出码),review.sh 启动前先跑 evidence-check.sh 以 plan 用例表为
+  基准机器核验结构完整性,不通过直接拒绝启动并开出补交清单(不消耗评审
+  轮次);评审者只核证据内容(命令对不对、退出码与正文是否符合预期),
+  不再就格式提意见(docs/decisions/0010);完整性哈希(含未跟踪文件内容/
+  类型/可执行位)保留为双保险,评审期间主工作区被动过即判评审无效
+- 范围自省不量化、只提醒:plan 必填「需求原文」「非目标」,实现记录的偏差
+  分收窄/替代/追加三类且追加须用户确认或入「停车场」,两级评审各有一个
+  固定的范围核对问题,结论单列「范围核对」节、不计入 pass/fail,交用户裁决
+  (docs/decisions/0011)
 - 严重度定义唯一权威在 .ai-workflow/review-standards.md;评审输出契约在
   .ai-workflow/schemas/review.schema.json 与 prompts/review.md 的字段语义
   说明(二者与 review.sh 解析/渲染逻辑绑定演化)

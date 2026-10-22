@@ -1,0 +1,50 @@
+# rawf-evidence v1
+tc: TC-07
+label: r02
+cmd: bash .ai/2026-10-22/scope-guard-and-evidence-format/evidence/tc-07.sh
+cwd: /home/rabbir/Projects/ai-workflow-template
+git_head: 22151a754f1eaa211c03d6de5bbea8980123d148 dirty
+started: 2026-10-22T11:05:26+09:00
+--- output ---
+--- stdout:
+机器核验(evidence-check,.ai/2026-10-22/t,第 01 轮):
+
+| 编号 | 档位 | 结果 | 证据文件 | 机器核验 | exit | cmd |
+|---|---|---|---|---|---|---|
+| TC-01 | A | pass | — | NO-REF |  | 证据单元格未引用 *.log 文件 |
+| TC-02 | A | pass | missing.log | MISSING |  |  |
+| TC-03 | A | pass | nohdr.log | NO-HEADER |  |  |
+| TC-04 | A | pass | noend.log | NO-FOOTER |  | x |
+| TC-05 | A | blocked | — | BLOCKED |  | 存在 blocked 项,须先经用户裁决 |
+
+结论:未通过(补交清单见 stderr)。
+--- stderr:
+补交清单:
+- TC-01:NO-REF 证据单元格未引用任何 evidence.sh 产出的 *.log 文件
+- TC-02:evidence/missing.log → MISSING
+- TC-03:evidence/nohdr.log → NO-HEADER
+- TC-04:evidence/noend.log → NO-FOOTER
+- TC-05:BLOCKED 结果为 blocked,不得进入评审
+  ok   - 退出码 == 1
+  ok   - TC-01 含 NO-REF
+  ok   - TC-02 含 MISSING
+  ok   - TC-03 含 NO-HEADER
+  ok   - TC-04 含 NO-FOOTER
+  ok   - TC-05 含 BLOCKED
+  ok   - stderr 有补交清单标题 含 补交清单:
+  ok   - stderr 补交清单 含 -\ TC-01
+  ok   - stderr 补交清单 含 -\ TC-02
+  ok   - stderr 补交清单 含 -\ TC-03
+  ok   - stderr 补交清单 含 -\ TC-04
+  ok   - stderr 补交清单 含 -\ TC-05
+  ok   - stderr 列出所缺项 含 NO-REF
+  ok   - stderr 列出所缺项 含 MISSING
+  ok   - stderr 列出所缺项 含 blocked
+  ok   - stdout 不含补交清单条目 不含 -\ TC-01
+
+RESULT: all assertions passed
+
+--- end ---
+exit: 0
+finished: 2026-10-22T11:05:26+09:00
+bytes: 1467

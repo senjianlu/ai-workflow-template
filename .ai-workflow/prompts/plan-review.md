@@ -13,7 +13,7 @@
 major → fail,仅 minor 或无问题 → pass。
 
 **硬约束(务必遵守)**:只列会导致返工或架构错误的 plan-blocker/major。风格、
-个人偏好、等价写法之争一律不列或至多降为 minor。核心只问两件事:
+个人偏好、等价写法之争一律不列或至多降为 minor。核心只问四件事:
 1. 方案是否存在架构/正确性错误,或与既有工作流约定冲突?
 2. 测试用例是否真实覆盖验收标准(含异常/边界路径;只测 happy path 即 major)?
 3. 证据契约是否合规(定义见 review-standards.md「测试证据档位」小节):
@@ -21,6 +21,11 @@ major → fail,仅 minor 或无问题 → pass。
    - 是否有**可自动化的用例被塞进 C 档**(应为 A 档)? → major;
    - **C 档是否超限**(> 总数 1/3;总数 < 3 时 > 1 条)**或缺少不可自动化的
      理由**? → major。
+4. 范围自省(固定问题):方案是否超出「需求原文」?「改动范围」「实现方案」
+   中不是需求直接要求的条目,plan 是否说明了"实现必需"的理由;顺手项是否
+   已移入「非目标」。结论逐条写入 `scope_findings`(**不定严重度、不计入
+   pass/fail**,由用户裁决,不要重复列进 issues);plan 缺「需求原文」或
+   「非目标」节 → major(模板硬要求)。
 
 输出要求:你的最终回复由 --output-schema 强制为 JSON,字段语义如下。verdict
 必须按 review-standards.md 的判定规则给出——脚本会按严重度清单独立复核,
@@ -32,4 +37,5 @@ major → fail,仅 minor 或无问题 → pass。
   - severity:plan-blocker | major | minor(定义见 review-standards.md)
   - summary:一句话结论
   - detail:定位 / 问题说明 / 修复建议
+- scope_findings:范围自省结论,字符串数组,无则为空数组
 - overall:两三句总评

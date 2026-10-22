@@ -1,0 +1,18 @@
+# rawf-evidence v1
+tc: TC-08
+label: 
+cmd: bash .ai/2026-10-22/scope-guard-and-evidence-format/evidence/tc-08.sh
+cwd: /home/rabbir/Projects/ai-workflow-template
+git_head: 22151a754f1eaa211c03d6de5bbea8980123d148 dirty
+started: 2026-10-22T10:50:44+09:00
+--- output ---
+plan 未声明 evidence_format: v1(历史任务),跳过机器核验;A 档格式由评审自行核对
+  ok   - 退出码 == 2
+  ok   - stdout 含 跳过机器核验
+
+RESULT: all assertions passed
+
+--- end ---
+exit: 0
+finished: 2026-10-22T10:50:44+09:00
+bytes: 195

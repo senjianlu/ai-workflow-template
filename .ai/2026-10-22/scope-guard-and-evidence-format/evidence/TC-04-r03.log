@@ -1,0 +1,106 @@
+# rawf-evidence v1
+tc: TC-04
+label: r03
+cmd: bash .ai/2026-10-22/scope-guard-and-evidence-format/evidence/tc-04.sh
+cwd: /home/rabbir/Projects/ai-workflow-template
+git_head: 22151a754f1eaa211c03d6de5bbea8980123d148 dirty
+started: 2026-10-22T11:13:29+09:00
+--- output ---
+  ok   - 包装器退出码 == 143
+  ok   - 尾部 含 ---\ end\ ---
+  ok   - 尾部 含 exit:\ 143
+  ok   - 尾部 含 bytes:\ 0
+  ok   - 子进程 sleep 不再存活 == ''
+--- 文件全文:
+# rawf-evidence v1
+tc: TC-04
+label: 
+cmd: bash -c sleep\ 37.3
+cwd: /tmp/rawf-tc.Q6PCYw
+git_head: c21a1c9201cedaaf9dbd88da0a02dcf7cbc2876a
+started: 2026-10-22T11:13:29+09:00
+--- output ---
+
+--- end ---
+exit: 143
+finished: 2026-10-22T11:13:31+09:00
+bytes: 0
+  ok   - 忽略 TERM:包装器退出码 == 143
+  ok   - 忽略 TERM:尾部 含 exit:\ 143
+  ok   - 忽略 TERM:在宽限后收尾(6s)
+  ok   - 忽略 TERM:sleep 41.3 不再存活 == ''
+  ok   - INT:包装器退出码 == 130
+  ok   - INT:尾部 含 exit:\ 130
+  ok   - INT:sleep 43.3 不再存活 == ''
+  ok   - 捕获 TERM 后 exit 0:包装器退出码 == 143
+  ok   - 捕获 TERM 后 exit 0:尾部 含 exit:\ 143
+  ok   - 捕获 TERM:sleep 45.3 不再存活 == ''
+  ok   - 整组 INT:包装器退出码 == 130
+  ok   - 整组 INT:正文恰为子进程收尾输出 == bye-after-int
+  ok   - 整组 INT:尾部 含 exit:\ 130
+  ok   - 整组 INT:子进程自行退出后即收尾(0s)
+  ok   - 整组 INT:sleep 0.473 不再存活 == ''
+  ok   - 无残留 sleep(37.3/41.3/43.3/45.3/0.473) == ''
+  ok   - 被包命令 pid=pgid=sid(2752671)
+  ok   - 组未建立时中断:包装器退出码 == 143
+  ok   - 组未建立时中断:尾部 含 exit:\ 143
+  ok   - 组未建立时中断:宽限后有界收尾(5954ms)
+  ok   - 组未建立时中断:sleep 51.3 不再存活 == ''
+  ok   - 转发重试:包装器退出码 == 143
+  ok   - 转发重试:正文含子进程收尾输出 含 got-term
+  ok   - 转发重试:组建立后即送达(2265ms)
+  ok   - 启动前中断:包装器退出码 == 143
+  ok   - 不存在 /tmp/rawf-fake.XSacpD/should-not-exist
+  ok   - 启动前中断:尾部 含 exit:\ 143
+  ok   - 启动前中断:正文为空 含 bytes:\ 0
+  ok   - 启动前中断:写完头部即收尾(3045ms)
+  ok   - 各中断场景证据结构核验 == 0
+  ok   - 无残留 sleep(51.3/0.531) == ''
+--- 各中断场景文件尾部:
+[TC-04-ignore.log]
+--- end ---
+exit: 143
+finished: 2026-10-22T11:13:37+09:00
+bytes: 0
+[TC-04-int.log]
+--- end ---
+exit: 130
+finished: 2026-10-22T11:13:39+09:00
+bytes: 0
+[TC-04-pgint.log]
+--- end ---
+exit: 130
+finished: 2026-10-22T11:13:43+09:00
+bytes: 14
+[TC-04-pregroup.log]
+--- end ---
+exit: 143
+finished: 2026-10-22T11:13:50+09:00
+bytes: 0
+[TC-04-prelaunch.log]
+--- end ---
+exit: 143
+finished: 2026-10-22T11:13:55+09:00
+bytes: 0
+[TC-04-retry.log]
+--- end ---
+exit: 143
+finished: 2026-10-22T11:13:52+09:00
+bytes: 19
+[TC-04-sid.log]
+--- end ---
+exit: 0
+finished: 2026-10-22T11:13:44+09:00
+bytes: 24
+[TC-04-trap0.log]
+--- end ---
+exit: 143
+finished: 2026-10-22T11:13:41+09:00
+bytes: 0
+
+RESULT: all assertions passed
+
+--- end ---
+exit: 0
+finished: 2026-10-22T11:13:56+09:00
+bytes: 2784

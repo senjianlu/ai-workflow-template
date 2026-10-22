@@ -1,0 +1,28 @@
+# rawf-evidence v1
+tc: TC-15
+label: r03
+cmd: bash .ai/2026-10-22/scope-guard-and-evidence-format/evidence/tc-15.sh
+cwd: /home/rabbir/Projects/ai-workflow-template
+git_head: 22151a754f1eaa211c03d6de5bbea8980123d148 dirty
+started: 2026-10-22T11:14:00+09:00
+--- output ---
+  ok   - 0006-test-evidence-tiers.md 含 已被\ 0010\ 部分取代
+  ok   - 0010-evidence-format-v1.md 含 -\ 日期:
+  ok   - 0010-evidence-format-v1.md 含 -\ 背景:
+  ok   - 0010-evidence-format-v1.md 含 -\ 决定:
+  ok   - 0010-evidence-format-v1.md 含 -\ 影响:
+  ok   - 0011-scope-reflection.md 含 -\ 日期:
+  ok   - 0011-scope-reflection.md 含 -\ 背景:
+  ok   - 0011-scope-reflection.md 含 -\ 决定:
+  ok   - 0011-scope-reflection.md 含 -\ 影响:
+  ok   - CHANGELOG.md 含 \##\ \[1.1.0\]
+  ok   - CHANGELOG.md 含 \###\ 升级指引
+  ok   - TEMPLATE-VERSION == 1.1.0
+  ok   - README.md 含 evidence-check
+
+RESULT: all assertions passed
+
+--- end ---
+exit: 0
+finished: 2026-10-22T11:14:00+09:00
+bytes: 658

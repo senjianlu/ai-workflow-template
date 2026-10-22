@@ -201,9 +201,27 @@ if ls "$task_dir"/review-round-"$nn"-*.md >/dev/null 2>&1; then
   exit 3
 fi
 
+# A 档证据机器核验(docs/decisions/0010):结构不完整的证据不送评审——
+# 格式问题由脚本判定并直接开出补交清单,不消耗 codex 评审轮次;通过的报告
+# 注入 prompt,评审者只核内容不核格式。plan 未声明 evidence_format(历史
+# 任务)→ 跳过,占位改为提示评审者自行核对格式。
+# stdout(报告表)与 stderr(补交清单 / 错误诊断)按产生顺序合并捕获:
+# 通过时 stderr 为空,注入 prompt 的就是纯报告;失败时整段原样转 stderr
+ev_rc=0
+ev_report=$(bash "$proj/.ai-workflow/scripts/evidence-check.sh" "$nn" 2>&1) || ev_rc=$?
+case "$ev_rc" in
+  0) ;;
+  1)
+    { echo "证据核验未通过(evidence-check),评审未启动;按补交清单补齐证据或修正实现记录后重跑 review.sh(当前轮尚未评审,不开新轮):"; echo "$ev_report"; } >&2
+    exit 3 ;;
+  2) ev_report="(历史任务:plan 未声明 evidence_format: v1,未经机器核验;A 档证据的格式——命令、完整输出、退出码——由评审按 review-standards.md 自行核对)" ;;
+  *) echo "evidence-check 执行异常(退出码 $ev_rc):$ev_report" >&2; exit 3 ;;
+esac
+
 prompt=$(cat .ai-workflow/prompts/review.md)
 prompt="${prompt//\{\{TASK_DIR\}\}/$task_rel}"
 prompt="${prompt//\{\{ROUND\}\}/$nn}"
+prompt="${prompt//\{\{EVIDENCE_REPORT\}\}/$ev_report}"
 
 pre_hash=$(workspace_hash)
 
@@ -301,7 +319,8 @@ if [ "$verdict" != "$derived" ]; then
   exit 3
 fi
 
-# 渲染为与历史轮次同构的 markdown(问题按严重度排序,plan-blocker 置顶);
+# 渲染为与历史轮次同构的 markdown(问题按严重度排序,plan-blocker 置顶;
+# 范围核对单列一节,不计入 pass/fail,缺字段按空数组容错);
 # --arg render 1 为渲染调用的特征标记,便于测试注入,对 jq 语义无影响
 render_review() {
   jq -r --arg render 1 --arg nn "$nn" '
@@ -311,6 +330,9 @@ render_review() {
      else ((.issues // []) | sort_by(sev_rank[.severity]) | .[]
        | "- [\(.severity)] \(.id) \(.summary)\n  - 详情:\(.detail)")
      end),
+    "\n## 范围核对",
+    (if ((.scope_findings // []) | length) == 0 then "无"
+     else ((.scope_findings // []) | .[] | "- \(.)") end),
     "\n## 总评\n\(.overall)\n\nVERDICT: \(.verdict)"
   ' "$raw"
 }

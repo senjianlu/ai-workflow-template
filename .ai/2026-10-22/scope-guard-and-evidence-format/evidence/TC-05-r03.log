@@ -1,0 +1,21 @@
+# rawf-evidence v1
+tc: TC-05
+label: r03
+cmd: bash .ai/2026-10-22/scope-guard-and-evidence-format/evidence/tc-05.sh
+cwd: /home/rabbir/Projects/ai-workflow-template
+git_head: 22151a754f1eaa211c03d6de5bbea8980123d148 dirty
+started: 2026-10-22T11:13:56+09:00
+--- output ---
+  ok   - 非法编号退出码 == 3
+  ok   - stderr 含 编号不合法
+  ok   - 缺 -- 退出码 == 3
+  ok   - stderr 含 用法
+  ok   - 无任务退出码 == 3
+  ok   - stderr 含 无进行中任务
+
+RESULT: all assertions passed
+
+--- end ---
+exit: 0
+finished: 2026-10-22T11:13:56+09:00
+bytes: 233

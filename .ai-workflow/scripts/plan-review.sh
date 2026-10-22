@@ -17,7 +17,8 @@
 set -euo pipefail
 
 # --- 渲染与原子发布(封装为函数,兼作可控测试点)-------------------------
-# render_review <raw_json> <nn>:把结构化输出渲染为与实现层评审同构的 md。
+# render_review <raw_json> <nn>:把结构化输出渲染为与实现层评审同构的 md
+# (范围核对单列一节,不计入 pass/fail,缺字段按空数组容错)。
 render_review() {
   jq -r --arg nn "$2" '
     def sev_rank: {"plan-blocker": 0, "major": 1, "minor": 2};
@@ -26,6 +27,9 @@ render_review() {
      else ((.issues // []) | sort_by(sev_rank[.severity]) | .[]
        | "- [\(.severity)] \(.id) \(.summary)\n  - 详情:\(.detail)")
      end),
+    "\n## 范围核对",
+    (if ((.scope_findings // []) | length) == 0 then "无"
+     else ((.scope_findings // []) | .[] | "- \(.)") end),
     "\n## 总评\n\(.overall)\n\nVERDICT: \(.verdict)"
   ' "$1"
 }
