@@ -1,0 +1,18 @@
+# rawf-evidence v1
+tc: TC-04
+label: 
+cmd: bash .ai/2026-10-22/plan-review-convergence/evidence/tc-04.sh
+cwd: /home/rabbir/Projects/ai-workflow-template
+git_head: c878d36dc61d8b70b8dd1afb7bef2ed708f35fbc dirty
+started: 2026-10-22T11:49:03+09:00
+--- output ---
+  ok   - 第 02 轮退出码 == 1
+  ok   - prompt 含 plan.md\ 自第\ 01\ 轮评审以来未修订
+  ok   - prompt 不含 \`\`\`diff
+
+RESULT: all assertions passed
+
+--- end ---
+exit: 0
+finished: 2026-10-22T11:49:03+09:00
+bytes: 165

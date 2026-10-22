@@ -1,0 +1,31 @@
+# rawf-evidence v1
+tc: TC-01
+label: round02
+cmd: bash .ai/2026-10-22/plan-review-convergence/evidence/tc-01.sh
+cwd: /home/rabbir/Projects/ai-workflow-template
+git_head: c878d36dc61d8b70b8dd1afb7bef2ed708f35fbc dirty
+started: 2026-10-22T11:58:11+09:00
+--- output ---
+  ok   - 退出码 == 1
+  ok   - 存在 .ai/2026-10-22/t/plan-review-round-01-fail.md
+  ok   - 存在 .ai/2026-10-22/t/.plan-review-raw-01.plan.md
+  ok   - 快照与 plan.md 字节一致
+  ok   - 模式行 == 本轮模式:全量穷尽评审
+  ok   - prompt 不含 \`\`\`diff
+  ok   - prompt 不含 上一轮评审:
+  ok   - prompt 不含 \{\{
+--- 本轮上下文段:
+## 本轮上下文
+
+本轮模式:全量穷尽评审
+
+本轮为第 01 轮(首轮)。
+
+## 严重度判据(返工判据)
+
+RESULT: all assertions passed
+
+--- end ---
+exit: 0
+finished: 2026-10-22T11:58:12+09:00
+bytes: 516

@@ -1,0 +1,35 @@
+# rawf-evidence v1
+tc: TC-05
+label: round02
+cmd: bash .ai/2026-10-22/plan-review-convergence/evidence/tc-05.sh
+cwd: /home/rabbir/Projects/ai-workflow-template
+git_head: c878d36dc61d8b70b8dd1afb7bef2ed708f35fbc dirty
+started: 2026-10-22T11:58:14+09:00
+--- output ---
+  ok   - 第 03 轮退出码 == 0
+  ok   - 模式行 == 本轮模式:全量穷尽评审\(无上一轮快照\)
+  ok   - prompt 含 .ai/2026-10-22/t/plan-review-round-02-
+  ok   - prompt 含 无上一轮快照
+  ok   - prompt 不含 \`\`\`diff
+  ok   - ② 快照不可读:退出码 == 3
+  ok   - ② stderr 含 修订\ diff\ 生成失败
+  ok   - 不存在 /tmp/rawf-prout.G9zuE5/invoked
+  ok   - 不存在 .ai/2026-10-22/t/plan-review-round-03-pass.md
+  ok   - ③ diff 失败:退出码 == 3
+  ok   - ③ stderr 含 diff\ 退出码\ 2
+  ok   - 不存在 /tmp/rawf-prout.G9zuE5/invoked
+  ok   - 不存在 .ai/2026-10-22/t/plan-review-round-03-pass.md
+  ok   - ④ 重跑退出码 == 0
+  ok   - ④ 模式行 == 本轮模式:收敛评审
+  ok   - ④ diff 含 +第三行
+  ok   - 存在 .ai/2026-10-22/t/plan-review-round-03-pass.md
+--- ② stderr:
+diff: /tmp/rawf-pr.pH9FwI/.ai/2026-10-22/t/.plan-review-raw-02.plan.md: 权限不够
+修订 diff 生成失败(diff 退出码 2,上一轮快照 .ai/2026-10-22/t/.plan-review-raw-02.plan.md);评审未启动、不消耗轮次,排查后重跑
+
+RESULT: all assertions passed
+
+--- end ---
+exit: 0
+finished: 2026-10-22T11:58:16+09:00
+bytes: 1117

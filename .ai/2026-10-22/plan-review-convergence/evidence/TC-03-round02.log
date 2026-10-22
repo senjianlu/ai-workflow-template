@@ -1,0 +1,44 @@
+# rawf-evidence v1
+tc: TC-03
+label: round02
+cmd: bash .ai/2026-10-22/plan-review-convergence/evidence/tc-03.sh
+cwd: /home/rabbir/Projects/ai-workflow-template
+git_head: c878d36dc61d8b70b8dd1afb7bef2ed708f35fbc dirty
+started: 2026-10-22T11:58:13+09:00
+--- output ---
+  ok   - 第 03 轮退出码 == 0
+  ok   - 模式行 == 本轮模式:收敛评审
+  ok   - prompt 含 .ai/2026-10-22/t/plan-review-round-02-fail.md
+  ok   - diff 含 -新行
+  ok   - diff 含 +第三行
+  ok   - diff 不含 -旧行
+  ok   - prompt 含 即本轮的\"修订部分\"
+  ok   - 存在 .ai/2026-10-22/t/plan-review-round-03-pass.md
+--- 本轮上下文段:
+## 本轮上下文
+
+本轮模式:收敛评审
+
+本轮为第 03 轮。上一轮评审:.ai/2026-10-22/t/plan-review-round-02-fail.md——先逐项核验其中的 plan-blocker/major 是否已解决。
+
+自第 02 轮评审以来的修订如下;diff 中的改动即本轮的"修订部分",其余为"未修订部分":
+
+```diff
+--- 第 02 轮所审 plan.md
++++ 本轮所审 plan.md
+@@ -10,4 +10,4 @@
+ ## 非目标
+ 无
+ 
+-新行
++第三行
+```
+
+## 严重度判据(返工判据)
+
+RESULT: all assertions passed
+
+--- end ---
+exit: 0
+finished: 2026-10-22T11:58:13+09:00
+bytes: 870

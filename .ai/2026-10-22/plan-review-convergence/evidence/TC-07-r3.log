@@ -1,0 +1,59 @@
+# rawf-evidence v1
+tc: TC-07
+label: r3
+cmd: bash .ai/2026-10-22/plan-review-convergence/evidence/tc-07.sh
+cwd: /home/rabbir/Projects/ai-workflow-template
+git_head: c878d36dc61d8b70b8dd1afb7bef2ed708f35fbc dirty
+started: 2026-10-22T11:50:18+09:00
+--- output ---
+  ok   - .ai-workflow/review-standards.md 含 若该问题留到实现阶段才被发现\,是否需要推翻已
+  ok   - .ai-workflow/review-standards.md 含 用例中意图明确的机械性错误
+  ok   - .ai-workflow/review-standards.md 含 第\ 1、2\ 轮:全量穷尽评审
+  ok   - .ai-workflow/review-standards.md 含 第\ 3\ 轮起:收敛评审
+  ok   - .ai-workflow/review-standards.md 含 机械性更正
+  ok   - .ai-workflow/review-standards.md 含 以更正后的文字为验收基准
+  ok   - .ai-workflow/review-standards.md 含 擅自
+  ok   - .ai-workflow/prompts/plan-review.md 含 \{\{ROUND_CONTEXT\}\}
+  ok   - .ai-workflow/prompts/plan-review.md 含 架构与正确性
+  ok   - .ai-workflow/prompts/plan-review.md 含 与既有约定的冲突
+  ok   - .ai-workflow/prompts/plan-review.md 含 验收覆盖
+  ok   - .ai-workflow/prompts/plan-review.md 含 证据契约
+  ok   - .ai-workflow/prompts/plan-review.md 含 范围自省
+  ok   - .ai-workflow/prompts/plan-review.md 含 不得在找到前几条后停止
+  ok   - .ai-workflow/prompts/plan-review.md 含 先逐项核验上一轮的\ plan-blocker/major
+  ok   - .ai-workflow/prompts/plan-review.md 含 未修订部分\*\*的新发现\*\*只报\ plan-blocker
+  ok   - .ai-workflow/prompts/plan-review.md 含 不要求逐轮重复列出
+  ok   - .claude/skills/rawf-plan/SKILL.md 含 写作粒度
+  ok   - .claude/skills/rawf-plan/SKILL.md 含 修订纪律
+  ok   - .claude/skills/rawf-plan/SKILL.md 含 \*\*默认\ 5\ 轮\*\*
+  ok   - .claude/skills/rawf-plan/SKILL.md 含 评审运行期间不得修改\ plan.md
+  ok   - .claude/skills/rawf-implement/SKILL.md 含 __minors
+  ok   - .claude/skills/rawf-implement/SKILL.md 含 全部
+  ok   - .claude/skills/rawf-implement/SKILL.md 含 回写\ plan\ 测试表
+  ok   - .claude/skills/rawf-implement/SKILL.md 含 〔机械性更正
+  ok   - .claude/skills/rawf-implement/SKILL.md 含 放宽断言
+  ok   - .ai-workflow/templates/implementation-round.md 含 \##\ plan\ 评审\ minor\ 交接
+  ok   - .ai-workflow/templates/implementation-round.md 含 __minors
+  ok   - CLAUDE.md 含 默认最多\ 5\ 轮
+  ok   - CLAUDE.md 含 plan\ 评审\ 5\ 轮、实现层修复\ 3\ 轮
+  ok   - AGENTS.md 含 默认最多\ 5\ 轮
+  ok   - docs/decisions/0012-plan-review-convergence.md 含 -\ 日期:
+  ok   - docs/decisions/0012-plan-review-convergence.md 含 -\ 背景:
+  ok   - docs/decisions/0012-plan-review-convergence.md 含 -\ 决定:
+  ok   - docs/decisions/0012-plan-review-convergence.md 含 -\ 影响:
+  ok   - docs/decisions/0001-plan-stage-review.md 含 0012-plan-review-convergence.md
+  ok   - docs/decisions/0003-configurable-review-round-caps.md 含 部分被\ 0012\ 取代
+  ok   - CHANGELOG.md 含 \##\ \[1.2.0\]
+  ok   - CHANGELOG.md 含 \###\ 升级指引
+  ok   - TEMPLATE-VERSION == 1.2.0
+  ok   - README.md 含 收敛评审
+  ok   - .claude/skills/rawf-plan/SKILL.md 不含 \*\*默认\ 3\ 轮\*\*
+  ok   - AGENTS.md 不含 plan-review\,默认最多\ 3\ 轮
+  ok   - .ai-workflow/scripts/plan-review.sh 不含 缺省\ 3
+
+RESULT: all assertions passed
+
+--- end ---
+exit: 0
+finished: 2026-10-22T11:50:18+09:00
+bytes: 3085

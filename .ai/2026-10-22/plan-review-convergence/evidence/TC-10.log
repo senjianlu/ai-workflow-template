@@ -1,0 +1,24 @@
+# rawf-evidence v1
+tc: TC-10
+label: 
+cmd: bash .ai/2026-10-22/plan-review-convergence/evidence/tc-10.sh
+cwd: /home/rabbir/Projects/ai-workflow-template
+git_head: c878d36dc61d8b70b8dd1afb7bef2ed708f35fbc dirty
+started: 2026-10-22T11:49:08+09:00
+--- output ---
+  ok   - 第一次退出码 == 3
+  ok   - stderr 含 评审期间被修改
+  ok   - 无评审文件 == ''
+  ok   - 存在 .ai/2026-10-22/t/.plan-review-raw-01.json
+  ok   - 重跑退出码 == 0
+  ok   - 存在 .ai/2026-10-22/t/plan-review-round-01-pass.md
+  ok   - 重跑快照与当时 plan.md 一致
+--- 第一次 stderr:
+
+
+RESULT: all assertions passed
+
+--- end ---
+exit: 0
+finished: 2026-10-22T11:49:08+09:00
+bytes: 356

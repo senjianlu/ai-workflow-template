@@ -1,13 +1,19 @@
 #!/usr/bin/env bash
 # plan 阶段 Codex 评审:>10 文件改动在实现前先审方案(plan.md)。
-# 只读运行 codex(--sandbox read-only),与 review.sh 同构;因 plan 阶段
-# 无"评审期间禁改工作区"约束,不设 review.sh 那道完整性哈希双保险。
+# 只读运行 codex(--sandbox read-only),与 review.sh 同构;plan 阶段不设
+# review.sh 那道全工作区完整性哈希,只保护评审对象本身:每轮先把 plan.md
+# 快照,评审结束后核对 plan.md 与快照一致,不一致则本轮作废、不发布、不消耗
+# 轮次(docs/decisions/0012)。工作区其它文件无禁改约束。
 # 退出码:0=pass 1=fail 3=评审执行异常。
 #
 # 判定语义以 .ai-workflow/review-standards.md「plan 阶段评审」小节为权威:
 # 存在任一 plan-blocker 或 major → fail;仅 minor 或无问题 → pass。
-# 轮次上限默认 3;用户明确要求放宽时在 plan.md frontmatter 记
-# plan_review_max_rounds(正整数),以该值为准(见 docs/decisions/0003)。
+# 轮次上限默认 5;用户明确要求放宽时在 plan.md frontmatter 记
+# plan_review_max_rounds(正整数),以该值为准(见 docs/decisions/0003、0012)。
+#
+# 分轮模式(docs/decisions/0012):第 1、2 轮全量穷尽评审;第 3 轮起收敛评审
+# (只核上一轮问题与本轮修订部分,未修订部分只报 plan-blocker)。脚本据此生成
+# prompt 的 {{ROUND_CONTEXT}}:模式行 + 上一轮评审文件 + 两轮快照间的修订 diff。
 #
 # 卡死治理(docs/decisions/0009,与 review.sh 同构):codex 的 stdin 接
 # /dev/null;--json 事件流落盘作进度信号,静默超过 RAWF_REVIEW_IDLE_SECONDS
@@ -53,7 +59,7 @@ publish_round() {
 }
 
 # resolve_max_rounds <plan.md>:解析轮次上限。只认首个 --- 块(frontmatter)
-# 内行首的 plan_review_max_rounds: 字段;字段未出现 → 缺省 3;字段出现但值
+# 内行首的 plan_review_max_rounds: 字段;字段未出现 → 缺省 5;字段出现但值
 # 非正整数(含空值)→ 报错返回 3(该字段仅在用户明确要求放宽时写入,不应
 # 出现拼写外的形态)。awk 以 "F=" 前缀标记"字段命中",与"未出现"区分——
 # 二者在裸值形态下同为空串,无法直接分辨。
@@ -66,7 +72,7 @@ resolve_max_rounds() {
                print "F=" $0; exit }
              n >= 2 { exit }' "$1")
   if [ -z "$hit" ]; then
-    echo 3
+    echo 5
     return 0
   fi
   val=${hit#F=}
@@ -78,8 +84,30 @@ resolve_max_rounds() {
   fi
 }
 
+# list_minors <task_dir>:按轮次顺序汇总全部 plan-review-round-*.md 中的 minor,
+# 每条一行 "| NN/R-xx | 概要 |";无任何 minor 时输出"无"。供 rawf-implement 在
+# 第 1 轮实现前做跨轮交接(收敛轮降级的问题也在其中,不只看最后一轮)。只读。
+list_minors() {
+  local td=${1:-} f nn out all=
+  [ -d "$td" ] || { echo "任务目录不存在:$td" >&2; return 3; }
+  shopt -s nullglob
+  local files=("$td"/plan-review-round-*.md)
+  shopt -u nullglob
+  for f in "${files[@]}"; do
+    nn=${f##*/plan-review-round-}; nn=${nn%%-*}
+    out=$(awk -v nn="$nn" '/^- \[minor\] R-[0-9]+ / {
+            id = $3; line = $0
+            sub(/^- \[minor\] R-[0-9]+ /, "", line)
+            gsub(/\|/, "\\|", line)
+            printf "| %s/%s | %s |\n", nn, id, line }' "$f")
+    [ -n "$out" ] && all+="$out"$'\n'
+  done
+  if [ -z "$all" ]; then echo "无"; else printf '%s' "$all"; fi
+}
+
 # 测试可控入口:直接调用发布函数(绕过轮次计数),验证 mv -n 不覆盖行为;
-# __resolve_max_rounds 同理,验证上限解析的缺省/合法/非法分支。
+# __resolve_max_rounds 同理,验证上限解析的缺省/合法/非法分支;
+# __minors 为跨轮 minor 汇总的工具入口(rawf-implement 使用)。
 if [ "${1:-}" = "__publish_round" ]; then
   shift
   publish_round "$@"
@@ -88,6 +116,11 @@ fi
 if [ "${1:-}" = "__resolve_max_rounds" ]; then
   shift
   resolve_max_rounds "$@"
+  exit $?
+fi
+if [ "${1:-}" = "__minors" ]; then
+  shift
+  list_minors "$@"
   exit $?
 fi
 
@@ -211,7 +244,7 @@ trap 'exit 143' TERM
 trap 'exit 130' INT
 
 # 轮次:count=已有 plan-review-round-*.md 数量;nn=count+1。
-# 机器上限:缺省 3,可被 plan.md frontmatter 的用户授权值放宽;
+# 机器上限:缺省 5,可被 plan.md frontmatter 的用户授权值放宽;
 # count>=上限直接拒绝,交人工。
 max_rounds=$(resolve_max_rounds "$plan") || exit 3
 shopt -s nullglob
@@ -224,9 +257,74 @@ if [ "$count" -ge "$max_rounds" ]; then
 fi
 nn=$(printf '%02d' "$((count + 1))")
 
+# 版本绑定:先快照本轮所审 plan.md,修订 diff 只在两份快照之间计算(不读可变的
+# plan.md);发布结论前再核对 plan.md 与本轮快照一致。快照命中 .gitignore 的
+# .plan-review-raw-* 模式,属运行时产物,同轮重跑覆盖。
+snap="$task_dir/.plan-review-raw-$nn.plan.md"
+cp "$plan" "$snap" || { echo "无法写出 plan 快照 $task_rel/${snap##*/}" >&2; exit 3; }
+snap_sum=$(sha256sum < "$snap" | cut -d' ' -f1)
+
+# build_round_context:生成 {{ROUND_CONTEXT}}。首行固定为"本轮模式:…"。
+# 第 1、2 轮全量穷尽;第 3 轮起有上一轮快照 → 收敛评审,无快照(升级前的
+# 历史轮次)→ 回退为全量穷尽。
+full_rounds=2
+build_round_context() {
+  local n=$((10#$nn)) prev prev_snap prev_review='' mode d f drc=0
+  if [ "$n" -eq 1 ]; then
+    printf '本轮模式:全量穷尽评审\n\n本轮为第 01 轮(首轮)。'
+    return 0
+  fi
+  prev=$(printf '%02d' "$((n - 1))")
+  prev_snap="$task_dir/.plan-review-raw-$prev.plan.md"
+  for f in "$task_dir"/plan-review-round-"$prev"-*.md; do
+    [ -f "$f" ] && { prev_review=${f##*/}; break; }
+  done
+  if [ "$n" -le "$full_rounds" ]; then
+    mode=全量穷尽评审
+  elif [ -f "$prev_snap" ]; then
+    mode=收敛评审
+  else
+    mode='全量穷尽评审(无上一轮快照)'
+  fi
+  printf '本轮模式:%s\n\n本轮为第 %s 轮。' "$mode" "$nn"
+  if [ -n "$prev_review" ]; then
+    printf '上一轮评审:%s/%s——先逐项核验其中的 plan-blocker/major 是否已解决。\n\n' "$task_rel" "$prev_review"
+  else
+    printf '上一轮评审:未找到第 %s 轮评审文件,按全量穷尽评审。\n\n' "$prev"
+  fi
+  if [ ! -f "$prev_snap" ]; then
+    printf '无上一轮快照(该轮评审早于快照机制),无法区分修订与未修订部分,本轮不提供修订 diff。'
+    return 0
+  fi
+  # diff 退出码:0 = 无差异,1 = 有差异,其它 = 执行失败(快照不可读、diff 异常等)。
+  # 失败不得当作"未修订"——那会让收敛轮把真实修订当成未修订部分而降级其问题
+  d=$(diff -u --label "第 $prev 轮所审 plan.md" --label "本轮所审 plan.md" "$prev_snap" "$snap") || drc=$?
+  if [ "$drc" -gt 1 ]; then
+    echo "修订 diff 生成失败(diff 退出码 $drc,上一轮快照 $task_rel/${prev_snap##*/});评审未启动、不消耗轮次,排查后重跑" >&2
+    return 3
+  fi
+  if [ "$drc" -eq 0 ]; then
+    printf 'plan.md 自第 %s 轮评审以来未修订。' "$prev"
+    return 0
+  fi
+  if [ "$mode" = 收敛评审 ]; then
+    printf '自第 %s 轮评审以来的修订如下;diff 中的改动即本轮的"修订部分",其余为"未修订部分":\n\n' "$prev"
+  else
+    printf '自第 %s 轮评审以来的修订如下(供定位;本轮仍全量评审):\n\n' "$prev"
+  fi
+  # shellcheck disable=SC2016  # 反引号是 markdown 代码栅栏的字面量,不需要展开
+  printf '```diff\n%s\n```' "$d"
+}
+round_context=$(build_round_context) || exit 3
+
+# bash 5.2 起 patsub_replacement 默认开启:替换文本里的 & 会被换成匹配原文,
+# diff 中常见的 &&、2>&1 会被破坏。关闭后再做占位替换;ROUND_CONTEXT 最后
+# 替换,其内容(plan 原文)里出现的占位字样不会被二次展开。
+shopt -u patsub_replacement 2>/dev/null || true
 prompt=$(cat .ai-workflow/prompts/plan-review.md)
 prompt="${prompt//\{\{TASK_DIR\}\}/$task_rel}"
 prompt="${prompt//\{\{ROUND\}\}/$nn}"
+prompt="${prompt//\{\{ROUND_CONTEXT\}\}/$round_context}"
 
 # 原始输出与事件流直接落在任务目录(已由 .gitignore 忽略),非法/异常时保留供排查。
 raw="$task_dir/.plan-review-raw-$nn.json"
@@ -302,6 +400,13 @@ blocking=$(jq '[.issues // [] | .[] | select(.severity == "plan-blocker" or .sev
 if [ "$blocking" -gt 0 ]; then derived=fail; else derived=pass; fi
 if [ "$verdict" != "$derived" ]; then
   echo "评审自报结论($verdict)与严重度清单推导($derived)矛盾,按判定规则该评审无效,原始输出保留在 $task_rel/.plan-review-raw-$nn.json" >&2
+  exit 3
+fi
+
+# 版本一致性:评审期间 plan.md 被改过,则评审者读到的内容与修订 diff 不再对应,
+# 本轮结论作废——不发布评审文件,轮次号不被消耗(重跑仍为同一 NN)
+if [ "$(sha256sum < "$plan" | cut -d' ' -f1)" != "$snap_sum" ]; then
+  echo "plan.md 在评审期间被修改,本轮结论作废(未发布、不消耗轮次);原始输出保留在 $task_rel/.plan-review-raw-$nn.json。评审运行期间不要修改 plan.md,改完后重跑" >&2
   exit 3
 fi
 

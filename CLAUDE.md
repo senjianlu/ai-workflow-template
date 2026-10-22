@@ -8,8 +8,8 @@
 
 1. `/rawf-plan` → 产出 plan.md(必须含测试用例),向用户呈现摘要
 1b. 【plan 评审闸,仅 >10 文件】确认前先跑 `.ai-workflow/scripts/plan-review.sh`,
-    plan-blocker/major 就地改 plan 再重评,默认最多 3 轮(用户明确指定时
-    以其为准,见硬规则),不决转人工
+    plan-blocker/major 就地改 plan 再重评,默认最多 5 轮(第 1、2 轮全量
+    穷尽、第 3 轮起收敛;用户明确指定时以其为准,见硬规则),不决转人工
 2. 【人工闸】用户确认 plan 前,禁止改动源码(有 hook 拦截)
 3. `/rawf-implement` → 实现 + 自测,写 implementation-round-<NN>.md
 4. `/rawf-review` → 跑 Codex 评审,产出 review-round-<NN>-<pass|fail>.md
@@ -29,7 +29,8 @@
   后重评,脚本强制轮次上限,达上限仍不决则停下交用户。≤10 文件不强制。
   文件数为 plan 起草时的估计;实现中实际超阈,按 rawf-implement"偏差需停下
   问用户"处理
-- **评审轮次上限默认均为 3 轮**(plan 评审与实现层修复各自计数),仅当
+- **评审轮次上限默认值:plan 评审 5 轮、实现层修复 3 轮**(各自计数;
+  plan 评审默认值见 docs/decisions/0012),仅当
   **用户明确要求放宽**时,在当前任务 plan.md frontmatter 写
   `plan_review_max_rounds` / `impl_fix_max_rounds`(正整数)覆盖默认值,
   并在摘要或实现记录中声明;不得未经用户提出而自行写入或建议性写入
