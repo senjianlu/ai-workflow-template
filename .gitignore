@@ -25,3 +25,10 @@ dist/
 .env
 .env.*
 .DS_Store
+
+# Cloudflare Workers:本地变量(示例文件入库)、wrangler 生成的运行时类型与本地状态
+.dev.vars
+.dev.vars.*
+!.dev.vars.example
+worker-configuration.d.ts
+.wrangler/

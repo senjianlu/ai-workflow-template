@@ -1,0 +1,15 @@
+# rawf-evidence v1
+tc: TC-04
+label: 
+cmd: bash .ai/2026-11-09/add-workers-stack/evidence/tc-04.sh
+cwd: /home/rabbir/Projects/ai-workflow-template
+git_head: 62b29a3a42f74db4c0a4357c2284c1f5ec9e1bd8 dirty
+started: 2026-11-09T22:27:38+09:00
+--- output ---
+# 0013:Cloudflare Worker 入标准栈,模板只定形态与基座,不写实现纪律
+OK
+
+--- end ---
+exit: 0
+finished: 2026-11-09T22:27:38+09:00
+bytes: 88

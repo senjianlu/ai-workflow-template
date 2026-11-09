@@ -207,4 +207,9 @@ plan 阶段 major 的唯一判据:**若该问题留到实现阶段才被发现,�
   无 default 导致页面结构变化即崩)、pipeline/middleware 异常吞噬致
   item 静默丢失、去重/限速/重试配置被关闭或绕过、解析测试依赖真网
   (须用本地 fixture 响应)
+- Cloudflare Workers:未处理的 Promise(未 await / return / `ctx.waitUntil`);
+  模块级可变状态跨请求共享;无界请求 / 响应体整体缓冲(应流式);
+  `WorkerEntrypoint` 把辅助方法暴露成 RPC;密钥进日志或以普通字符串比较
+  (应先哈希再 `timingSafeEqual`);`passThroughOnException` 代替显式错误处理;
+  Cron / 后台任务超出 CPU 与时长预算而未分页推进;单元测试访问真网
 - 通用:plan 中测试用例是否被偷工减料(只测 happy path 即 major)

@@ -1,0 +1,36 @@
+# rawf-evidence v1
+tc: TC-08
+label: 
+cmd: bash .ai/2026-11-09/add-workers-stack/evidence/tc-08.sh
+cwd: /home/rabbir/Projects/ai-workflow-template
+git_head: 62b29a3a42f74db4c0a4357c2284c1f5ec9e1bd8 dirty
+started: 2026-11-09T22:27:39+09:00
+--- output ---
+
+工程约定:
+
+- `index.ts` 只做 `WorkerEntrypoint` 适配(公开方法整体暴露为 RPC,入口类
+  不放辅助方法),实现在 `app.ts`(组合根:配置、依赖、服务类)
+- 横切单文件模块平铺于根;每个外部协议一个目录;领域逻辑超过三个文件成目录
+- 出站 fetch 与时钟经依赖注入,单元测试不访问真网
+- 环境形态二选一并记 decisions:单环境(无状态,或派生数据可重建),或 preview +
+  production(顶层配置仅供本地,远端一律 `--env`);部署经 Workers Builds 或 CI
+  `wrangler deploy`
+
+对外契约文档分三层:
+
+1. **仓内**:`docs/architecture/` 至少 overview(生态位置、模块、数据模型)、契约
+   (RPC 方法表 + HTTP 接口表)、deploy(环境、变量、runbook、回滚)三篇;README
+   列 Cron / HTTP / RPC 三类入口
+2. **面向公网调用方的服务**:自托管参考文档 `/`(HTML)+ `/llms.txt` + 机器契约
+   (`/reference.json` 或 `/openapi.json`),与路由、校验共用同一份契约定义,带版本
+   与更新日期;静态资源经 ASSETS 绑定
+3. **RPC 调用方**:契约 = `index.ts` 导出的类型(调用方以 `wrangler types` 同时传入
+   双方配置生成)+ 仓内契约文,不另做公网文档
+
+OK
+
+--- end ---
+exit: 0
+finished: 2026-11-09T22:27:39+09:00
+bytes: 1244

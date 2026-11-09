@@ -1,0 +1,53 @@
+# rawf-evidence v1
+tc: TC-07
+label: 
+cmd: bash .ai/2026-11-09/add-workers-stack/evidence/tc-07.sh
+cwd: /home/rabbir/Projects/ai-workflow-template
+git_head: 62b29a3a42f74db4c0a4357c2284c1f5ec9e1bd8 dirty
+started: 2026-11-09T22:27:39+09:00
+--- output ---
+MISS: section: ### Cloudflare Worker 不存在
+MISS: position: []
+MISS: table: 标准表不存在
+MISS: 运行时: compatibility_date
+MISS: 运行时: nodejs_compat
+MISS: 运行时: 默认不开
+MISS: 语言: strict
+MISS: 语言: noUncheckedIndexedAccess
+MISS: 语言: 5.x
+MISS: 入口: WorkerEntrypoint
+MISS: 入口: fetch
+MISS: 入口: scheduled
+MISS: 入口: Service Binding RPC
+MISS: 数据: D1
+MISS: 数据: 按需
+MISS: 数据: migrations/
+MISS: 数据: 无状态
+MISS: 出站: 原生 fetch
+MISS: 部署 CLI: wrangler
+MISS: 部署 CLI: 成对钉版本
+MISS: 部署 CLI: 4.x
+MISS: 测试: @cloudflare/vitest-plugin
+MISS: 测试: 同 isolate
+MISS: 测试: 5.x / 1.x
+MISS: Lint: typescript-eslint
+MISS: Lint: 类型感知
+MISS: Lint: Prettier
+MISS: Lint: 9.x / 8.x / 3.x
+MISS: 包管理: pnpm
+MISS: 包管理: 白名单
+MISS: 包管理: 11.x
+MISS: 配置与密钥: wrangler.jsonc
+MISS: 配置与密钥: wrangler types
+MISS: 配置与密钥: .dev.vars.example
+MISS: 配置与密钥: wrangler secret
+MISS: 配置与密钥: keep_vars
+MISS: 可观测: observability.enabled: true
+MISS: 可观测: 结构化 JSON 日志
+inner FAILS=38
+OK: TC-01 断言对改动前版本失败(非恒真)
+
+--- end ---
+exit: 0
+finished: 2026-11-09T22:27:39+09:00
+bytes: 1185

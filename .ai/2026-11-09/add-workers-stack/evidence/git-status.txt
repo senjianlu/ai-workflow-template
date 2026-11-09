@@ -1,0 +1,28 @@
+ M .ai-workflow/TEMPLATE-VERSION
+ M .ai-workflow/review-standards.md
+ M .gitignore
+ M AGENTS.md
+ M CHANGELOG.md
+?? .ai/2026-11-09/add-workers-stack/assets/.gitkeep
+?? .ai/2026-11-09/add-workers-stack/evidence/.gitkeep
+?? .ai/2026-11-09/add-workers-stack/evidence/TC-01.log
+?? .ai/2026-11-09/add-workers-stack/evidence/TC-02.log
+?? .ai/2026-11-09/add-workers-stack/evidence/TC-03.log
+?? .ai/2026-11-09/add-workers-stack/evidence/TC-04.log
+?? .ai/2026-11-09/add-workers-stack/evidence/TC-05.log
+?? .ai/2026-11-09/add-workers-stack/evidence/TC-06.log
+?? .ai/2026-11-09/add-workers-stack/evidence/git-status.txt
+?? .ai/2026-11-09/add-workers-stack/evidence/lib.sh
+?? .ai/2026-11-09/add-workers-stack/evidence/tc-01.sh
+?? .ai/2026-11-09/add-workers-stack/evidence/tc-02.sh
+?? .ai/2026-11-09/add-workers-stack/evidence/tc-03.sh
+?? .ai/2026-11-09/add-workers-stack/evidence/tc-04.sh
+?? .ai/2026-11-09/add-workers-stack/evidence/tc-05.sh
+?? .ai/2026-11-09/add-workers-stack/evidence/tc-06.sh
+?? .ai/2026-11-09/add-workers-stack/evidence/tc-07.sh
+?? .ai/2026-11-09/add-workers-stack/evidence/tc-08.sh
+?? .ai/2026-11-09/add-workers-stack/plan-review-round-01-fail.md
+?? .ai/2026-11-09/add-workers-stack/plan-review-round-02-fail.md
+?? .ai/2026-11-09/add-workers-stack/plan-review-round-03-pass.md
+?? .ai/2026-11-09/add-workers-stack/plan.md
+?? docs/decisions/0013-workers-standard-stack.md

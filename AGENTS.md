@@ -170,6 +170,49 @@ pyproject.toml 安装,项目依赖变更时镜像同步重建;直连路径下由
   离线响应喂给 parse 方法;单元测试不访问真网
 - 开发与测试工具同后端(pytest 8.x + ruff)
 
+### Cloudflare Worker
+
+单个 Cloudflare Worker 应用(参考 senjianlu/cscheap-telegram 与 cscheap-catalog)。
+本节只定**形态与基座**:目录、入口形态、工具链、对外契约文档的形态;数据写入、
+RPC 入参与返回、HTTP 路径与错误码、幂等等**实现纪律**由项目在自己的 docs/ 中
+约定(取舍见 docs/decisions/0013)。版本以 pnpm-lock.yaml 为准,表格只在大版本
+升级时更新。
+
+| 类别 | 技术 | 版本 |
+|---|---|---|
+| 运行时 | Cloudflare Workers(workerd;`compatibility_date` 钉定;`nodejs_compat` 默认不开,依赖需要 Node 内置模块时再开并记 decisions) | — |
+| 语言 | TypeScript(strict + noUncheckedIndexedAccess) | 5.x |
+| 入口 | `WorkerEntrypoint` 默认导出:`fetch`(HTTP)、`scheduled`(Cron)、公开方法即 Service Binding RPC | — |
+| 数据 | D1 按需(有持久状态时;SQL 迁移在 `migrations/`,wrangler 管理);KV / R2 / Queues 按需;无状态服务不绑定数据层 | — |
+| 出站 | 原生 fetch,不引 SDK(按需引入记 decisions) | — |
+| 部署 CLI | wrangler(与 vitest 插件成对钉版本) | 4.x |
+| 测试 | Vitest + @cloudflare/vitest-plugin(测试与 Worker 同 isolate,本地绑定) | 5.x / 1.x |
+| Lint / 格式化 | ESLint flat + typescript-eslint(类型感知的 Promise 规则)/ Prettier | 9.x / 8.x / 3.x |
+| 包管理 | pnpm(安装脚本白名单在 pnpm-workspace.yaml) | 11.x |
+| 配置与密钥 | wrangler.jsonc 放非密配置与绑定,`wrangler types` 生成运行时类型;本地 `.dev.vars`(`.dev.vars.example` 入库);远端 secret 经 `wrangler secret` 或外部密钥管理同步(项目决策;外部同步时 `keep_vars: true`) | — |
+| 可观测 | `observability.enabled: true`,结构化 JSON 日志 | — |
+
+工程约定:
+
+- `index.ts` 只做 `WorkerEntrypoint` 适配(公开方法整体暴露为 RPC,入口类
+  不放辅助方法),实现在 `app.ts`(组合根:配置、依赖、服务类)
+- 横切单文件模块平铺于根;每个外部协议一个目录;领域逻辑超过三个文件成目录
+- 出站 fetch 与时钟经依赖注入,单元测试不访问真网
+- 环境形态二选一并记 decisions:单环境(无状态,或派生数据可重建),或 preview +
+  production(顶层配置仅供本地,远端一律 `--env`);部署经 Workers Builds 或 CI
+  `wrangler deploy`
+
+对外契约文档分三层:
+
+1. **仓内**:`docs/architecture/` 至少 overview(生态位置、模块、数据模型)、契约
+   (RPC 方法表 + HTTP 接口表)、deploy(环境、变量、runbook、回滚)三篇;README
+   列 Cron / HTTP / RPC 三类入口
+2. **面向公网调用方的服务**:自托管参考文档 `/`(HTML)+ `/llms.txt` + 机器契约
+   (`/reference.json` 或 `/openapi.json`),与路由、校验共用同一份契约定义,带版本
+   与更新日期;静态资源经 ASSETS 绑定
+3. **RPC 调用方**:契约 = `index.ts` 导出的类型(调用方以 `wrangler types` 同时传入
+   双方配置生成)+ 仓内契约文,不另做公网文档
+
 ### 部署
 
 - Docker(Dockerfile,必要时 docker-compose)
@@ -200,14 +243,14 @@ docs/architecture/README.md。 -->
 
 应用内(扁平态与 apps/ 态规则一致,按应用类型取列):
 
-| 位置 | 前端应用 | 后端应用 |
-|---|---|---|
-| 源码 | `app/`(Next 路由,框架固定)+ `components/`(`ui/` shadcn 手写件、`features/` 业务件)+ `lib/`、`hooks/` | `<snake_name>/` 具名 Python 包,按领域分子模块(routes/、jobs/、models/……) |
-| 单元测试 | `__tests__/` 随源码同置 | `tests/` 与包平级,镜像包结构 |
-| 端到端 | `e2e/`(specs/ + helpers/) | —(集成测试并入 tests/) |
-| 数据迁移 | — | `migrations/` + alembic.ini(需要时) |
-| 静态资源 / 国际化 | `public/`;`i18n/` + `messages/`(next-intl 栈) | — |
-| 应用配置 | next.config.mjs、components.json | pyproject.toml |
+| 位置 | 前端应用 | 后端应用 | Worker 应用 |
+|---|---|---|---|
+| 源码 | `app/`(Next 路由,框架固定)+ `components/`(`ui/` shadcn 手写件、`features/` 业务件)+ `lib/`、`hooks/` | `<snake_name>/` 具名 Python 包,按领域分子模块(routes/、jobs/、models/……) | 横切单文件模块平铺于根(`index.ts` 入口、`app.ts` 组合根、`config.ts`、`http.ts`);每个外部协议一个目录;领域逻辑超过三个文件成目录 |
+| 单元测试 | `__tests__/` 随源码同置 | `tests/` 与包平级,镜像包结构 | `test/`(vitest 插件,含集成路径;离线样本放 `test/fixtures/`) |
+| 端到端 | `e2e/`(specs/ + helpers/) | —(集成测试并入 tests/) | —(线上验收脚本随任务放 `.ai/<任务>/assets/`) |
+| 数据迁移 | — | `migrations/` + alembic.ini(需要时) | `migrations/`(有 D1 时;SQL,wrangler 管理) |
+| 静态资源 / 国际化 | `public/`;`i18n/` + `messages/`(next-intl 栈) | — | `public/`(仅自托管文档 / 资源时,ASSETS 绑定) |
+| 应用配置 | next.config.mjs、components.json | pyproject.toml | wrangler.jsonc、package.json、pnpm-workspace.yaml、.dev.vars.example |
 
 原则:
 

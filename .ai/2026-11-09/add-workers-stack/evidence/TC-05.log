@@ -1,0 +1,19 @@
+# rawf-evidence v1
+tc: TC-05
+label: 
+cmd: bash .ai/2026-11-09/add-workers-stack/evidence/tc-05.sh
+cwd: /home/rabbir/Projects/ai-workflow-template
+git_head: 62b29a3a42f74db4c0a4357c2284c1f5ec9e1bd8 dirty
+started: 2026-11-09T22:27:38+09:00
+--- output ---
+ignored: .dev.vars
+ignored: .dev.vars.local
+ignored: worker-configuration.d.ts
+ignored: .wrangler/state/x
+not ignored (rc=1): .dev.vars.example
+OK
+
+--- end ---
+exit: 0
+finished: 2026-11-09T22:27:38+09:00
+bytes: 147

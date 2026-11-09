@@ -1,0 +1,28 @@
+# rawf-evidence v1
+tc: TC-01
+label: 
+cmd: bash .ai/2026-11-09/add-workers-stack/evidence/tc-01.sh
+cwd: /home/rabbir/Projects/ai-workflow-template
+git_head: 62b29a3a42f74db4c0a4357c2284c1f5ec9e1bd8 dirty
+started: 2026-11-09T22:27:37+09:00
+--- output ---
+--- 标准表 ---
+| 类别 | 技术 | 版本 |
+|---|---|---|
+| 运行时 | Cloudflare Workers(workerd;`compatibility_date` 钉定;`nodejs_compat` 默认不开,依赖需要 Node 内置模块时再开并记 decisions) | — |
+| 语言 | TypeScript(strict + noUncheckedIndexedAccess) | 5.x |
+| 入口 | `WorkerEntrypoint` 默认导出:`fetch`(HTTP)、`scheduled`(Cron)、公开方法即 Service Binding RPC | — |
+| 数据 | D1 按需(有持久状态时;SQL 迁移在 `migrations/`,wrangler 管理);KV / R2 / Queues 按需;无状态服务不绑定数据层 | — |
+| 出站 | 原生 fetch,不引 SDK(按需引入记 decisions) | — |
+| 部署 CLI | wrangler(与 vitest 插件成对钉版本) | 4.x |
+| 测试 | Vitest + @cloudflare/vitest-plugin(测试与 Worker 同 isolate,本地绑定) | 5.x / 1.x |
+| Lint / 格式化 | ESLint flat + typescript-eslint(类型感知的 Promise 规则)/ Prettier | 9.x / 8.x / 3.x |
+| 包管理 | pnpm(安装脚本白名单在 pnpm-workspace.yaml) | 11.x |
+| 配置与密钥 | wrangler.jsonc 放非密配置与绑定,`wrangler types` 生成运行时类型;本地 `.dev.vars`(`.dev.vars.example` 入库);远端 secret 经 `wrangler secret` 或外部密钥管理同步(项目决策;外部同步时 `keep_vars: true`) | — |
+| 可观测 | `observability.enabled: true`,结构化 JSON 日志 | — |
+OK
+
+--- end ---
+exit: 0
+finished: 2026-11-09T22:27:37+09:00
+bytes: 1334

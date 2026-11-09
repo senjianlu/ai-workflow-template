@@ -1,0 +1,22 @@
+# rawf-evidence v1
+tc: TC-02
+label: 
+cmd: bash .ai/2026-11-09/add-workers-stack/evidence/tc-02.sh
+cwd: /home/rabbir/Projects/ai-workflow-template
+git_head: 62b29a3a42f74db4c0a4357c2284c1f5ec9e1bd8 dirty
+started: 2026-11-09T22:27:37+09:00
+--- output ---
+| 位置 | 前端应用 | 后端应用 | Worker 应用 |
+|---|---|---|---|
+| 源码 | `app/`(Next 路由,框架固定)+ `components/`(`ui/` shadcn 手写件、`features/` 业务件)+ `lib/`、`hooks/` | `<snake_name>/` 具名 Python 包,按领域分子模块(routes/、jobs/、models/……) | 横切单文件模块平铺于根(`index.ts` 入口、`app.ts` 组合根、`config.ts`、`http.ts`);每个外部协议一个目录;领域逻辑超过三个文件成目录 |
+| 单元测试 | `__tests__/` 随源码同置 | `tests/` 与包平级,镜像包结构 | `test/`(vitest 插件,含集成路径;离线样本放 `test/fixtures/`) |
+| 端到端 | `e2e/`(specs/ + helpers/) | —(集成测试并入 tests/) | —(线上验收脚本随任务放 `.ai/<任务>/assets/`) |
+| 数据迁移 | — | `migrations/` + alembic.ini(需要时) | `migrations/`(有 D1 时;SQL,wrangler 管理) |
+| 静态资源 / 国际化 | `public/`;`i18n/` + `messages/`(next-intl 栈) | — | `public/`(仅自托管文档 / 资源时,ASSETS 绑定) |
+| 应用配置 | next.config.mjs、components.json | pyproject.toml | wrangler.jsonc、package.json、pnpm-workspace.yaml、.dev.vars.example |
+OK
+
+--- end ---
+exit: 0
+finished: 2026-11-09T22:27:38+09:00
+bytes: 1166

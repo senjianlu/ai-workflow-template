@@ -1,0 +1,19 @@
+# rawf-evidence v1
+tc: TC-03
+label: 
+cmd: bash .ai/2026-11-09/add-workers-stack/evidence/tc-03.sh
+cwd: /home/rabbir/Projects/ai-workflow-template
+git_head: 62b29a3a42f74db4c0a4357c2284c1f5ec9e1bd8 dirty
+started: 2026-11-09T22:27:38+09:00
+--- output ---
+- Cloudflare Workers:未处理的 Promise(未 await / return / `ctx.waitUntil`);
+  模块级可变状态跨请求共享;无界请求 / 响应体整体缓冲(应流式);
+  `WorkerEntrypoint` 把辅助方法暴露成 RPC;密钥进日志或以普通字符串比较
+  (应先哈希再 `timingSafeEqual`);`passThroughOnException` 代替显式错误处理;
+  Cron / 后台任务超出 CPU 与时长预算而未分页推进;单元测试访问真网
+OK
+
+--- end ---
+exit: 0
+finished: 2026-11-09T22:27:38+09:00
+bytes: 445

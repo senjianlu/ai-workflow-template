@@ -1,0 +1,46 @@
+# rawf-evidence v1
+tc: TC-06
+label: 
+cmd: bash .ai/2026-11-09/add-workers-stack/evidence/tc-06.sh
+cwd: /home/rabbir/Projects/ai-workflow-template
+git_head: 62b29a3a42f74db4c0a4357c2284c1f5ec9e1bd8 dirty
+started: 2026-11-09T22:27:38+09:00
+--- output ---
+changelog order: 1.3.0@19 < 1.2.1@44
+TEMPLATE-VERSION: version: 1.3.0
+REGRESSION-OK
+ M .ai-workflow/TEMPLATE-VERSION
+ M .ai-workflow/review-standards.md
+ M .gitignore
+ M AGENTS.md
+ M CHANGELOG.md
+?? .ai/2026-11-09/add-workers-stack/assets/.gitkeep
+?? .ai/2026-11-09/add-workers-stack/evidence/.gitkeep
+?? .ai/2026-11-09/add-workers-stack/evidence/TC-01.log
+?? .ai/2026-11-09/add-workers-stack/evidence/TC-02.log
+?? .ai/2026-11-09/add-workers-stack/evidence/TC-03.log
+?? .ai/2026-11-09/add-workers-stack/evidence/TC-04.log
+?? .ai/2026-11-09/add-workers-stack/evidence/TC-05.log
+?? .ai/2026-11-09/add-workers-stack/evidence/TC-06.log
+?? .ai/2026-11-09/add-workers-stack/evidence/git-status.txt
+?? .ai/2026-11-09/add-workers-stack/evidence/lib.sh
+?? .ai/2026-11-09/add-workers-stack/evidence/tc-01.sh
+?? .ai/2026-11-09/add-workers-stack/evidence/tc-02.sh
+?? .ai/2026-11-09/add-workers-stack/evidence/tc-03.sh
+?? .ai/2026-11-09/add-workers-stack/evidence/tc-04.sh
+?? .ai/2026-11-09/add-workers-stack/evidence/tc-05.sh
+?? .ai/2026-11-09/add-workers-stack/evidence/tc-06.sh
+?? .ai/2026-11-09/add-workers-stack/evidence/tc-07.sh
+?? .ai/2026-11-09/add-workers-stack/evidence/tc-08.sh
+?? .ai/2026-11-09/add-workers-stack/plan-review-round-01-fail.md
+?? .ai/2026-11-09/add-workers-stack/plan-review-round-02-fail.md
+?? .ai/2026-11-09/add-workers-stack/plan-review-round-03-pass.md
+?? .ai/2026-11-09/add-workers-stack/plan.md
+?? docs/decisions/0013-workers-standard-stack.md
+SCOPE-OK
+OK
+
+--- end ---
+exit: 0
+finished: 2026-11-09T22:27:39+09:00
+bytes: 1476
