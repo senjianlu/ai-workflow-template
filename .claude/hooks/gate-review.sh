@@ -2,7 +2,7 @@
 # Stop hook:最新一轮实现尚未评审时,不许结束回合(只拦一次)。
 # 放行 = 无输出退出 0;拦截 = stdout 输出 decision: block 的 JSON 并退出 0。
 # 评审进行中(当前任务目录的 .review-lock 被 review.sh 以 flock 持有)也放行:
-# 评审后台运行、回合结束后由完成通知唤回,无需原地等待(docs/decisions/0009)。
+# 评审后台运行、回合结束后由完成通知唤回,无需原地等待(docs/decisions/t0009)。
 set -euo pipefail
 
 block() {

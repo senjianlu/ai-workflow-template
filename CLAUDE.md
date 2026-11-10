@@ -30,11 +30,11 @@
   文件数为 plan 起草时的估计;实现中实际超阈,按 rawf-implement"偏差需停下
   问用户"处理
 - **评审轮次上限默认值:plan 评审 5 轮、实现层修复 3 轮**(各自计数;
-  plan 评审默认值见 docs/decisions/0012),仅当
+  plan 评审默认值见 docs/decisions/t0012),仅当
   **用户明确要求放宽**时,在当前任务 plan.md frontmatter 写
   `plan_review_max_rounds` / `impl_fix_max_rounds`(正整数)覆盖默认值,
   并在摘要或实现记录中声明;不得未经用户提出而自行写入或建议性写入
-  (机制见 docs/decisions/0003)
+  (机制见 docs/decisions/t0003)
 - **评审进行中(review.sh 运行至返回,含后台等待期)禁止改动本项目任何
   文件,`.claude/` 除外**。脚本比对评审前后主工作区指纹,任何被计入的
   写入都会使评审无效并返回 exit 3;`.claude/`(如权限记录 settings.local.json)
@@ -42,11 +42,11 @@
 - **A 档证据一律经 `.ai-workflow/scripts/evidence.sh` 留证**(rawf-evidence
   v1),不得手工拼写或截断;送审前先跑 `evidence-check.sh`,review.sh 启动前
   会再核一次,不通过直接拒绝启动(不消耗评审轮次)。评审只核证据内容,
-  格式问题由机器判定(docs/decisions/0010)
+  格式问题由机器判定(docs/decisions/t0010)
 - **追加类偏差不得自行实现**:plan 范围之外的新增文件、行为、功能,要么
   停下经用户确认,要么写入实现记录「停车场」留给后续任务;"只加强不放宽"
   不是自授权理由。范围核对是两级评审的固定问题,结论不计入 pass/fail,
-  原样交用户裁决(docs/decisions/0011)
+  原样交用户裁决(docs/decisions/t0011)
 - 开新任务前先检查 `.ai/` 下是否有同日同名任务目录,避免覆盖
 - 禁止用 Bash 重定向、临时脚本等方式绕过 gate-plan 对源码与工作流
   控制文件的写入闸

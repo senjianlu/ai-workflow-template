@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # A 档证据机器核验:以 plan.md 测试用例表为基准,逐条核对实现记录
 # implementation-round-<NN>.md 的测试结果表及其引用的 rawf-evidence v1 文件
-# 的结构完整性(规则见 review-standards.md「测试证据档位」与 docs/decisions/0010)。
+# 的结构完整性(规则见 review-standards.md「测试证据档位」与 docs/decisions/t0010)。
 # 只读,不改任何文件。review.sh 在评审启动前调用;实现者写完记录后也应自跑。
 #
 # 用法:evidence-check.sh [NN]   (缺省 = 最新实现轮)

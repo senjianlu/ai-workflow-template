@@ -1,4 +1,4 @@
-# 0013:Cloudflare Worker 入标准栈,模板只定形态与基座,不写实现纪律
+# t0013:Cloudflare Worker 入标准栈,模板只定形态与基座,不写实现纪律
 
 - 日期:2026-11-09
 - 背景:模板已派生出三个 Cloudflare Worker 仓——cscheap-link(无状态公网 API +
@@ -24,7 +24,7 @@
   5. **`nodejs_compat` 默认不开**:偏离官方"建议开启",理由是参考仓零运行时依赖、
      不需要 Node 内置模块;依赖需要时再开并记项目 decisions。
   6. **密钥管理工具不点名**:写"`wrangler secret` 或外部密钥管理同步(项目决策)",
-     具体选型属项目私有(同 0007 可选扩展的做法)。
+     具体选型属项目私有(同 t0007 可选扩展的做法)。
   7. **对外契约文档分三层**:仓内 docs/architecture/(overview / 契约 / deploy);
      面向公网调用方的服务自托管 HTML + `/llms.txt` + 机器契约,与执行同源;RPC 以
      导出类型为契约,不另做公网文档。
@@ -37,3 +37,13 @@
   review-standards.md 新增 Workers 评审关注点;`.gitignore` 新增 Workers 本地变量与
   生成文件条目。consumer 升级时 AGENTS.md 按需人工合并。cscheap-link 与标准的偏差
   (目录、入口形态、包管理)只在此记录,是否对齐由该仓另开任务决定。
+
+## 沿革
+
+- 2026-11-10(1.4.0):两处澄清,决定本身不变。① AGENTS.md 的「参考」暂只点名
+  cscheap-telegram——cscheap-catalog 当时尚未推送到远端,照着去看的人看不到收敛形;
+  README「发布纪律」同时加一条:被点名的参考仓须已推送且远端可复核。上文背景里对
+  catalog 的叙述是当时的事实,保持原样。② 决定 1 的「横切单文件模块平铺于根,每个
+  外部协议一个目录,领域逻辑超过三个文件成目录」补了判定口径(什么算横切、外部
+  协议目录的门槛、领域逻辑怎么计数),以 AGENTS.md「技术栈 > Cloudflare Worker」
+  工程约定为准。来源:`.ai/2026-11-10/consumer-feedback-1.3.0/`。

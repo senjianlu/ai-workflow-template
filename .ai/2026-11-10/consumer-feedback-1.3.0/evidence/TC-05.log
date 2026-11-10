@@ -1,0 +1,43 @@
+# rawf-evidence v1
+tc: TC-05
+label: 
+cmd: bash .ai/2026-11-10/consumer-feedback-1.3.0/assets/tc05.sh
+cwd: /home/rabbir/Projects/ai-workflow-template
+git_head: 7021fdb4792e52f1ff6ba8436358dd4b1291d898 dirty
+started: 2026-11-10T11:46:10+09:00
+--- output ---
+## git status --porcelain --untracked-files=all -- .ai
+?? .ai/2026-11-10/consumer-feedback-1.3.0/assets/.gitkeep
+?? .ai/2026-11-10/consumer-feedback-1.3.0/assets/lib.sh
+?? .ai/2026-11-10/consumer-feedback-1.3.0/assets/tc01.sh
+?? .ai/2026-11-10/consumer-feedback-1.3.0/assets/tc02.sh
+?? .ai/2026-11-10/consumer-feedback-1.3.0/assets/tc03.sh
+?? .ai/2026-11-10/consumer-feedback-1.3.0/assets/tc04.sh
+?? .ai/2026-11-10/consumer-feedback-1.3.0/assets/tc05.sh
+?? .ai/2026-11-10/consumer-feedback-1.3.0/assets/tc06.sh
+?? .ai/2026-11-10/consumer-feedback-1.3.0/assets/tc07.sh
+?? .ai/2026-11-10/consumer-feedback-1.3.0/assets/tc08.sh
+?? .ai/2026-11-10/consumer-feedback-1.3.0/assets/tc09.sh
+?? .ai/2026-11-10/consumer-feedback-1.3.0/assets/tc10.sh
+?? .ai/2026-11-10/consumer-feedback-1.3.0/evidence/.gitkeep
+?? .ai/2026-11-10/consumer-feedback-1.3.0/evidence/TC-01.log
+?? .ai/2026-11-10/consumer-feedback-1.3.0/evidence/TC-02.log
+?? .ai/2026-11-10/consumer-feedback-1.3.0/evidence/TC-03.log
+?? .ai/2026-11-10/consumer-feedback-1.3.0/evidence/TC-04.log
+?? .ai/2026-11-10/consumer-feedback-1.3.0/evidence/TC-05.log
+?? .ai/2026-11-10/consumer-feedback-1.3.0/evidence/from-catalog/README.md
+?? .ai/2026-11-10/consumer-feedback-1.3.0/plan-review-round-01-fail.md
+?? .ai/2026-11-10/consumer-feedback-1.3.0/plan-review-round-02-pass.md
+?? .ai/2026-11-10/consumer-feedback-1.3.0/plan.md
+PASS  变化全部位于 .ai/2026-11-10/consumer-feedback-1.3.0/
+## git diff HEAD --stat -- .ai
+(空)
+PASS  已跟踪的 .ai 历史文件无任何改动
+已跟踪的 .ai 文件数:445
+---
+失败断言数:0
+
+--- end ---
+exit: 0
+finished: 2026-11-10T11:46:10+09:00
+bytes: 1576

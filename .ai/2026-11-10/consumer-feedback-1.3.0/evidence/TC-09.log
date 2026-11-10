@@ -1,0 +1,32 @@
+# rawf-evidence v1
+tc: TC-09
+label: 
+cmd: bash .ai/2026-11-10/consumer-feedback-1.3.0/assets/tc09.sh
+cwd: /home/rabbir/Projects/ai-workflow-template
+git_head: 7021fdb4792e52f1ff6ba8436358dd4b1291d898 dirty
+started: 2026-11-10T11:46:11+09:00
+--- output ---
+## TEMPLATE-VERSION
+version: 1.4.0
+source: https://github.com/senjianlu/ai-workflow-template
+adopted: 拷入 consumer 项目时填写采用日期(yyyy-mm-dd);模板仓库内保持此占位
+PASS  version: 1.4.0
+## CHANGELOG 版本标题
+22:## [1.4.0] - 2026-11-10
+87:## [1.3.0] - 2026-11-09
+112:## [1.2.1] - 2026-10-22
+134:## [1.2.0] - 2026-10-22
+171:## [1.1.0] - 2026-10-22
+215:## [1.0.1] - 2026-10-04
+251:## [1.0.0] - 2026-07-25
+PASS  存在 ## [1.4.0] - 2026-11-10
+PASS  1.4.0 条目位于 1.3.0 之前
+PASS  1.4.0 是第一个版本条目
+PASS  1.4.0 条目含「升级指引」小节
+---
+失败断言数:0
+
+--- end ---
+exit: 0
+finished: 2026-11-10T11:46:11+09:00
+bytes: 610

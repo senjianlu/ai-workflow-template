@@ -1,0 +1,62 @@
+# rawf-evidence v1
+tc: TC-06
+label: 
+cmd: bash .ai/2026-11-10/consumer-feedback-1.3.0/assets/tc06.sh
+cwd: /home/rabbir/Projects/ai-workflow-template
+git_head: 7021fdb4792e52f1ff6ba8436358dd4b1291d898 dirty
+started: 2026-11-10T11:46:10+09:00
+--- output ---
+## .ai-workflow/scripts/review.sh 增删行
+-# plan-review.sh 同构;取消副本的决策见 docs/decisions/0005)。评审者不
++# plan-review.sh 同构;取消副本的决策见 docs/decisions/t0005)。评审者不
+-# 卡死治理(docs/decisions/0009):codex 的 stdin 接 /dev/null(codex 在 stdin
++# 卡死治理(docs/decisions/t0009):codex 的 stdin 接 /dev/null(codex 在 stdin
+-# A 档证据机器核验(docs/decisions/0010):结构不完整的证据不送评审——
++# A 档证据机器核验(docs/decisions/t0010):结构不完整的证据不送评审——
+-# 替换(与 plan-review.sh 同一处理,见 docs/decisions/0012)。
++# 替换(与 plan-review.sh 同一处理,见 docs/decisions/t0012)。
+PASS  .ai-workflow/scripts/review.sh 有改动
+PASS  .ai-workflow/scripts/review.sh 增删行全部是注释
+## .ai-workflow/scripts/plan-review.sh 增删行
+-# 轮次(docs/decisions/0012)。工作区其它文件无禁改约束。
++# 轮次(docs/decisions/t0012)。工作区其它文件无禁改约束。
+-# plan_review_max_rounds(正整数),以该值为准(见 docs/decisions/0003、0012)。
++# plan_review_max_rounds(正整数),以该值为准(见 docs/decisions/t0003、t0012)。
+-# 分轮模式(docs/decisions/0012):第 1、2 轮全量穷尽评审;第 3 轮起收敛评审
++# 分轮模式(docs/decisions/t0012):第 1、2 轮全量穷尽评审;第 3 轮起收敛评审
+-# 卡死治理(docs/decisions/0009,与 review.sh 同构):codex 的 stdin 接
++# 卡死治理(docs/decisions/t0009,与 review.sh 同构):codex 的 stdin 接
+PASS  .ai-workflow/scripts/plan-review.sh 有改动
+PASS  .ai-workflow/scripts/plan-review.sh 增删行全部是注释
+## .ai-workflow/scripts/evidence.sh 增删行
+-# 证据档位」与 docs/decisions/0010),落当前任务目录 evidence/。
++# 证据档位」与 docs/decisions/t0010),落当前任务目录 evidence/。
+PASS  .ai-workflow/scripts/evidence.sh 有改动
+PASS  .ai-workflow/scripts/evidence.sh 增删行全部是注释
+## .ai-workflow/scripts/evidence-check.sh 增删行
+-# 的结构完整性(规则见 review-standards.md「测试证据档位」与 docs/decisions/0010)。
++# 的结构完整性(规则见 review-standards.md「测试证据档位」与 docs/decisions/t0010)。
+PASS  .ai-workflow/scripts/evidence-check.sh 有改动
+PASS  .ai-workflow/scripts/evidence-check.sh 增删行全部是注释
+## .claude/hooks/gate-review.sh 增删行
+-# 评审后台运行、回合结束后由完成通知唤回,无需原地等待(docs/decisions/0009)。
++# 评审后台运行、回合结束后由完成通知唤回,无需原地等待(docs/decisions/t0009)。
+PASS  .claude/hooks/gate-review.sh 有改动
+PASS  .claude/hooks/gate-review.sh 增删行全部是注释
+## .gitignore 增删行
+-# rawf:评审 flock 锁文件(常驻任务目录,永不删除;锁语义见 docs/decisions/0009)
++# rawf:评审 flock 锁文件(常驻任务目录,永不删除;锁语义见 docs/decisions/t0009)
+PASS  .gitignore 有改动
+PASS  .gitignore 增删行全部是注释
+PASS  bash -n .ai-workflow/scripts/review.sh
+PASS  bash -n .ai-workflow/scripts/plan-review.sh
+PASS  bash -n .ai-workflow/scripts/evidence.sh
+PASS  bash -n .ai-workflow/scripts/evidence-check.sh
+PASS  bash -n .claude/hooks/gate-review.sh
+---
+失败断言数:0
+
+--- end ---
+exit: 0
+finished: 2026-11-10T11:46:10+09:00
+bytes: 3260

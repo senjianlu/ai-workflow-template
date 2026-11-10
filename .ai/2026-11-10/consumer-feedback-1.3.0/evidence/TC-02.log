@@ -1,0 +1,28 @@
+# rawf-evidence v1
+tc: TC-02
+label: 
+cmd: bash .ai/2026-11-10/consumer-feedback-1.3.0/assets/tc02.sh
+cwd: /home/rabbir/Projects/ai-workflow-template
+git_head: 7021fdb4792e52f1ff6ba8436358dd4b1291d898 dirty
+started: 2026-11-10T11:46:09+09:00
+--- output ---
+CHANGELOG 旧条目起始行:87
+## 全仓(.ai/、.git/ 除外)grep decisions/[0-9]{4}
+./CHANGELOG.md:95:  基座,D1 / RPC / HTTP 等实现纪律留给项目(docs/decisions/0013)。
+./CHANGELOG.md:99:- 决策记录 docs/decisions/0013。
+./CHANGELOG.md:109:  `docs/decisions/0013` 作为模板历史随新建项目带入,存量项目可不拷。
+./CHANGELOG.md:149:- 决策记录 docs/decisions/0012。
+./CHANGELOG.md:187:- 决策记录 docs/decisions/0010(证据格式 v1 与机器核验,部分取代 0006 的
+./CHANGELOG.md:231:- 决策记录 docs/decisions/0009。
+## 其中不属于 CHANGELOG 旧条目的命中
+(无)
+PASS  CHANGELOG 旧条目之外无纯数字决策路径
+PASS  CHANGELOG 自 [1.3.0] 起与 HEAD 逐字节相同
+旧条目行数:174(HEAD:174)
+---
+失败断言数:0
+
+--- end ---
+exit: 0
+finished: 2026-11-10T11:46:09+09:00
+bytes: 785

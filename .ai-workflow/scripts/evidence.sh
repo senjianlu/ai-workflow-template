@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # A 档证据留证器:包住一条命令,把「命令 + 完整输出 + 退出码」写成
 # rawf-evidence v1 格式文件(格式与完整性定义见 review-standards.md「测试
-# 证据档位」与 docs/decisions/0010),落当前任务目录 evidence/。
+# 证据档位」与 docs/decisions/t0010),落当前任务目录 evidence/。
 #
 # 用法:evidence.sh <TC-id> [-l <label>] -- <命令> [参数...]
 #   目标文件 evidence/<TC-id>[-<label>].log;已存在则拒绝覆盖(.ai/ 只增不改,

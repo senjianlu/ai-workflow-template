@@ -1,0 +1,47 @@
+# rawf-evidence v1
+tc: TC-04
+label: 
+cmd: bash .ai/2026-11-10/consumer-feedback-1.3.0/assets/tc04.sh
+cwd: /home/rabbir/Projects/ai-workflow-template
+git_head: 7021fdb4792e52f1ff6ba8436358dd4b1291d898 dirty
+started: 2026-11-10T11:46:10+09:00
+--- output ---
+## ① 改名只动了决策编号
+PASS  docs/decisions/t0001-plan-stage-review.md 去 t 后与 HEAD:docs/decisions/0001-plan-stage-review.md 相同
+    含 t 编号的行数:3
+PASS  docs/decisions/t0002-task-evidence-assets-dirs.md 去 t 后与 HEAD:docs/decisions/0002-task-evidence-assets-dirs.md 相同
+    含 t 编号的行数:1
+PASS  docs/decisions/t0003-configurable-review-round-caps.md 去 t 后与 HEAD:docs/decisions/0003-configurable-review-round-caps.md 相同
+    含 t 编号的行数:3
+PASS  docs/decisions/t0004-review-action-boundary.md 去 t 后与 HEAD:docs/decisions/0004-review-action-boundary.md 相同
+    含 t 编号的行数:2
+PASS  docs/decisions/t0005-review-readonly.md 去 t 后与 HEAD:docs/decisions/0005-review-readonly.md 相同
+    含 t 编号的行数:7
+PASS  docs/decisions/t0006-test-evidence-tiers.md 去 t 后与 HEAD:docs/decisions/0006-test-evidence-tiers.md 相同
+    含 t 编号的行数:6
+PASS  docs/decisions/t0007-scrapy-standard-stack.md 去 t 后与 HEAD:docs/decisions/0007-scrapy-standard-stack.md 相同
+    含 t 编号的行数:1
+PASS  docs/decisions/t0008-template-versioning.md 去 t 后与 HEAD:docs/decisions/0008-template-versioning.md 相同
+    含 t 编号的行数:2
+PASS  docs/decisions/t0009-review-watchdog-async.md 去 t 后与 HEAD:docs/decisions/0009-review-watchdog-async.md 相同
+    含 t 编号的行数:1
+PASS  docs/decisions/t0010-evidence-format-v1.md 去 t 后与 HEAD:docs/decisions/0010-evidence-format-v1.md 相同
+    含 t 编号的行数:4
+PASS  docs/decisions/t0011-scope-reflection.md 去 t 后与 HEAD:docs/decisions/0011-scope-reflection.md 相同
+    含 t 编号的行数:1
+PASS  docs/decisions/t0012-plan-review-convergence.md 去 t 后与 HEAD:docs/decisions/0012-plan-review-convergence.md 相同
+    含 t 编号的行数:2
+## ② 未带 t 前缀的 00NN
+docs/decisions/t0013-workers-standard-stack.md:7: 0015)
+docs/decisions/t0013-workers-standard-stack.md:7: 0014)
+PASS  命中恰 2 处
+PASS  命中全部在 t0013
+PASS  t0013 保留「其 0015」
+PASS  t0013 保留「其 0014」
+---
+失败断言数:0
+
+--- end ---
+exit: 0
+finished: 2026-11-10T11:46:10+09:00
+bytes: 2104

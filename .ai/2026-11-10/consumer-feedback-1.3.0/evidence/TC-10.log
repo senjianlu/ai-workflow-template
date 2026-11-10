@@ -1,0 +1,86 @@
+# rawf-evidence v1
+tc: TC-10
+label: 
+cmd: bash .ai/2026-11-10/consumer-feedback-1.3.0/assets/tc10.sh
+cwd: /home/rabbir/Projects/ai-workflow-template
+git_head: 7021fdb4792e52f1ff6ba8436358dd4b1291d898 dirty
+started: 2026-11-10T11:46:11+09:00
+--- output ---
+## 升级前
+0001-plan-stage-review.md
+0002-task-evidence-assets-dirs.md
+0003-configurable-review-round-caps.md
+0004-review-action-boundary.md
+0005-review-readonly.md
+0006-test-evidence-tiers.md
+0007-scrapy-standard-stack.md
+0008-template-versioning.md
+0009-review-watchdog-async.md
+0010-evidence-format-v1.md
+0011-scope-reflection.md
+0012-plan-review-convergence.md
+0013-own-thing.md
+0013-workers-standard-stack.md
+0014-template-decision-namespace.md
+README.md
+PASS  1.4.0 升级指引中恰有 1 个 bash 代码块
+## 所执行的命令(取自 CHANGELOG,逐字)
+AWT=${AWT:-/tmp/awt}
+for f in 0001-plan-stage-review.md 0002-task-evidence-assets-dirs.md \
+  0003-configurable-review-round-caps.md 0004-review-action-boundary.md \
+  0005-review-readonly.md 0006-test-evidence-tiers.md \
+  0007-scrapy-standard-stack.md 0008-template-versioning.md \
+  0009-review-watchdog-async.md 0010-evidence-format-v1.md \
+  0011-scope-reflection.md 0012-plan-review-convergence.md \
+  0013-workers-standard-stack.md; do
+  rm -f "docs/decisions/$f"
+done
+cp "$AWT"/docs/decisions/t*.md docs/decisions/
+PASS  代码块非空
+PASS  升级命令 exit 0
+## 升级后
+0013-own-thing.md
+0014-template-decision-namespace.md
+README.md
+t0001-plan-stage-review.md
+t0002-task-evidence-assets-dirs.md
+t0003-configurable-review-round-caps.md
+t0004-review-action-boundary.md
+t0005-review-readonly.md
+t0006-test-evidence-tiers.md
+t0007-scrapy-standard-stack.md
+t0008-template-versioning.md
+t0009-review-watchdog-async.md
+t0010-evidence-format-v1.md
+t0011-scope-reflection.md
+t0012-plan-review-convergence.md
+t0013-workers-standard-stack.md
+t0014-template-decision-namespace.md
+PASS  纯数字文件只剩两个项目自有决策(模板旧文件 0001~0013 全部消失)
+PASS  t0001 已拷入
+PASS  t0002 已拷入
+PASS  t0003 已拷入
+PASS  t0004 已拷入
+PASS  t0005 已拷入
+PASS  t0006 已拷入
+PASS  t0007 已拷入
+PASS  t0008 已拷入
+PASS  t0009 已拷入
+PASS  t0010 已拷入
+PASS  t0011 已拷入
+PASS  t0012 已拷入
+PASS  t0013 已拷入
+PASS  t0014 已拷入
+PASS  t 系列共 14 个
+0013-own-thing.md: OK
+0014-template-decision-namespace.md: OK
+README.md: OK
+PASS  两个项目自有决策与带项目索引的 README.md 内容未变
+PASS  README.md 的项目索引段落仍在
+---
+失败断言数:0
+
+--- end ---
+exit: 0
+finished: 2026-11-10T11:46:11+09:00
+bytes: 2289

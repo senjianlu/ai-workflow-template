@@ -30,20 +30,25 @@ implementation-round-NN.md、review-round-NN-<pass|fail>.md、summary.md,
 1. GitHub 上 Use this template,克隆到本地
 2. 在 `.ai-workflow/TEMPLATE-VERSION` 填写 adopted 采用日期(新建
    项目内容即模板全量,天然处于基线)
-3. 启用提交约束(每克隆一次):`git config core.hooksPath .githooks
+3. 清理模板带来的项目自有文件(创建后即与模板脱钩,模板升级不再触碰):
+   `CHANGELOG.md` 重置为项目自己的版本历史;`logo.svg` 替换或删除,并同步
+   处理本文件顶部对它的引用;删除 `.ai/` 下模板带来的任务目录(模板历史在
+   模板仓可查)。`docs/decisions/` 里的 `t` 系列(模板决策)保留,项目决策用
+   纯数字、自 0001 起编
+4. 启用提交约束(每克隆一次):`git config core.hooksPath .githooks
    && git config commit.template .gitmessage`
-4. 全局搜索 `TEMPLATE:`,按各处注释裁剪(AGENTS.md 技术栈与 Skill
+5. 全局搜索 `TEMPLATE:`,按各处注释裁剪(AGENTS.md 技术栈与 Skill
    基线、.ai-workflow/review-standards.md 评审关注点、docs/ 骨架)
-5. 安装栈 skills:项目内建的入库 `.agents/skills/` + skills-lock.json,
+6. 安装栈 skills:项目内建的入库 `.agents/skills/` + skills-lock.json,
    每机自装的记入 AGENTS.md「Skill 基线」清单
-6. 按需增删栈约定:可为你的栈新建 .claude/skills/rawf-stack-*
+7. 按需增删栈约定:可为你的栈新建 .claude/skills/rawf-stack-*
    (SKILL.md 写初始化、编码与测试约定);.github/workflows/ 为空目录,
    按需添加 CI。栈调整时同步 .ai-workflow/review-standards.md 的
    技术栈关注点
-7. 生成应用骨架(若建了 stack skill,按其"初始化"一节执行),架构
+8. 生成应用骨架(若建了 stack skill,按其"初始化"一节执行),架构
    落入 docs/architecture/;其中 README.md 只做汇总和导航,细节下沉
    到同目录其他文件
-8. 开 Claude Code 会话,/rawf-plan 开始第一个任务
+9. 开 Claude Code 会话,/rawf-plan 开始第一个任务
 
 ## 存量项目迁移
 
@@ -68,7 +73,7 @@ implementation-round-NN.md、review-round-NN-<pass|fail>.md、summary.md,
    v1.0.0(对照物取模板克隆的 v1.0.0 checkout,见「版本与升级」)。
 4. **前置依赖**:jq、codex CLI(须支持 --output-schema 与 --json)、
    Linux 的 util-linux(flock、setsid)与 procps(pgrep;评审脚本的锁与
-   看门狗依赖它们,缺失时明确报错退出),并执行「开新项目」第 3 步的
+   看门狗依赖它们,缺失时明确报错退出),并执行「开新项目」第 4 步的
    两条 git config。
 5. **提交规范衔接**:模板规范是 Conventional Commits 的超集,存量
    历史无需改写;此后新提交按 AGENTS.md 执行。
@@ -85,24 +90,24 @@ implementation-round-NN.md、review-round-NN-<pass|fail>.md、summary.md,
   文件则拒绝重评(历史只增不改);codex 的 stdin 接 /dev/null,--json 事件流
   作进度信号,静默 15 分钟 / 总时长 60 分钟的看门狗按会话终止 codex 并
   exit 3(环境变量 RAWF_REVIEW_IDLE_SECONDS / RAWF_REVIEW_MAX_SECONDS 可调);
-  互斥锁为 flock 文件,随进程退出自动释放(见 docs/decisions/0009)
-- 评审以只读沙箱直审原仓库(无副本,零复制开销;见 docs/decisions/0005);
-  评审者不运行任何测试,测试真实性走证据协议(档位制见 docs/decisions/0006):
+  互斥锁为 flock 文件,随进程退出自动释放(见 docs/decisions/t0009)
+- 评审以只读沙箱直审原仓库(无副本,零复制开销;见 docs/decisions/t0005);
+  评审者不运行任何测试,测试真实性走证据协议(档位制见 docs/decisions/t0006):
   A 档证据由 evidence.sh 包住命令产出 rawf-evidence v1 文件(命令 + 完整
   输出 + 退出码),review.sh 启动前先跑 evidence-check.sh 以 plan 用例表为
   基准机器核验结构完整性,不通过直接拒绝启动并开出补交清单(不消耗评审
   轮次);评审者只核证据内容(命令对不对、退出码与正文是否符合预期),
-  不再就格式提意见(docs/decisions/0010);完整性哈希(含未跟踪文件内容/
+  不再就格式提意见(docs/decisions/t0010);完整性哈希(含未跟踪文件内容/
   类型/可执行位)保留为双保险,评审期间主工作区被动过即判评审无效
 - plan 评审分轮:第 1、2 轮按五个固定维度全量穷尽评审(一次列全、含 minor),
   第 3 轮起收敛评审(只核上一轮问题与修订部分,未修订部分只报 plan-blocker);
   脚本每轮快照 plan.md 并注入修订 diff,评审期间 plan.md 被改则本轮作废;
   默认上限 5 轮;plan 阶段 major 按"留到实现阶段是否返工"判定,跨轮 minor
-  由实现阶段经 `plan-review.sh __minors` 汇总交接(docs/decisions/0012)
+  由实现阶段经 `plan-review.sh __minors` 汇总交接(docs/decisions/t0012)
 - 范围自省不量化、只提醒:plan 必填「需求原文」「非目标」,实现记录的偏差
   分收窄/替代/追加三类且追加须用户确认或入「停车场」,两级评审各有一个
   固定的范围核对问题,结论单列「范围核对」节、不计入 pass/fail,交用户裁决
-  (docs/decisions/0011)
+  (docs/decisions/t0011)
 - 严重度定义唯一权威在 .ai-workflow/review-standards.md;评审输出契约在
   .ai-workflow/schemas/review.schema.json 与 prompts/review.md 的字段语义
   说明(二者与 review.sh 解析/渲染逻辑绑定演化)
@@ -120,7 +125,9 @@ implementation-round-NN.md、review-round-NN-<pass|fail>.md、summary.md,
 
 **发布纪律**:发版提交须同步更新 CHANGELOG.md 与
 `.ai-workflow/TEMPLATE-VERSION`,随后打 `v<版本>` tag 并创建同名
-GitHub Release(notes 取 CHANGELOG 对应条目)。
+GitHub Release(notes 取 CHANGELOG 对应条目)。受管文件(AGENTS.md 等)
+点名的参考仓,发版时须已推送到远端,且被引用的内容可在远端复核;不满足
+的不点名。
 
 **升级流程**(consumer 视角)。前提:consumer 经 Use this template
 创建,git 历史与模板不同源,本地没有模板的 tag——增量一律在模板
@@ -135,6 +142,7 @@ cd /tmp/awt
 git checkout --detach "v$NEW"   # 锚定 NEW 快照,diff/CHANGELOG/拷贝同源
 git diff "v$OLD..v$NEW" -- .ai-workflow .claude/hooks \
   '.claude/skills/rawf-*' .claude/settings.json .githooks .gitmessage \
+  'docs/decisions/t*' docs/decisions/README.md \
   CLAUDE.md AGENTS.md README.md .agents/skills skills-lock.json
 ```
 
@@ -150,4 +158,4 @@ TEMPLATE-VERSION 随之更新 → **需人工合并类**按升级指引逐文件
 - plan 的 approved 状态由 Claude 在用户确认后翻转,存在理论上的
   误翻可能(approved_at 留有审计痕迹;可升级为仅人工翻转)
 - 评审者不复跑测试(只读沙箱),测试真实性依赖证据协议与开发侧纪律;
-  若出现证据造假案例,可新增决策引入抽查机制(取舍见 docs/decisions/0005)
+  若出现证据造假案例,可新增决策引入抽查机制(取舍见 docs/decisions/t0005)

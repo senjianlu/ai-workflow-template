@@ -14,7 +14,7 @@
 | 位置 | 内容 |
 |---|---|
 | `architecture/` | 架构目录:`README.md` 做汇总和导航,细节按主题下沉到同目录文件 |
-| `decisions/` | 决策记录,一事一文,`NNNN-<slug>.md` |
+| `decisions/` | 决策记录,一事一文:模板决策 `tNNNN-<slug>.md`,项目决策 `NNNN-<slug>.md`(见该目录 README) |
 
 ## 回写纪律
 

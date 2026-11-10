@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # 调用 Codex 评审当前改动。退出码:0=pass 1=fail 3=评审执行异常(含看门狗终止)
 # 评审以只读沙箱(--sandbox read-only)直审原仓库,不建副本(与
-# plan-review.sh 同构;取消副本的决策见 docs/decisions/0005)。评审者不
+# plan-review.sh 同构;取消副本的决策见 docs/decisions/t0005)。评审者不
 # 运行任何测试,测试核验走证据协议(review-standards.md「评审动作边界」)。
 # 完整性哈希保留为双保险:检测评审期间主工作区的并发写入,兜底沙箱失效;
 # 只读沙箱生效且无并发写入时理应永不触发。
 #
-# 卡死治理(docs/decisions/0009):codex 的 stdin 接 /dev/null(codex 在 stdin
+# 卡死治理(docs/decisions/t0009):codex 的 stdin 接 /dev/null(codex 在 stdin
 # 非终端时必读到 EOF);--json 事件流落盘作进度信号,静默超过
 # RAWF_REVIEW_IDLE_SECONDS 或总时长超过 RAWF_REVIEW_MAX_SECONDS 即按会话 +
 # 进程组终止 codex 并 exit 3;锁为 flock 文件,随持有进程退出自动释放。
@@ -201,7 +201,7 @@ if ls "$task_dir"/review-round-"$nn"-*.md >/dev/null 2>&1; then
   exit 3
 fi
 
-# A 档证据机器核验(docs/decisions/0010):结构不完整的证据不送评审——
+# A 档证据机器核验(docs/decisions/t0010):结构不完整的证据不送评审——
 # 格式问题由脚本判定并直接开出补交清单,不消耗 codex 评审轮次;通过的报告
 # 注入 prompt,评审者只核内容不核格式。plan 未声明 evidence_format(历史
 # 任务)→ 跳过,占位改为提示评审者自行核对格式。
@@ -220,7 +220,7 @@ esac
 
 # bash 5.2 起 patsub_replacement 默认开启:替换文本里的 & 会被换成匹配原文、\& 丢
 # 反斜杠,证据报告(B/C 档证据格原文、%q 转义的 cmd)会被改写。关闭后再做占位
-# 替换(与 plan-review.sh 同一处理,见 docs/decisions/0012)。
+# 替换(与 plan-review.sh 同一处理,见 docs/decisions/t0012)。
 shopt -u patsub_replacement 2>/dev/null || true
 prompt=$(cat .ai-workflow/prompts/review.md)
 prompt="${prompt//\{\{TASK_DIR\}\}/$task_rel}"

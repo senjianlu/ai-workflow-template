@@ -3,19 +3,19 @@
 # 只读运行 codex(--sandbox read-only),与 review.sh 同构;plan 阶段不设
 # review.sh 那道全工作区完整性哈希,只保护评审对象本身:每轮先把 plan.md
 # 快照,评审结束后核对 plan.md 与快照一致,不一致则本轮作废、不发布、不消耗
-# 轮次(docs/decisions/0012)。工作区其它文件无禁改约束。
+# 轮次(docs/decisions/t0012)。工作区其它文件无禁改约束。
 # 退出码:0=pass 1=fail 3=评审执行异常。
 #
 # 判定语义以 .ai-workflow/review-standards.md「plan 阶段评审」小节为权威:
 # 存在任一 plan-blocker 或 major → fail;仅 minor 或无问题 → pass。
 # 轮次上限默认 5;用户明确要求放宽时在 plan.md frontmatter 记
-# plan_review_max_rounds(正整数),以该值为准(见 docs/decisions/0003、0012)。
+# plan_review_max_rounds(正整数),以该值为准(见 docs/decisions/t0003、t0012)。
 #
-# 分轮模式(docs/decisions/0012):第 1、2 轮全量穷尽评审;第 3 轮起收敛评审
+# 分轮模式(docs/decisions/t0012):第 1、2 轮全量穷尽评审;第 3 轮起收敛评审
 # (只核上一轮问题与本轮修订部分,未修订部分只报 plan-blocker)。脚本据此生成
 # prompt 的 {{ROUND_CONTEXT}}:模式行 + 上一轮评审文件 + 两轮快照间的修订 diff。
 #
-# 卡死治理(docs/decisions/0009,与 review.sh 同构):codex 的 stdin 接
+# 卡死治理(docs/decisions/t0009,与 review.sh 同构):codex 的 stdin 接
 # /dev/null;--json 事件流落盘作进度信号,静默超过 RAWF_REVIEW_IDLE_SECONDS
 # 或总时长超过 RAWF_REVIEW_MAX_SECONDS 即按会话 + 进程组终止 codex 并 exit 3;
 # 锁为 flock 文件 .plan-review-lock,随持有进程退出自动释放。

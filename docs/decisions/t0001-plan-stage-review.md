@@ -1,4 +1,4 @@
-# 0001:>10 文件的改动在方案确认前先经 Codex plan 阶段评审
+# t0001:>10 文件的改动在方案确认前先经 Codex plan 阶段评审
 
 - 日期:2026-07-07
 - 背景:plan-blocker(方案/架构层面错误)原先只在**实现层评审**(review.sh)
@@ -27,7 +27,7 @@
   见 `.ai/2026-07-11/task-subdirs-3rounds/`。
 - 2026-07-18:固定上限改为**可配置默认值**——默认仍 3 轮,用户明确要求时
   可经 plan.md frontmatter 的 `plan_review_max_rounds` 放宽,机制见
-  [0003](0003-configurable-review-round-caps.md)。
+  [t0003](t0003-configurable-review-round-caps.md)。
 - 2026-10-22:默认上限 3 → **5 轮**,并改为分轮模式——第 1、2 轮全量穷尽
   评审,第 3 轮起收敛评审(只核上一轮问题与修订部分);plan 阶段 major 改按
-  返工判据。见 [0012](0012-plan-review-convergence.md)。
+  返工判据。见 [t0012](t0012-plan-review-convergence.md)。

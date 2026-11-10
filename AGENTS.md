@@ -172,10 +172,10 @@ pyproject.toml 安装,项目依赖变更时镜像同步重建;直连路径下由
 
 ### Cloudflare Worker
 
-单个 Cloudflare Worker 应用(参考 senjianlu/cscheap-telegram 与 cscheap-catalog)。
+单个 Cloudflare Worker 应用(参考 senjianlu/cscheap-telegram)。
 本节只定**形态与基座**:目录、入口形态、工具链、对外契约文档的形态;数据写入、
 RPC 入参与返回、HTTP 路径与错误码、幂等等**实现纪律**由项目在自己的 docs/ 中
-约定(取舍见 docs/decisions/0013)。版本以 pnpm-lock.yaml 为准,表格只在大版本
+约定(取舍见 docs/decisions/t0013)。版本以 pnpm-lock.yaml 为准,表格只在大版本
 升级时更新。
 
 | 类别 | 技术 | 版本 |
@@ -196,7 +196,17 @@ RPC 入参与返回、HTTP 路径与错误码、幂等等**实现纪律**由项�
 
 - `index.ts` 只做 `WorkerEntrypoint` 适配(公开方法整体暴露为 RPC,入口类
   不放辅助方法),实现在 `app.ts`(组合根:配置、依赖、服务类)
-- 横切单文件模块平铺于根;每个外部协议一个目录;领域逻辑超过三个文件成目录
+- 横切单文件模块平铺于根;每个外部协议一个目录;领域逻辑超过三个文件成目录。
+  判定口径:
+  - **横切模块**:与具体业务无关的基座与通用工具——入口、组合根、配置、HTTP
+    适配,以及解析、编码、国际化这类通用工具。单文件平铺于根,不计入领域计数
+  - **外部协议**:对接一个外部系统的协议代码(客户端、类型、回调解析)。有两个
+    及以上源文件时成目录;只有一个源文件(含单函数适配)时平铺于根
+  - **领域逻辑**:本仓业务规则及其数据读写。只数源文件、不含测试;达到四个
+    (即"超过三个")时收进领域目录,三个及以下平铺于根
+  - 例(成目录):对接 Telegram 的 `api.ts` + `webhook.ts` 两个文件 → `telegram/`
+  - 例(不成目录):根上除基座外有 `items.ts`、`sync.ts`(领域,2 个)、
+    `ndjson.ts`(通用解析,横切)、`link.ts`(单函数外部适配)→ 全部平铺
 - 出站 fetch 与时钟经依赖注入,单元测试不访问真网
 - 环境形态二选一并记 decisions:单环境(无状态,或派生数据可重建),或 preview +
   production(顶层配置仅供本地,远端一律 `--env`);部署经 Workers Builds 或 CI
@@ -245,7 +255,7 @@ docs/architecture/README.md。 -->
 
 | 位置 | 前端应用 | 后端应用 | Worker 应用 |
 |---|---|---|---|
-| 源码 | `app/`(Next 路由,框架固定)+ `components/`(`ui/` shadcn 手写件、`features/` 业务件)+ `lib/`、`hooks/` | `<snake_name>/` 具名 Python 包,按领域分子模块(routes/、jobs/、models/……) | 横切单文件模块平铺于根(`index.ts` 入口、`app.ts` 组合根、`config.ts`、`http.ts`);每个外部协议一个目录;领域逻辑超过三个文件成目录 |
+| 源码 | `app/`(Next 路由,框架固定)+ `components/`(`ui/` shadcn 手写件、`features/` 业务件)+ `lib/`、`hooks/` | `<snake_name>/` 具名 Python 包,按领域分子模块(routes/、jobs/、models/……) | 横切单文件模块平铺于根(`index.ts` 入口、`app.ts` 组合根、`config.ts`、`http.ts`);每个外部协议一个目录;领域逻辑超过三个文件成目录(口径见「技术栈 > Cloudflare Worker」工程约定) |
 | 单元测试 | `__tests__/` 随源码同置 | `tests/` 与包平级,镜像包结构 | `test/`(vitest 插件,含集成路径;离线样本放 `test/fixtures/`) |
 | 端到端 | `e2e/`(specs/ + helpers/) | —(集成测试并入 tests/) | —(线上验收脚本随任务放 `.ai/<任务>/assets/`) |
 | 数据迁移 | — | `migrations/` + alembic.ini(需要时) | `migrations/`(有 D1 时;SQL,wrangler 管理) |

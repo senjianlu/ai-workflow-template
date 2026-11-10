@@ -1,4 +1,4 @@
-# 0012:plan 评审改为"前两轮全量穷尽、第 3 轮起收敛",默认上限 5 轮,major 按返工判据
+# t0012:plan 评审改为"前两轮全量穷尽、第 3 轮起收敛",默认上限 5 轮,major 按返工判据
 
 - 日期:2026-10-22
 - 背景:四个 consumer 项目 252 个跑过 plan 评审的任务、共 1059 轮的统计:
@@ -46,7 +46,7 @@
     核验规则」新增机械性更正条款;prompts/plan-review.md 按分轮模式重写;
     templates/implementation-round.md 新增「plan 评审 minor 交接」节;rawf-plan、
     rawf-implement、CLAUDE.md、AGENTS.md 同步。
-  - 0003 的"两处上限缺省均为 3"中 plan 评审部分被本条取代(默认 5);0001 修订
+  - t0003 的"两处上限缺省均为 3"中 plan 评审部分被本条取代(默认 5);t0001 修订
     节追加沿革。
   - 前两轮单轮 token 上升,换取总轮数下降;收敛规则只把未修订部分的非 blocker
     问题降为 minor,降级项经 `__minors` 进入实现阶段,实现层评审仍全量把关。

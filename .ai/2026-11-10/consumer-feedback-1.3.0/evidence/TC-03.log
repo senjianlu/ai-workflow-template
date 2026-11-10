@@ -1,0 +1,33 @@
+# rawf-evidence v1
+tc: TC-03
+label: 
+cmd: bash .ai/2026-11-10/consumer-feedback-1.3.0/assets/tc03.sh
+cwd: /home/rabbir/Projects/ai-workflow-template
+git_head: 7021fdb4792e52f1ff6ba8436358dd4b1291d898 dirty
+started: 2026-11-10T11:46:09+09:00
+--- output ---
+## docs/decisions/tNNNN 引用(.ai/、.git/ 除外)
+引用总数:31
+PASS  存在 t 引用
+PASS  t0003(被引用 2 处)→ docs/decisions/t0003-configurable-review-round-caps.md
+PASS  t0005(被引用 4 处)→ docs/decisions/t0005-review-readonly.md
+PASS  t0006(被引用 1 处)→ docs/decisions/t0006-test-evidence-tiers.md
+PASS  t0009(被引用 5 处)→ docs/decisions/t0009-review-watchdog-async.md
+PASS  t0010(被引用 6 处)→ docs/decisions/t0010-evidence-format-v1.md
+PASS  t0011(被引用 3 处)→ docs/decisions/t0011-scope-reflection.md
+PASS  t0012(被引用 6 处)→ docs/decisions/t0012-plan-review-convergence.md
+PASS  t0013(被引用 2 处)→ docs/decisions/t0013-workers-standard-stack.md
+PASS  t0014(被引用 2 处)→ docs/decisions/t0014-template-decision-namespace.md
+## 决策目录内相对 .md 链接
+链接总数:4
+PASS  docs/decisions/README.md:34 → t0014-template-decision-namespace.md
+PASS  docs/decisions/t0001-plan-stage-review.md:30 → t0003-configurable-review-round-caps.md
+PASS  docs/decisions/t0001-plan-stage-review.md:33 → t0012-plan-review-convergence.md
+PASS  docs/decisions/t0005-review-readonly.md:4 → t0006-test-evidence-tiers.md
+---
+失败断言数:0
+
+--- end ---
+exit: 0
+finished: 2026-11-10T11:46:10+09:00
+bytes: 1206

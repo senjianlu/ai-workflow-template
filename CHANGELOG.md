@@ -7,14 +7,82 @@
 
 受管路径归类(每个版本条目的升级指引按此标注文件所属类别):
 
-- 可整体替换:.ai-workflow/、.claude/hooks/、.claude/skills/rawf-*、.claude/settings.json、.githooks/、.gitmessage
-- 需人工合并:AGENTS.md、CLAUDE.md、README.md、.agents/skills/、skills-lock.json
+- 可整体替换:.ai-workflow/、.claude/hooks/、.claude/skills/rawf-*、.claude/settings.json、.githooks/、.gitmessage、docs/decisions/t*.md
+- 需人工合并:AGENTS.md、CLAUDE.md、README.md、docs/decisions/README.md、.agents/skills/、skills-lock.json
+- 项目自有,创建后即脱钩:CHANGELOG.md、logo.svg、.ai/ 下的任务目录、docs/decisions/ 纯数字系列(NNNN-*.md)
 
-(需人工合并的原因:前三者 consumer 已按项目裁剪;后两者为项目内建
+(需人工合并的原因:AGENTS.md、CLAUDE.md、README.md consumer 已按项目裁剪;
+docs/decisions/README.md 里 consumer 维护着自己的决策索引;后两者为项目内建
 skill 目录及其内容哈希锁,consumer 可能持有自有条目,须经锁机制合并。
-settings.local.json 属本机个人授权,不受管。)
+项目自有类随 Use this template 带入,新建项目按 README「开新项目」第 3 步
+重置或清理,此后模板升级不触碰。settings.local.json 属本机个人授权,不受管。)
 
 每个版本条目必须含「升级指引」小节,逐文件标注归类与迁移动作。
+
+## [1.4.0] - 2026-11-10
+
+### Changed
+
+- 模板决策改用 `t` 前缀独立编号:`docs/decisions/` 下的 `0001-*.md` ~ `0013-*.md`
+  改名为 `t0001-*.md` ~ `t0013-*.md`(slug 不变,编号同号对应),正文互相引用与仓内全部
+  `docs/decisions/NNNN` 引用同步加 `t`;纯数字 `NNNN` 整段留给派生项目。解决模板
+  决策与派生仓自编决策撞号(docs/decisions/t0014)。流程脚本、gate-review.sh 与
+  `.gitignore` 只改了注释里的路径,行为不变。
+- AGENTS.md「技术栈 > Cloudflare Worker」:工程约定第 2 条补判定口径(横切模块 /
+  外部协议 / 领域逻辑各自的定义与成目录门槛,附成目录与不成目录各一例),目录表
+  Worker 列指向该口径;「参考」只点名 cscheap-telegram(cscheap-catalog 尚未推送)。
+
+### Added
+
+- 受管路径归类:「可整体替换」加入 `docs/decisions/t*.md`,「需人工合并」加入
+  `docs/decisions/README.md`,新增第三类「项目自有,创建后即脱钩」(`CHANGELOG.md`、
+  `logo.svg`、`.ai/` 下的任务目录、`docs/decisions/` 纯数字系列)。
+- README「开新项目」新增第 3 步:重置 `CHANGELOG.md`、处理 `logo.svg`、删除 `.ai/`
+  下模板带来的任务目录;原第 3 ~ 8 步顺延为 4 ~ 9。
+- README「发布纪律」:受管文件点名的参考仓须已推送到远端且可复核。
+- `docs/decisions/README.md` 写明模板决策与项目决策两个系列及旧编号对应。
+- 决策记录 docs/decisions/t0014。
+
+### 升级指引
+
+- 可整体替换:`docs/decisions/t*.md`(本版起纳入)。在模板克隆 `/tmp/awt`(已
+  `git checkout --detach v1.4.0`)就绪后,于项目仓库根执行下列命令:先删除随建仓
+  带入的模板旧决策文件(只删清单里这 13 个完整文件名,项目自有的同编号决策不受
+  影响),再拷入 `t` 系列。若项目改写过带入的模板决策正文,先自查 diff 再执行。
+
+  ```bash
+  AWT=${AWT:-/tmp/awt}
+  for f in 0001-plan-stage-review.md 0002-task-evidence-assets-dirs.md \
+    0003-configurable-review-round-caps.md 0004-review-action-boundary.md \
+    0005-review-readonly.md 0006-test-evidence-tiers.md \
+    0007-scrapy-standard-stack.md 0008-template-versioning.md \
+    0009-review-watchdog-async.md 0010-evidence-format-v1.md \
+    0011-scope-reflection.md 0012-plan-review-convergence.md \
+    0013-workers-standard-stack.md; do
+    rm -f "docs/decisions/$f"
+  done
+  cp "$AWT"/docs/decisions/t*.md docs/decisions/
+  ```
+
+  项目自有决策**不改号**:1.4.0 之前创建的项目若从 0013 起编,保持原号,前面的
+  空号不补。项目文档里指向模板决策的旧编号(`docs/decisions/00NN`)改写为
+  `docs/decisions/t00NN`。
+- 可整体替换:`.ai-workflow/`、`.claude/hooks/`——脚本、hook 与 review-standards.md
+  只改了决策路径引用(review-standards.md 的「技术栈评审关注点」若有项目自改,先
+  摘出再覆盖);TEMPLATE-VERSION 随之更新为 1.4.0。
+- 需人工合并:`docs/decisions/README.md`(本版起纳入)——并入两个系列的命名规则与
+  「沿革:旧编号对应」一节,项目自有的决策索引、裁剪说明、取代关系原样保留。
+- 需人工合并:`CLAUDE.md`——4 处 `docs/decisions/NNNN` 引用加 `t`。
+- 需人工合并:`AGENTS.md`——Worker 项目并入工程约定第 2 条的判定口径与目录表
+  Worker 列的指向;Worker 节里的决策引用改为 `docs/decisions/t0013`。非 Worker 项目可不合并。
+- 需人工合并:`README.md`——模板自述,consumer 一般已重写;若保留了「机制速览」
+  「已知限制」,其中的决策路径加 `t`。
+- 项目自有(本版起明确,模板升级不触碰):存量项目若仍留着模板的 `CHANGELOG.md`
+  内容、`logo.svg` 或 `.ai/` 下的模板任务目录,可按 README「开新项目」第 3 步自行
+  清理,不清理不影响升级。
+- 按需自取:`.gitignore` 仅一处注释里的决策路径加 `t`;`docs/README.md` 组织表的
+  文件名约定同步了两个系列。
+- settings.json、prompts、schemas、templates、skills 未变。
 
 ## [1.3.0] - 2026-11-09
 

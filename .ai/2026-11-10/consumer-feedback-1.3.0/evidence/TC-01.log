@@ -1,0 +1,50 @@
+# rawf-evidence v1
+tc: TC-01
+label: 
+cmd: bash .ai/2026-11-10/consumer-feedback-1.3.0/assets/tc01.sh
+cwd: /home/rabbir/Projects/ai-workflow-template
+git_head: 7021fdb4792e52f1ff6ba8436358dd4b1291d898 dirty
+started: 2026-11-10T11:46:09+09:00
+--- output ---
+## docs/decisions 清单
+README.md
+t0001-plan-stage-review.md
+t0002-task-evidence-assets-dirs.md
+t0003-configurable-review-round-caps.md
+t0004-review-action-boundary.md
+t0005-review-readonly.md
+t0006-test-evidence-tiers.md
+t0007-scrapy-standard-stack.md
+t0008-template-versioning.md
+t0009-review-watchdog-async.md
+t0010-evidence-format-v1.md
+t0011-scope-reflection.md
+t0012-plan-review-convergence.md
+t0013-workers-standard-stack.md
+t0014-template-decision-namespace.md
+PASS  决策文件编号恰为 t0001~t0014
+PASS  存在 README.md
+PASS  目录共 15 个条目
+PASS  无纯数字开头的文件
+## HEAD 旧文件 → 新文件
+PASS  HEAD 中有 13 个旧决策文件
+PASS  slug 不变:0001-plan-stage-review.md → t0001-plan-stage-review.md
+PASS  slug 不变:0002-task-evidence-assets-dirs.md → t0002-task-evidence-assets-dirs.md
+PASS  slug 不变:0003-configurable-review-round-caps.md → t0003-configurable-review-round-caps.md
+PASS  slug 不变:0004-review-action-boundary.md → t0004-review-action-boundary.md
+PASS  slug 不变:0005-review-readonly.md → t0005-review-readonly.md
+PASS  slug 不变:0006-test-evidence-tiers.md → t0006-test-evidence-tiers.md
+PASS  slug 不变:0007-scrapy-standard-stack.md → t0007-scrapy-standard-stack.md
+PASS  slug 不变:0008-template-versioning.md → t0008-template-versioning.md
+PASS  slug 不变:0009-review-watchdog-async.md → t0009-review-watchdog-async.md
+PASS  slug 不变:0010-evidence-format-v1.md → t0010-evidence-format-v1.md
+PASS  slug 不变:0011-scope-reflection.md → t0011-scope-reflection.md
+PASS  slug 不变:0012-plan-review-convergence.md → t0012-plan-review-convergence.md
+PASS  slug 不变:0013-workers-standard-stack.md → t0013-workers-standard-stack.md
+---
+失败断言数:0
+
+--- end ---
+exit: 0
+finished: 2026-11-10T11:46:09+09:00
+bytes: 1762

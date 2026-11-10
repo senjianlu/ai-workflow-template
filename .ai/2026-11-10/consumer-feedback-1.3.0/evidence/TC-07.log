@@ -1,0 +1,44 @@
+# rawf-evidence v1
+tc: TC-07
+label: 
+cmd: bash .ai/2026-11-10/consumer-feedback-1.3.0/assets/tc07.sh
+cwd: /home/rabbir/Projects/ai-workflow-template
+git_head: 7021fdb4792e52f1ff6ba8436358dd4b1291d898 dirty
+started: 2026-11-10T11:46:10+09:00
+--- output ---
+## AGENTS.md 中 cscheap-catalog 出现次数:0
+PASS  AGENTS.md 不再出现 cscheap-catalog
+PASS  Worker 节参考只点名 telegram
+PASS  Worker 节含:**横切模块**
+PASS  Worker 节含:**外部协议**
+PASS  Worker 节含:**领域逻辑**
+PASS  Worker 节含:例(成目录)
+PASS  Worker 节含:例(不成目录)
+PASS  Worker 节含:有两个
+PASS  Worker 节含:达到四个
+PASS  目录表 Worker 列指向口径
+## Worker 节口径原文
+  判定口径:
+  - **横切模块**:与具体业务无关的基座与通用工具——入口、组合根、配置、HTTP
+    适配,以及解析、编码、国际化这类通用工具。单文件平铺于根,不计入领域计数
+  - **外部协议**:对接一个外部系统的协议代码(客户端、类型、回调解析)。有两个
+    及以上源文件时成目录;只有一个源文件(含单函数适配)时平铺于根
+  - **领域逻辑**:本仓业务规则及其数据读写。只数源文件、不含测试;达到四个
+    (即"超过三个")时收进领域目录,三个及以下平铺于根
+  - 例(成目录):对接 Telegram 的 `api.ts` + `webhook.ts` 两个文件 → `telegram/`
+  - 例(不成目录):根上除基座外有 `items.ts`、`sync.ts`(领域,2 个)、
+    `ndjson.ts`(通用解析,横切)、`link.ts`(单函数外部适配)→ 全部平铺
+## README 发布纪律原文
+**发布纪律**:发版提交须同步更新 CHANGELOG.md 与
+`.ai-workflow/TEMPLATE-VERSION`,随后打 `v<版本>` tag 并创建同名
+GitHub Release(notes 取 CHANGELOG 对应条目)。受管文件(AGENTS.md 等)
+点名的参考仓,发版时须已推送到远端,且被引用的内容可在远端复核;不满足
+的不点名。
+PASS  发布纪律含参考仓须已推送一条
+---
+失败断言数:0
+
+--- end ---
+exit: 0
+finished: 2026-11-10T11:46:11+09:00
+bytes: 1750

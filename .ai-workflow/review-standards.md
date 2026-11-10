@@ -17,7 +17,7 @@
 
 ## 评审动作边界
 
-评审在**只读沙箱**中直审原仓库(机制见 docs/decisions/0005),任何写入
+评审在**只读沙箱**中直审原仓库(机制见 docs/decisions/t0005),任何写入
 都会被沙箱拒绝;评审动作以此为前提:
 
 - **允许**:读取代码与 diff、grep 类检索;运行**确无写入副作用**的
@@ -65,7 +65,7 @@
 `evidence.sh <TC-id> [-l <label>] -- <命令...>` 写出
 `evidence/<TC-id>[-<label>].log`,已存在则拒绝覆盖(重跑另起 label)。
 文件结构与完整性定义(evidence-check 的唯一判据,机制与取舍见
-docs/decisions/0010):
+docs/decisions/t0010):
 
 ```
 # rawf-evidence v1          ← 第 1 行,逐字
@@ -134,7 +134,7 @@ plan 的「证据形态」列写明用的是哪种,评审据此解读 `exit:`:
 
 两级评审各有一个**固定问题**,结论写入输出的 `scope_findings`(字符串数组,
 每条含定位与一句说明),渲染为评审文件的「范围核对」节;**不定严重度、不
-计入 pass/fail、不重复列进 issues**,由用户裁决(机制见 docs/decisions/0011):
+计入 pass/fail、不重复列进 issues**,由用户裁决(机制见 docs/decisions/t0011):
 
 - plan 阶段:方案是否超出「需求原文」?「改动范围」「实现方案」中不是需求
   直接要求的条目,plan 是否说明了"实现必需"的理由;顺手项是否已移入
@@ -184,7 +184,7 @@ plan 阶段 major 的唯一判据:**若该问题留到实现阶段才被发现,�
 
 ### 分轮模式:第 1、2 轮全量穷尽,第 3 轮起收敛
 
-机制与取舍见 docs/decisions/0012;plan-review.sh 每轮快照 plan.md,并把模式、
+机制与取舍见 docs/decisions/t0012;plan-review.sh 每轮快照 plan.md,并把模式、
 上一轮评审文件与两轮快照间的修订 diff 注入评审指令。
 
 - **第 1、2 轮:全量穷尽评审**。逐一走完五个维度(架构与正确性、与既有约定的
