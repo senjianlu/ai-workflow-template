@@ -1,0 +1,36 @@
+# rawf-evidence v1
+tc: TC-04
+label: 
+cmd: bash .ai/2026-11-19/review-fingerprint-evidence-bloat/assets/test-workspace-hash.sh tc04
+cwd: /home/rabbir/Projects/ai-workflow-template/.claude/worktrees/review-fingerprint-batch-hash
+git_head: fd5d23a2354fbe194d3e565ba22595fa90339383 dirty
+started: 2026-11-19T18:06:09+09:00
+--- output ---
+== TC-04 无未跟踪文件 / 跨批 + 不可读文件 ==
+  ok   - 非 root 运行 (uid=1000)
+-- 夹具 a:无未跟踪文件
+  ok   - 未跟踪文件数 = 0
+  ok   - 基线指纹 45c4c5320443fafa83789191cd0526bc3d62fe18 (rc=0)
+  ok   - 第二次取值:指纹 = 基线 (45c4c5320443fafa83789191cd0526bc3d62fe18, rc=0)
+-- 夹具 b:路径总字节数跨多批,第一批混入不可读文件
+  xargs 各批文件数:1110 1110 1110 670 
+  ok   - 批数 = 4 (≥ 3)
+  ok   - 第一批文件数 = 1110 (> 10)
+  不可读文件(序号 2):d00_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx/f0040_abcdefghijklmnopqrst.txt
+  同批可读文件(序号 10):d00_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx/f0200_abcdefghijklmnopqrst.txt
+  末批最后一个文件:d19_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx/f3999_abcdefghijklmnopqrst.txt
+  ok   - chmod 000 后确不可读
+  ok   - 基线指纹 81392818a5d3b3207a76b6805d7708c3a59c1f4d (rc=0)
+  ok   - stderr 含 sha1sum 的 Permission denied(错误分支确被执行):sha1sum: ./d00_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx/f0040_abcdefghijklmnopqrst.txt: Permission denied
+  ok   - 第二次取值:指纹 = 基线 (81392818a5d3b3207a76b6805d7708c3a59c1f4d, rc=0)
+  ok   - 等长改写与不可读文件同批、其后的可读文件:指纹变化 (1c68474e1122970e7436452d2778b0d735c03ce2, rc=0)
+  ok   - 还原同批文件:指纹 = 基线 (81392818a5d3b3207a76b6805d7708c3a59c1f4d, rc=0)
+  ok   - 等长改写末批最后一个文件:指纹变化 (53bb7f1bf58c235a2e9b6564280a863c5555934d, rc=0)
+  ok   - 还原末批文件:指纹 = 基线 (81392818a5d3b3207a76b6805d7708c3a59c1f4d, rc=0)
+
+RESULT: all assertions passed
+
+--- end ---
+exit: 0
+finished: 2026-11-19T18:06:19+09:00
+bytes: 1811

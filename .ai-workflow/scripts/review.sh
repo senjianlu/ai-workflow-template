@@ -10,13 +10,22 @@
 # 非终端时必读到 EOF);--json 事件流落盘作进度信号,静默超过
 # RAWF_REVIEW_IDLE_SECONDS 或总时长超过 RAWF_REVIEW_MAX_SECONDS 即按会话 +
 # 进程组终止 codex 并 exit 3;锁为 flock 文件,随持有进程退出自动释放。
-# 运行环境要求 Linux:util-linux(flock、setsid)与 procps(pgrep)。
+# 运行环境要求 Linux:util-linux(flock、setsid)、procps(pgrep)、
+# coreutils(sha1sum)与 findutils(xargs)。
 set -euo pipefail
 
 # --- 完整性指纹(封装于顶层,兼作可控测试点)-----------------------------
-# 快照口径:已跟踪改动 + 未跟踪文件逐条 NUL 定界记账
-# (类型\0路径\0载荷\0;符号链接记链接目标,普通文件记可执行位+内容哈希),
-# diff 段与未跟踪段各自先哈希再合并,无分隔符歧义与跨段拼接歧义。
+# 快照口径:已跟踪改动 + 未跟踪文件(符号链接记链接目标、不跟随;普通文件记
+# 可执行位 + 内容哈希)。分三段,各自先哈希再合并,无跨段拼接歧义:
+#   diff 段      git diff HEAD
+#   元数据子段   逐条 NUL 定界:symlink\0路径\0链接目标\0 / file\0路径\0x|-\0
+#   内容子段     sha1sum -z 的记录:<sha1>  ./<路径>\0
+# 内容子段按参数容量分批交给 sha1sum(xargs),不为每个文件单独启动哈希进程
+# ——未跟踪文件上万时,逐文件启动进程的开销是分钟级的。路径一律加 ./ 前缀:
+# sha1sum 把操作数 - 当作标准输入,-- 消不掉这层含义。
+# 失败语义:sha1sum 对个别文件失败(不可读)时 xargs 返回 123,容忍(该文件无
+# 内容记录,同批与后续批次照常计入);其它失败(工具缺失、异常退出)使
+# workspace_hash 返回非 0 且不输出指纹,调用点据此 exit 3。
 # 未跟踪文件不按 .gitignore 排除(防 .env 等被忽略文件遭篡改而不被发现),
 # 只排除明确允许的评审/测试产物。
 # .claude/ 例外排除:评审强制后台运行,主会话在评审期间仍活跃,而 Claude
@@ -33,23 +42,38 @@ hash_excludes=(
   --exclude='.venv/' --exclude='node_modules/' --exclude='dist/' --exclude='.next/'
   --exclude='.DS_Store'
 )
+untracked_meta() {
+  local f m
+  git ls-files --others -z "${hash_excludes[@]}" \
+    | while IFS= read -r -d '' f; do
+        if [ -L "$f" ]; then
+          printf 'symlink\0%s\0' "$f"
+          readlink "$f"
+          printf '\0'
+        else
+          if [ -x "$f" ]; then m=x; else m=-; fi
+          printf 'file\0%s\0%s\0' "$f" "$m"
+        fi
+      done
+}
+untracked_content() {
+  local f rc=0
+  git ls-files --others -z "${hash_excludes[@]}" \
+    | while IFS= read -r -d '' f; do
+        [ -L "$f" ] || printf './%s\0' "$f"
+      done \
+    | xargs -0 -r sha1sum -z -- || rc=$?
+  case "$rc" in
+    0|123) return 0 ;;
+    *) return "$rc" ;;
+  esac
+}
 workspace_hash() {
-  {
-    git diff HEAD -- . ':(exclude).claude' | shasum
-    git ls-files --others -z "${hash_excludes[@]}" \
-      | while IFS= read -r -d '' f; do
-          if [ -L "$f" ]; then
-            printf 'symlink\0%s\0' "$f"
-            readlink "$f"
-            printf '\0'
-          else
-            if [ -x "$f" ]; then m=x; else m=-; fi
-            printf 'file\0%s\0%s\0' "$f" "$m"
-            shasum < "$f"
-            printf '\0'
-          fi
-        done | shasum
-  } | shasum | cut -d' ' -f1
+  local d m c
+  d=$(git diff HEAD -- . ':(exclude).claude' | shasum) || return 1
+  m=$(untracked_meta | shasum) || return 1
+  c=$(untracked_content | shasum) || return 1
+  printf '%s\n%s\n%s\n' "$d" "$m" "$c" | shasum | cut -d' ' -f1
 }
 
 # 测试可控入口:脱离 codex 与主流程单测指纹敏感性(CLAUDE_PROJECT_DIR
@@ -114,6 +138,10 @@ positive_int() {
 for tool in flock setsid pgrep; do
   command -v "$tool" >/dev/null \
     || { echo "需要 util-linux(flock、setsid)与 procps(pgrep):缺少 $tool" >&2; exit 3; }
+done
+for tool in sha1sum xargs; do
+  command -v "$tool" >/dev/null \
+    || { echo "需要 coreutils(sha1sum)与 findutils(xargs):缺少 $tool" >&2; exit 3; }
 done
 command -v codex >/dev/null || { echo "codex CLI 未安装或不在 PATH" >&2; exit 3; }
 
@@ -227,7 +255,8 @@ prompt="${prompt//\{\{TASK_DIR\}\}/$task_rel}"
 prompt="${prompt//\{\{ROUND\}\}/$nn}"
 prompt="${prompt//\{\{EVIDENCE_REPORT\}\}/$ev_report}"
 
-pre_hash=$(workspace_hash)
+pre_hash=$(workspace_hash) \
+  || { echo "工作区指纹计算失败(评审前),评审未启动;排查上方报错后重跑" >&2; exit 3; }
 
 # 原始输出直接落任务目录(已由 .gitignore 忽略、hash_excludes 排除),
 # 由 codex CLI 进程自身写入,不经受沙箱约束(沙箱只管模型生成的 shell
@@ -286,7 +315,8 @@ fi
 codex_pid=
 
 # 双保险:主工作区必须分毫未动(只读沙箱生效且无并发写入时恒真)
-post_hash=$(workspace_hash)
+post_hash=$(workspace_hash) \
+  || { echo "工作区指纹计算失败(评审后),无法确认主工作区未被改动,本次评审无效;排查上方报错后重跑" >&2; exit 3; }
 if [ "$pre_hash" != "$post_hash" ]; then
   echo "主工作区在评审期间发生改动(沙箱未能阻止,或存在并发写入),本次评审无效。请 git status 检查后重跑。" >&2
   exit 3

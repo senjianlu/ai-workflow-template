@@ -1,0 +1,89 @@
+# cscheap-frontend:工作区指纹覆盖的未跟踪文件(按 review.sh hash_excludes 的口径;2026-11-19T17:44:51+09:00,HEAD 1a96856,模板 1.2.1)
+
+总数:30130 个文件
+其中位于 .ai/ 下:29327;位于 .ai/**/evidence/ 下:28411;其它位置:803
+体积(.ai/**/evidence 合计):6.1G
+
+## 其它位置的未跟踪文件(非 .ai/;只列路径,不含内容)
+.dev.vars
+.dev.vars.bak-2026-08-03
+.dev.vars.bak-tc17
+.env  (环境文件,刻意留在指纹内)
+.env.bak-2026-08-03  (环境文件,刻意留在指纹内)
+.env.development.local  (环境文件,刻意留在指纹内)
+.env.development.local.bak-2026-08-03  (环境文件,刻意留在指纹内)
+.env.infisical-admin.local  (环境文件,刻意留在指纹内)
+.env.production.local  (环境文件,刻意留在指纹内)
+.env.production.local.bak-2026-08-03  (环境文件,刻意留在指纹内)
+.open-next/.build/cache.cjs
+.open-next/.build/composable-cache.cjs
+.open-next/.build/durable-objects/bucket-cache-purge.js
+.open-next/.build/durable-objects/queue.js
+.open-next/.build/durable-objects/sharded-tag-cache.js
+.open-next/.build/open-next.config.edge.mjs
+.open-next/.build/open-next.config.mjs
+.open-next/assets/BUILD_ID
+.open-next/assets/avatars/claudecode.svg
+.open-next/assets/avatars/codex.svg
+
+## 按任务目录计数(前 25)
+   2961 2026-10-28/tickets-single-pane
+   2925 2026-10-27/subpage-shell
+   2493 2026-10-25/design-truth-v34
+   2313 2026-11-02/modal-plain
+   1497 2026-11-01/control-scale-spacing
+   1304 2026-10-30/control-scale-buttons
+   1236 2026-11-03/admin-users-pagination-reflow
+   1212 2026-11-01/control-scale-tabs-badges
+   1209 2026-10-31/control-scale-inputs
+   1118 2026-11-03/mobile-nav-billing
+   1099 2026-11-01/control-scale-tables
+   1085 2026-11-02/cancelled-exceptions
+    841 2026-10-21/fee-workspace
+    589 2026-10-25/unlock-tiers-and-reminders
+    512 2026-10-30/test-speedup
+    416 2026-11-18/fee-access-and-matrix
+    339 2026-10-19/dashboard-redesign-admin-tickets-interactions
+    289 2026-10-18/dashboard-redesign-settings
+    270 2026-10-19/dashboard-redesign-admin-tickets-layout
+    226 2026-11-18/fee-contract-and-tiers
+    207 2026-10-09/docs-cms-runtime-poc
+    198 2026-08-11/facevalue-fixes-and-retest
+    195 2026-10-30/fee-mobile-form
+    187 2026-10-19/dashboard-redesign-password
+    186 2026-09-17/d1-preview-cutover
+
+## 有未跟踪文件的任务目录数:127;.ai 下任务目录总数:150
+
+## 按扩展名计数(前 12)
+  23164 png
+   3960 json
+   1329 txt
+    558 jsonl
+    160 md
+     83 plan-review-lock
+     79 mjs
+     66 svg
+     64 jpeg
+     47 cache
+     41 sh
+     25 sqlite
+
+## evidence 下的一级子目录名(前 8)
+  22544 runs
+    854 shots
+    522 superseded-final-2
+    222 screenshots
+    171 tc12-admin-tickets
+    157 ac
+    146 round-02
+    123 baseline
+
+## 单个任务的增量:2026-11-18/fee-access-and-matrix 新增 416 个文件(37M)
+
+## 对照:其它仓库(同一机器,同一口径)
+cscheap-api(模板 1.2.1):370 个未跟踪文件;证据入库(1372 个已跟踪证据文件)
+steammarket-refinery(模板 1.2.1):193 个未跟踪文件;证据入库(991 个)
+cscheap-telegram(模板 1.2.1):19 个未跟踪文件;证据入库(287 个)
+cscheap-catalog(模板 1.4.0):14 个未跟踪文件;证据入库(23 个)
+cscheap-frontend 的 .gitignore 第 68–70 行把 .ai/**/evidence/* 设为只留本地(.gitkeep 占位入库):证据里有大量截图与浏览器套件运行目录。

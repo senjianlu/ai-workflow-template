@@ -1,0 +1,71 @@
+# review.sh 的工作区指纹:相关代码摘录
+# 来源:cscheap-frontend/.ai-workflow/scripts/review.sh(模板 1.2.1);与模板仓 1.4.0 的 workspace_hash() 逐字相同(2026-11-19 用 diff 核对)
+
+## 第 20–75 行:排除清单与 workspace_hash()
+# 未跟踪文件不按 .gitignore 排除(防 .env 等被忽略文件遭篡改而不被发现),
+# 只排除明确允许的评审/测试产物。
+# .claude/ 例外排除:评审强制后台运行,主会话在评审期间仍活跃,而 Claude
+# Code 会自动写 .claude/settings.local.json(记录权限授予,不经工具、无从拦截),
+# 若纳入指纹会把这类并发写入误判为"隔离失败"致评审无效。故整目录不计入。
+# .review-lock:flock 锁文件常驻任务目录(永不删除),评审前后都在,排除只为
+# 让 git status 在评审期间保持干净。
+# TEMPLATE: 按项目构建产物增删排除项。
+# 排除 pnpm dev/build 与本地工具的生成产物(按机器而异、非业务代码):主会话
+# 若在评审期间跑起 dev(sync:logos 刷 public/directory、fumadocs 生成
+# .source、tsc 写 *.tsbuildinfo 等),这些副产物变动不应使评审失效。
+# 与 .gitignore 的"脚手架产物 / 生成内容源 / 本地工具产物 / skill 安装产物"
+# 类目对应;刻意不排除 .env* 等密钥文件——保留其在指纹内以侦测篡改。
+hash_excludes=(
+  --exclude='.review-raw-*'
+  --exclude='.review-lock'
+  --exclude='.claude/'
+  --exclude='__pycache__/' --exclude='*.pyc' --exclude='.pytest_cache/'
+  --exclude='.venv/' --exclude='node_modules/' --exclude='dist/'
+  # Next/构建输出与缓存
+  --exclude='.next/' --exclude='out/' --exclude='build/' --exclude='.turbo/'
+  --exclude='next-env.d.ts' --exclude='*.tsbuildinfo'
+  --exclude='.pnp' --exclude='.pnpm-store/' --exclude='.vercel/'
+  # 生成的内容源 / 镜像资源(每次 dev 由脚本重刷)
+  --exclude='.source/' --exclude='public/directory/'
+  # 本地工具 / 参考副本 / skill 安装产物
+  --exclude='.playwright-mcp/' --exclude='reference/'
+  --exclude='.agents/' --exclude='skills-lock.json' --exclude='static/'
+  --exclude='*.log' --exclude='.DS_Store'
+)
+workspace_hash() {
+  {
+    git diff HEAD -- . ':(exclude).claude' | shasum
+    git ls-files --others -z "${hash_excludes[@]}" \
+      | while IFS= read -r -d '' f; do
+          if [ -L "$f" ]; then
+            printf 'symlink\0%s\0' "$f"
+            readlink "$f"
+            printf '\0'
+          else
+            if [ -x "$f" ]; then m=x; else m=-; fi
+            printf 'file\0%s\0%s\0' "$f" "$m"
+            shasum < "$f"
+            printf '\0'
+          fi
+        done | shasum
+  } | shasum | cut -d' ' -f1
+}
+
+# 测试可控入口:脱离 codex 与主流程单测指纹敏感性(CLAUDE_PROJECT_DIR
+# 指向测试用临时工作区),循 plan-review.sh __publish_round 先例。
+if [ "${1:-}" = "__workspace_hash" ]; then
+  proj="${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel)}"
+  cd "$proj"
+  workspace_hash
+  exit $?
+
+## 调用点
+50:workspace_hash() {
+71:if [ "${1:-}" = "__workspace_hash" ]; then
+74:  workspace_hash
+244:pre_hash=$(workspace_hash)
+303:post_hash=$(workspace_hash)
+304:if [ "$pre_hash" != "$post_hash" ]; then
+
+## plan-review.sh 里没有工作区指纹(只比对 plan.md 快照)
+(无 workspace_hash;shasum 只用于 plan.md)

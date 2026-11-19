@@ -1,0 +1,25 @@
+# rawf-evidence v1
+tc: TC-06
+label: 
+cmd: bash .ai/2026-11-19/review-fingerprint-evidence-bloat/assets/test-workspace-hash.sh tc06
+cwd: /home/rabbir/Projects/ai-workflow-template/.claude/worktrees/review-fingerprint-batch-hash
+git_head: fd5d23a2354fbe194d3e565ba22595fa90339383 dirty
+started: 2026-11-19T18:06:36+09:00
+--- output ---
+== TC-06 性能对比 ==
+  未跟踪文件数:3000
+  改前实现:提交 fd5d23a2354fbe194d3e565ba22595fa90339383 的 .ai-workflow/scripts/review.sh
+  ok   - 基线脚本确为逐文件 shasum 实现
+  ok   - 改后取值 be56f51bb16d538b6e9c480834fc3db3ea0a1602 (rc=0)
+  ok   - 改前取值 f72b57956e9d042f0f3aace823596f054f6d28f8 (rc=0)
+  改后耗时:245 ms
+  改前耗时:62613 ms
+  ok   - 改后 ≤ 改前的 1/10
+  ok   - 改后 ≤ 5 秒
+
+RESULT: all assertions passed
+
+--- end ---
+exit: 0
+finished: 2026-11-19T18:07:44+09:00
+bytes: 478

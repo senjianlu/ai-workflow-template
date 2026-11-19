@@ -1,0 +1,21 @@
+# rawf-evidence v1
+tc: TC-02
+label: 
+cmd: bash .ai/2026-11-19/review-fingerprint-evidence-bloat/assets/test-workspace-hash.sh tc02
+cwd: /home/rabbir/Projects/ai-workflow-template/.claude/worktrees/review-fingerprint-batch-hash
+git_head: fd5d23a2354fbe194d3e565ba22595fa90339383 dirty
+started: 2026-11-19T18:06:06+09:00
+--- output ---
+== TC-02 排除清单与被忽略文件 ==
+  ok   - 基线指纹 1c69a98cb815cc13f33196f86813d65eda113ea6 (rc=0)
+  ok   - 只写 .claude/、.review-raw-*、node_modules/:指纹 = 基线 (1c69a98cb815cc13f33196f86813d65eda113ea6, rc=0)
+  ok   - .env 确被 .gitignore 忽略
+  ok   - 等长改写被忽略的 .env:指纹变化 (1e15dcc48acdfcb6b892d2d330c91780b9777f31, rc=0)
+  ok   - 还原 .env:指纹 = 基线 (1c69a98cb815cc13f33196f86813d65eda113ea6, rc=0)
+
+RESULT: all assertions passed
+
+--- end ---
+exit: 0
+finished: 2026-11-19T18:06:07+09:00
+bytes: 492

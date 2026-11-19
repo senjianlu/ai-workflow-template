@@ -1,0 +1,23 @@
+# 实际评审的时间线(cscheap-frontend,模板 1.2.1,任务 2026-11-18/fee-access-and-matrix,2026-11-19)
+# 时刻取自任务目录里文件的修改时间(ls --time-style=+%H:%M:%S)
+
+## 实现评审第 02 轮
+17:31:02  .review-lock                  review.sh 取得评审锁(此前已跑完 evidence-check)
+17:42:11  .review-raw-02.json 创建      开始调用 codex exec —— 之前的 11 分 09 秒是 pre_hash=$(workspace_hash)
+17:44:48  .review-raw-02.events.jsonl   Codex 事件流最后一次写入
+17:44:54  .review-raw-02.json           Codex 输出落盘 —— Codex 本身用时 2 分 43 秒
+(之后)                                  post_hash=$(workspace_hash),评审文件发布时刻见文末补记
+
+## 实现评审第 01 轮(同一天)
+13:14:48  .review-raw-01.events.jsonl   Codex 事件流最后一次写入
+13:14:52  .review-raw-01.json           Codex 输出落盘
+13:26:14  review-round-01-fail.md       评审文件发布 —— 之前的 11 分 22 秒是 post_hash=$(workspace_hash)
+
+## 第 02 轮 pre_hash 期间对进程的观察(17:38–17:40)
+- pgrep -f "codex exec":没有 codex 进程(用户此时注意到 Codex 额度没有变化)。
+- pstree:bash(review.sh) ─ git ls-files --others -z … │ while read 循环(bash) │ shasum
+- git 进程:State = S (sleeping),/proc/<pid>/wchan = anon_pipe_write,/proc/<pid>/io wchar = 2310144
+  —— 它已列完文件名(写出约 2.3 MB 路径),阻塞在等下游读管道。
+- while 循环所在的 bash:持续占用约 2% CPU,没有常驻子进程
+  —— 对每个文件做 [ -L ]、[ -x ] 判断并起一个 `shasum < "$f"`(shasum 是 /usr/bin/perl 脚本)。
+- 聚合用的 shasum:/proc/<pid>/io rchar 在 8 分钟时约 3.5 MB(只收到了各文件的摘要行,不是文件内容)。

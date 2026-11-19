@@ -1,0 +1,42 @@
+# rawf-evidence v1
+tc: TC-05
+label: 
+cmd: bash .ai/2026-11-19/review-fingerprint-evidence-bloat/assets/test-workspace-hash.sh tc05
+cwd: /home/rabbir/Projects/ai-workflow-template/.claude/worktrees/review-fingerprint-batch-hash
+git_head: fd5d23a2354fbe194d3e565ba22595fa90339383 dirty
+started: 2026-11-19T18:06:19+09:00
+--- output ---
+== TC-05 缺 sha1sum / sha1sum 运行期异常 ==
+  ok   - 受控 PATH (i) 不含 sha1sum
+-- (1) PATH 不含 sha1sum
+  ok   - __workspace_hash:退出码 1(非 0)且 stdout 无指纹
+  review.sh 退出码 3;输出:
+  | 需要 coreutils(sha1sum)与 findutils(xargs):缺少 sha1sum
+  ok   - (1) 完整流程:exit 3
+  ok   - (1) stderr 指明缺少 sha1sum
+  ok   - (1) codex 桩未被调用
+  ok   - (1):无 review-round-*.md
+-- (2) sha1sum 桩以 255 退出(标记已存在)
+  ok   - __workspace_hash:退出码 1(非 0)且 stdout 无指纹
+  review.sh 退出码 3;输出:
+  | xargs: sha1sum: exited with status 255; aborting
+  | 工作区指纹计算失败(评审前),评审未启动;排查上方报错后重跑
+  ok   - (2) 完整流程(pre_hash 失败):exit 3
+  ok   - (2) codex 桩未被调用
+  ok   - (2):无 review-round-*.md
+-- (3) 标记由 codex 桩在写出 JSON 前创建(post_hash 失败)
+  ok   - 对照:标记不存在时桩 sha1sum 下指纹正常 (08b51dcb804d17a3d52375463d141425866bea32, rc=0)
+  review.sh 退出码 3;输出:
+  | xargs: sha1sum: exited with status 255; aborting
+  | 工作区指纹计算失败(评审后),无法确认主工作区未被改动,本次评审无效;排查上方报错后重跑
+  ok   - (3) 完整流程(post_hash 失败):exit 3
+  ok   - (3) codex 桩被调用过
+  ok   - (3) 标记已由桩创建
+  ok   - (3):无 review-round-*.md
+
+RESULT: all assertions passed
+
+--- end ---
+exit: 0
+finished: 2026-11-19T18:06:36+09:00
+bytes: 1409

@@ -1,0 +1,31 @@
+# rawf-evidence v1
+tc: TC-01
+label: 
+cmd: bash .ai/2026-11-19/review-fingerprint-evidence-bloat/assets/test-workspace-hash.sh tc01
+cwd: /home/rabbir/Projects/ai-workflow-template/.claude/worktrees/review-fingerprint-batch-hash
+git_head: fd5d23a2354fbe194d3e565ba22595fa90339383 dirty
+started: 2026-11-19T18:06:05+09:00
+--- output ---
+== TC-01 敏感性回归 ==
+  ok   - 基线指纹 1c69a98cb815cc13f33196f86813d65eda113ea6 (rc=0)
+  ok   - 改已跟踪文件:指纹变化 (42c622fe7e2e0d4361573548832ab3cdc8fbaef2, rc=0)
+  ok   - 还原已跟踪文件:指纹 = 基线 (1c69a98cb815cc13f33196f86813d65eda113ea6, rc=0)
+  ok   - 改未跟踪文件内容(等长):指纹变化 (5382324df876c60f44bf624e286fe12d5d97e556, rc=0)
+  ok   - 还原未跟踪文件内容:指纹 = 基线 (1c69a98cb815cc13f33196f86813d65eda113ea6, rc=0)
+  ok   - 去掉可执行位:指纹变化 (72543e002d8f379d904e2299c020fad7d132295f, rc=0)
+  ok   - 恢复可执行位:指纹 = 基线 (1c69a98cb815cc13f33196f86813d65eda113ea6, rc=0)
+  ok   - 改符号链接目标:指纹变化 (c617eacf9e9179b2802fac79f08c6582bfac398c, rc=0)
+  ok   - 还原符号链接目标:指纹 = 基线 (1c69a98cb815cc13f33196f86813d65eda113ea6, rc=0)
+  ok   - 新增未跟踪文件:指纹变化 (0fe083f316ac1ef312f9750a63f813ad174e5f71, rc=0)
+  ok   - 删除新增的文件:指纹 = 基线 (1c69a98cb815cc13f33196f86813d65eda113ea6, rc=0)
+  ok   - 删除未跟踪文件:指纹变化 (88b94686ed37c799d6f4e55f320ca8cfbaf3fe1c, rc=0)
+  ok   - 恢复被删文件:指纹 = 基线 (1c69a98cb815cc13f33196f86813d65eda113ea6, rc=0)
+  ok   - 重命名未跟踪文件:指纹变化 (2ef1eab3f58453ee13cf4d7fe0b39815408851c7, rc=0)
+  ok   - 改回原名:指纹 = 基线 (1c69a98cb815cc13f33196f86813d65eda113ea6, rc=0)
+
+RESULT: all assertions passed
+
+--- end ---
+exit: 0
+finished: 2026-11-19T18:06:06+09:00
+bytes: 1454

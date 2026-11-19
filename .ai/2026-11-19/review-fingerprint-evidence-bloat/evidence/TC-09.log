@@ -1,0 +1,22 @@
+# rawf-evidence v1
+tc: TC-09
+label: 
+cmd: bash .ai/2026-11-19/review-fingerprint-evidence-bloat/assets/test-workspace-hash.sh tc09
+cwd: /home/rabbir/Projects/ai-workflow-template/.claude/worktrees/review-fingerprint-batch-hash
+git_head: fd5d23a2354fbe194d3e565ba22595fa90339383 dirty
+started: 2026-11-19T18:07:45+09:00
+--- output ---
+== TC-09 发版文件 ==
+  TEMPLATE-VERSION:1:version: 1.4.1
+  ok   - version 行为 1.4.1
+  CHANGELOG 行号:[1.4.1]=22 [1.4.0]=49
+  ok   - [1.4.1] - 2026-11-19 条目存在且位于 [1.4.0] 之前
+  条目内升级指引:20:### 升级指引
+  ok   - [1.4.1] 条目含「升级指引」小节
+
+RESULT: all assertions passed
+
+--- end ---
+exit: 0
+finished: 2026-11-19T18:07:46+09:00
+bytes: 325

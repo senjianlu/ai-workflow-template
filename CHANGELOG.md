@@ -19,6 +19,33 @@ skill 目录及其内容哈希锁,consumer 可能持有自有条目,须经锁机
 
 每个版本条目必须含「升级指引」小节,逐文件标注归类与迁移动作。
 
+## [1.4.1] - 2026-11-19
+
+### Fixed
+
+- review.sh 的工作区指纹不再为每个未跟踪文件单独启动一个 `shasum` 进程:内容
+  哈希改为按参数容量分批交给 `sha1sum`(经 `xargs`)。未跟踪文件上万的仓库
+  (典型是 `.ai/**/evidence/` 未提交)此前一次指纹要十分钟级,且每轮评审在
+  Codex 前后各算一次;3000 个文件的夹具上实测由约一分钟降到 1 秒以内。指纹
+  口径不变(类型 + 路径 + 可执行位 + 内容哈希,符号链接不跟随,排除清单不变;
+  路径统一加 `./` 前缀交给 `sha1sum`,文件名恰为 `-` 的文件照旧按内容计入),
+  指纹取值会变但只在单次运行内比对,无兼容影响。
+
+### Changed
+
+- review.sh 新增对 coreutils(`sha1sum`)与 findutils(`xargs`)的依赖,启动时
+  预检,缺失即 exit 3。
+- 指纹计算失败(工具缺失、哈希进程异常退出)时 review.sh 一律 exit 3:评审前
+  失败不调用 Codex,评审后失败不发布评审文件。个别文件不可读仍按原行为容忍。
+
+### 升级指引
+
+- 可整体替换:`.ai-workflow/`(本版只改 scripts/review.sh 与 TEMPLATE-VERSION)。
+  consumer 若按 `# TEMPLATE:` 注释在 review.sh 的 `hash_excludes` 里加过项目
+  排除项,替换后须把这些排除项重新加回。
+- 无需人工合并项;hooks、settings.json、`.gitignore` 未变。
+- 运行环境须有 `sha1sum` 与 `xargs`(常见 Linux 发行版默认具备)。
+
 ## [1.4.0] - 2026-11-10
 
 ### Changed

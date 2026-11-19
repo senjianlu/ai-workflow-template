@@ -1,0 +1,13 @@
+# rawf-evidence v1
+tc: TC-08
+label: 
+cmd: bash -n .ai-workflow/scripts/review.sh
+cwd: /home/rabbir/Projects/ai-workflow-template/.claude/worktrees/review-fingerprint-batch-hash
+git_head: fd5d23a2354fbe194d3e565ba22595fa90339383 dirty
+started: 2026-11-19T18:07:46+09:00
+--- output ---
+
+--- end ---
+exit: 0
+finished: 2026-11-19T18:07:46+09:00
+bytes: 0

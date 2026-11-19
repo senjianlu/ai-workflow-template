@@ -1,0 +1,3 @@
+# 实测:cscheap-frontend 工作区指纹(review.sh __workspace_hash)耗时
+# 时间:2026-11-19T17:44:12+09:00;此时同一仓库有一轮 review.sh 正在运行(Codex 阶段),机器另有常规负载
+$ time bash .ai-workflow/scripts/review.sh __workspace_hash

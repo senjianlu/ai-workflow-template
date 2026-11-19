@@ -1,0 +1,36 @@
+# rawf-evidence v1
+tc: TC-03
+label: 
+cmd: bash .ai/2026-11-19/review-fingerprint-evidence-bloat/assets/test-workspace-hash.sh tc03
+cwd: /home/rabbir/Projects/ai-workflow-template/.claude/worktrees/review-fingerprint-batch-hash
+git_head: fd5d23a2354fbe194d3e565ba22595fa90339383 dirty
+started: 2026-11-19T18:06:07+09:00
+--- output ---
+== TC-03 特殊路径与符号链接 ==
+  ok   - 基线指纹 e3ebe5345c8228bce58ff3250150c049e7f84d1c (rc=0)
+  ok   - (1) 连续两次取值相等 (e3ebe5345c8228bce58ff3250150c049e7f84d1c, rc=0)
+  ok   - (2) 等长改写 sp\ ace.txt:指纹变化 (c0f12186754e8cf7abec1a8e8d8783dfaca38cbc, rc=0)
+  ok   - (2) 还原 sp\ ace.txt:指纹 = 基线 (e3ebe5345c8228bce58ff3250150c049e7f84d1c, rc=0)
+  ok   - (2) 等长改写 $'new\nline.txt':指纹变化 (0b6086ebcf9f22b84a4068d8d02d8b456b1eb6ef, rc=0)
+  ok   - (2) 还原 $'new\nline.txt':指纹 = 基线 (e3ebe5345c8228bce58ff3250150c049e7f84d1c, rc=0)
+  ok   - (2) 等长改写 -dash.txt:指纹变化 (81a8a84ad36f1f6dcd0e72ce7bf7632a08011bf7, rc=0)
+  ok   - (2) 还原 -dash.txt:指纹 = 基线 (e3ebe5345c8228bce58ff3250150c049e7f84d1c, rc=0)
+  ok   - (2) 等长改写 -:指纹变化 (00bd6bd66afc8fbe754d8c3ed14abf4435a407d7, rc=0)
+  ok   - (2) 还原 -:指纹 = 基线 (e3ebe5345c8228bce58ff3250150c049e7f84d1c, rc=0)
+  ok   - (2) 等长改写 $'\344\270\255\346\226\207.txt':指纹变化 (368652d99a60d01d247296e6aea122803da9fbf6, rc=0)
+  ok   - (2) 还原 $'\344\270\255\346\226\207.txt':指纹 = 基线 (e3ebe5345c8228bce58ff3250150c049e7f84d1c, rc=0)
+  ok   - (2) 等长改写 st\*ar.txt:指纹变化 (2b1a63783fb9119376acf7acd31e6eb5e1c520bb, rc=0)
+  ok   - (2) 还原 st\*ar.txt:指纹 = 基线 (e3ebe5345c8228bce58ff3250150c049e7f84d1c, rc=0)
+  ok   - (3) 向空文件写入内容:指纹变化 (a02204fbf6fd5d7b4e3cb7209010d8a90ddd975f, rc=0)
+  ok   - (3) 还原为空文件:指纹 = 基线 (e3ebe5345c8228bce58ff3250150c049e7f84d1c, rc=0)
+  ok   - (4) 交换两个等长文件的内容:指纹变化 (4ce46f029b981eaf70d918e3ebc1e56bccca3839, rc=0)
+  ok   - (4) 换回:指纹 = 基线 (e3ebe5345c8228bce58ff3250150c049e7f84d1c, rc=0)
+  ok   - (5) 只改仓库外链接目标的内容:指纹 = 基线 (e3ebe5345c8228bce58ff3250150c049e7f84d1c, rc=0)
+  ok   - (6) 链接改指向另一个仓库外文件:指纹变化 (ccf68e05ed44b8c3a35dc94c98f1ac6a524c706a, rc=0)
+
+RESULT: all assertions passed
+
+--- end ---
+exit: 0
+finished: 2026-11-19T18:06:09+09:00
+bytes: 2055
