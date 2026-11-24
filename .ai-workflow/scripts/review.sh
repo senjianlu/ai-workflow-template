@@ -2,16 +2,21 @@
 # 调用 Codex 评审当前改动。退出码:0=pass 1=fail 3=评审执行异常(含看门狗终止)
 # 评审以只读沙箱(--sandbox read-only)直审原仓库,不建副本(与
 # plan-review.sh 同构;取消副本的决策见 docs/decisions/t0005)。评审者不
-# 运行任何测试,测试核验走证据协议(review-standards.md「评审动作边界」)。
+# 运行任何测试,也不核验证据——证据由 evidence-check.sh 在评审启动前机器判定。
 # 完整性哈希保留为双保险:检测评审期间主工作区的并发写入,兜底沙箱失效;
 # 只读沙箱生效且无并发写入时理应永不触发。
+#
+# 判定(docs/decisions/t0015):评审者不自报结论。脚本先校验输出结构,再按
+# 问题的 file 做路径归类,把指向非产品路径或缺失败场景的问题降为建议,余下有
+# blocker/major 即 fail。每轮保存所审改动的清单与内容快照,第 2 轮起据此生成
+# 轮间差异,评审者只审修复(规则见 review-standards.md「分轮模式」)。
 #
 # 卡死治理(docs/decisions/t0009):codex 的 stdin 接 /dev/null(codex 在 stdin
 # 非终端时必读到 EOF);--json 事件流落盘作进度信号,静默超过
 # RAWF_REVIEW_IDLE_SECONDS 或总时长超过 RAWF_REVIEW_MAX_SECONDS 即按会话 +
 # 进程组终止 codex 并 exit 3;锁为 flock 文件,随持有进程退出自动释放。
 # 运行环境要求 Linux:util-linux(flock、setsid)、procps(pgrep)、
-# coreutils(sha1sum)与 findutils(xargs)。
+# coreutils(sha1sum)、findutils(xargs)与 diffutils(diff、cmp)。
 set -euo pipefail
 
 # --- 完整性指纹(封装于顶层,兼作可控测试点)-----------------------------
@@ -85,6 +90,546 @@ if [ "${1:-}" = "__workspace_hash" ]; then
   exit $?
 fi
 
+# --- 判定:输入校验、路径归类、降级与渲染(docs/decisions/t0015)-------------
+# 路径归类:命中 product_globs → 产品路径;否则命中 nonproduct_globs → 非产品
+# 路径;其余(含空串、无法定位或越出仓库根的路径)→ 产品路径。匹配对象是词法
+# 归一后的仓库相对路径。清单项按写法分四种,目录按路径组件匹配、文件名规则
+# 只匹配 basename,通配符不会跨过 /:
+#   '/dir/'   以 / 开头并以 / 结尾:从仓库根起的目录('/docs/' 命中 docs/ 下的一切)
+#   'name/'   只以 / 结尾:任意层级的目录名('tests/' 命中 tests/x 与 a/tests/x,
+#             不命中 a/mytests/x)
+#   '/glob'   只以 / 开头:仓库根目录下的文件名通配('/README.md')
+#   'glob'    其余:任意层级的文件名通配('test_*.py' 命中 a/test_x.py,不命中
+#             apps/test_management/api.py)
+# TEMPLATE: 按项目增删。product_globs 优先于 nonproduct_globs,用于把"文档即
+# 产品"一类路径从非产品清单里挖出来(如 '/docs/site/')。
+product_globs=()
+nonproduct_globs=(
+  '/.ai/' '/docs/'
+  '/README.md' '/CHANGELOG.md'
+  'tests/' 'test/' '__tests__/' 'e2e/'
+  'test_*.py' '*_test.py' '*.test.*' '*.spec.*' 'conftest.py'
+)
+
+# path_matches <归一后的路径> <清单项>:按上面四种写法判断是否命中。
+path_matches() {
+  local p=$1 g=$2
+  case "$g" in
+    /*/) case "/$p" in "$g"*) return 0 ;; esac ;;
+    */)  case "/$p" in *"/$g"*) return 0 ;; esac ;;
+    /*)
+      case "$p" in */*) return 1 ;; esac
+      # shellcheck disable=SC2254  # 清单项就是要按通配解释
+      case "$p" in ${g#/}) return 0 ;; esac ;;
+    *)
+      # shellcheck disable=SC2254
+      case "${p##*/}" in $g) return 0 ;; esac ;;
+  esac
+  return 1
+}
+
+# normalize_issue_path <路径>:去掉项目根绝对前缀与尾部 :行号,折叠 .、.. 与重复
+# 的 /。输出归一后的仓库相对路径;越出仓库根(.. 多于层数,或仓库外的绝对路径)
+# 时输出以 "../" 开头的串,由 classify_issue_path 按产品路径处理。依赖全局 proj。
+normalize_issue_path() {
+  local p=$1 seg escaped=0 joined
+  local -a segs=() out=()
+  while [[ "$p" =~ ^(.*):[0-9]+(-[0-9]+)?$ ]]; do p=${BASH_REMATCH[1]}; done
+  case "$p" in
+    "$proj"/*) p=${p#"$proj"/} ;;
+    "$proj") p= ;;
+    /*) printf '../%s\n' "${p#/}"; return 0 ;;
+  esac
+  IFS=/ read -r -a segs <<< "$p" || true
+  for seg in "${segs[@]}"; do
+    case "$seg" in
+      ''|.) ;;
+      ..) if [ "${#out[@]}" -gt 0 ]; then unset 'out[-1]'; else escaped=1; fi ;;
+      *) out+=("$seg") ;;
+    esac
+  done
+  joined=$(IFS=/; printf '%s' "${out[*]}")
+  if [ "$escaped" = 1 ]; then printf '../%s\n' "$joined"; else printf '%s\n' "$joined"; fi
+}
+
+# classify_issue_path <归一后的路径>:输出 product | nonproduct | taskplan。
+# taskplan = 本任务的 plan.md(plan-blocker 允许指向它)。依赖全局 task_rel。
+classify_issue_path() {
+  local p=$1 g
+  case "$p" in ''|../*) echo product; return 0 ;; esac
+  if [ "$p" = "$task_rel/plan.md" ]; then echo taskplan; return 0; fi
+  for g in "${product_globs[@]}"; do
+    if path_matches "$p" "$g"; then echo product; return 0; fi
+  done
+  for g in "${nonproduct_globs[@]}"; do
+    if path_matches "$p" "$g"; then echo nonproduct; return 0; fi
+  done
+  echo product
+}
+
+# issue_classes <raw_json>:逐条 issue 归类,输出与 issues 等长的 JSON 数组。
+issue_classes() {
+  local f cls
+  local -a out=()
+  while IFS= read -r f; do
+    cls=$(classify_issue_path "$(normalize_issue_path "$f")")
+    out+=("$cls")
+  done < <(jq -r '.issues[] | .file | gsub("[\r\n]"; " ")' "$1")
+  if [ "${#out[@]}" -eq 0 ]; then echo '[]'; else printf '%s\n' "${out[@]}" | jq -R . | jq -cs .; fi
+}
+
+# validate_review_json <raw_json>:最低输入校验。评审者不再自报 verdict,结论完全
+# 由脚本推导,因此结构不合法的输出(空对象、缺字段、类型错误、非法严重度)必须
+# 在这里拦下,不得渲染成 pass。
+validate_review_json() {
+  jq -e '
+    def strs: type == "array" and all(.[]; type == "string");
+    # 枚举按"是字符串且与某一项严格相等"判定(index 会把数组当作子序列查找)
+    def one_of($xs): . as $v | ($v | type) == "string" and any($xs[]; . == $v);
+    # 键集合必须与 schema 完全一致:缺字段、多字段(如旧版的 verdict)都不合法
+    def keys_are($xs): keys == ($xs | sort);
+    (type == "object")
+    and keys_are(["issues", "test_gaps", "advisories", "scope_findings", "overall"])
+    and ((.issues | type) == "array")
+    and all(.issues[];
+          type == "object"
+          and keys_are(["id", "severity", "file", "line", "summary", "scenario", "detail"])
+          and ([.id, .file, .summary, .scenario, .detail] | all(.[]; type == "string"))
+          and ((.line | type) == "number") and (.line == (.line | floor))
+          and (.severity | one_of(["plan-blocker", "blocker", "major", "minor"])))
+    and (.test_gaps | strs) and (.advisories | strs) and (.scope_findings | strs)
+    and ((.overall | type) == "string")
+  ' "$1" >/dev/null 2>&1
+}
+
+# jq 前导:并入归类结果 $cls 后推导每条 issue 的降级原因(_why 为空串 = 留在问题
+# 清单)与结论。规则:非 plan-blocker 位于非产品路径(含任务目录)→ 降级;
+# plan-blocker 只接受本任务 plan.md、空串或产品路径;plan-blocker / blocker /
+# major 的失败场景为空白 → 降级;余下有 blocker/major → fail。
+# shellcheck disable=SC2016  # jq 程序里的 $ 是 jq 变量
+jq_derive='
+  # 空白 = 不含任何非空白字符(不依赖 ^ / $ 的行锚点语义)
+  def blank: test("\\S") | not;
+  def oneline: gsub("\\s*\\n\\s*"; " ");
+  def pad2: tostring | if length < 2 then "0" + . else . end;
+  def sev_rank: {"plan-blocker": 0, "blocker": 1, "major": 2, "minor": 3};
+  .issues = [ .issues | to_entries[] | .value + {_cls: $cls[.key]} ]
+  | .issues |= map(. + {_why: (
+      if .severity == "plan-blocker" then
+        (if ._cls == "nonproduct" then "非产品路径"
+         elif (.scenario | blank) then "缺失败场景" else "" end)
+      elif ._cls != "product" then "非产品路径"
+      elif (.severity != "minor") and (.scenario | blank) then "缺失败场景"
+      else "" end)})
+  | .kept = [ .issues[] | select(._why == "") ]
+  | .demoted = [ .issues[] | select(._why != "") ]
+  | .verdict = (if any(.kept[]; .severity == "blocker" or .severity == "major")
+                then "fail" else "pass" end)
+'
+
+# derive_verdict <raw_json> <cls_json>:输出 pass | fail。
+derive_verdict() {
+  jq -r --argjson cls "$2" "$jq_derive | .verdict" "$1"
+}
+
+# render_review <raw_json> <NN> <cls_json>:渲染评审文件。问题清单按严重度排序
+# (plan-blocker 置顶,同级保持原顺序);测试缺口取前 3 条、评审者自拟建议取前
+# 5 条,超出部分只注明条数;脚本降级的条目保留原编号并带标记,不受条数限制。
+# --arg render 1 为渲染调用的特征标记,便于测试注入,对 jq 语义无影响。
+render_review() {
+  # shellcheck disable=SC2016
+  jq -r --arg render 1 --arg nn "$2" --argjson cls "$3" "$jq_derive"'
+    | def loc: (if .file == "" then ""
+                else "\n  - 位置:\(.file)\(if .line > 0 then ":\(.line)" else "" end)" end);
+      def scn: (if (.scenario | blank) then "" else "\n  - 失败场景:\(.scenario | oneline)" end);
+      def item: "\(.summary | oneline)\(loc)\(scn)\n  - 详情:\(.detail | oneline)";
+    "# 评审:第 \($nn) 轮\n\n## 问题清单",
+    (if (.kept | length) == 0 then "无"
+     else (.kept | sort_by(sev_rank[.severity]) | .[] | "- [\(.severity)] \(.id) \(item)") end),
+    "\n## 测试缺口(不计入 pass/fail)",
+    (if (.test_gaps | length) == 0 then "无"
+     else (.test_gaps[0:3] | to_entries[] | "- T-\(.key + 1 | pad2) \(.value | oneline)") end),
+    (if (.test_gaps | length) > 3
+     then "(另有 \((.test_gaps | length) - 3) 条超出上限未列出,见原始输出)" else empty end),
+    "\n## 建议(不计入 pass/fail)",
+    (if ((.advisories | length) + (.demoted | length)) == 0 then "无" else empty end),
+    (.advisories[0:5] | to_entries[] | "- A-\(.key + 1 | pad2) \(.value | oneline)"),
+    (if (.advisories | length) > 5
+     then "(另有 \((.advisories | length) - 5) 条超出上限未列出,见原始输出)" else empty end),
+    (.demoted[] | "- [\(.severity)] \(.id) 〔降级:\(._why)〕\(item)"),
+    "\n## 范围核对",
+    (if (.scope_findings | length) == 0 then "无" else (.scope_findings[] | "- \(oneline)") end),
+    "\n## 总评\n\(.overall)\n\nVERDICT: \(.verdict)"
+  ' "$1"
+}
+
+# list_minors <任务目录>:汇总全部实现评审轮次的非阻断条目(minor、测试缺口、
+# 建议、降级条目),每条一行 "| impl/NN/<编号> | <类别>:<概要> |";无则输出"无"。
+# 供 rawf-report 收尾汇总——修复轮只审修复,首轮的 minor 不会在末轮重复出现。
+# 1.5.0 之前的旧格式评审文件没有测试缺口与建议两节,只提取出 minor。只读。
+list_minors() {
+  local td=${1:-} f nn out all=
+  [ -d "$td" ] || { echo "任务目录不存在:$td" >&2; return 3; }
+  shopt -s nullglob
+  local files=("$td"/review-round-*.md)
+  shopt -u nullglob
+  for f in "${files[@]}"; do
+    nn=${f##*/review-round-}; nn=${nn%%-*}
+    out=$(awk -v ref="impl/$nn" '
+      function row(id, text) { gsub(/\|/, "\\|", text); printf "| %s/%s | %s |\n", ref, id, text }
+      /^## / { sec = $0; next }
+      sec ~ /^## 问题清单/ && /^- \[minor\] R-[0-9]+ / {
+        t = $0; sub(/^- \[minor\] R-[0-9]+ /, "", t); row($3, "minor:" t); next }
+      sec ~ /^## 测试缺口/ && /^- T-[0-9]+ / {
+        t = $0; sub(/^- T-[0-9]+ /, "", t); row($2, "测试缺口:" t); next }
+      sec ~ /^## 建议/ && /^- A-[0-9]+ / {
+        t = $0; sub(/^- A-[0-9]+ /, "", t); row($2, "建议:" t); next }
+      sec ~ /^## 建议/ && /^- \[[a-z-]+\] R-[0-9]+ / {
+        t = $0; sub(/^- \[[a-z-]+\] R-[0-9]+ /, "", t); row($3, "降级" $2 ":" t); next }
+    ' "$f")
+    [ -n "$out" ] && all+="$out"$'\n'
+  done
+  if [ -z "$all" ]; then echo "无"; else printf '%s' "$all"; fi
+}
+
+if [ "${1:-}" = "__minors" ]; then
+  shift
+  list_minors "$@"
+  exit $?
+fi
+
+# --- 每轮所审改动的清单、内容快照与轮间差异 --------------------------------
+# 路径口径:相对 HEAD 有差异的已跟踪文件(含已删除)+ 未被 .gitignore 忽略的
+# 未跟踪文件;排除 .ai/(任务产物不是评审对象)、.claude/settings.local.json
+# 与 .claude/worktrees/。.claude/ 下的 skill、hook 属于评审对象,计入。
+# 以下函数依赖全局 proj、task_dir、task_rel、scratch,且 cwd = proj。
+review_pathspec=(':(exclude).ai' ':(exclude).claude/settings.local.json' ':(exclude).claude/worktrees')
+snap_limit=1048576   # 单文件内容快照上限(字节);超过即"未快照"
+# 指令经单个命令行参数传给 codex(Linux 上单个参数约 128 KiB)。两块可变长内容
+# ——变化文件列表与证据报告——各自内联不超过 inline_budget 字节,超出部分落盘
+# 供评审者按路径读取;拼好的指令再按 prompt_limit 做一次总量兜底。
+inline_budget=16384
+prompt_limit=100000
+
+# enc_field / dec_field:清单字段(路径、符号链接目标)的无歧义编码——% → %25、
+# 制表符 → %09、换行 → %0A、回车 → %0D,其余字节原样。编码是单射:不同的原文
+# 不会得到相同的字段,不含这四种字符的普通路径编码后不变。结果放在 REPLY
+# (不经子 shell,清单逐文件调用)。
+enc_field() {
+  REPLY=$1
+  REPLY=${REPLY//\%/%25}; REPLY=${REPLY//$'\t'/%09}
+  REPLY=${REPLY//$'\n'/%0A}; REPLY=${REPLY//$'\r'/%0D}
+}
+dec_field() {
+  REPLY=$1
+  REPLY=${REPLY//%0D/$'\r'}; REPLY=${REPLY//%0A/$'\n'}
+  REPLY=${REPLY//%09/$'\t'}; REPLY=${REPLY//%25/%}
+}
+# disp_field <编码后的字段>:给评审者看的写法,结果放 REPLY。不含制表符/换行/回车
+# 时就是真实内容(% 原样显示,可直接当路径用);含这些控制字符时显示编码形式并
+# 带标注,不会与恰好长成那样的真实路径混淆。
+disp_field() {
+  local enc=$1
+  dec_field "$enc"
+  case "$REPLY" in
+    *$'\t'*|*$'\n'*|*$'\r'*) REPLY="$enc〔含控制字符,按 %XX 编码显示〕" ;;
+  esac
+}
+
+# 清单格式标记(首行)。读取上一轮清单时据此判断能否按当前格式解读。
+manifest_magic=$'rawf-manifest\t1'
+
+# manifest_readable <清单文件>:该清单能否按当前格式解读。带格式标记 → 能。不带
+# 标记的是引入标记之前写出的清单(路径未统一编码):只有通篇不含 % 且没有以 $'
+# 开头的字段(旧的 shell 转义写法)时,才与当前格式逐字节等价,否则不能。
+manifest_readable() {
+  if [ "$(head -n 1 "$1")" = "$manifest_magic" ]; then return 0; fi
+  if grep -q '%' "$1" || grep -qF $'\t$\'' "$1"; then return 1; fi
+  return 0
+}
+
+review_paths() {
+  { git diff HEAD --no-renames --name-only -z -- . "${review_pathspec[@]}" \
+      && git ls-files --others --exclude-standard -z -- . "${review_pathspec[@]}"; } | sort -zu
+}
+
+# build_manifest <清单输出文件> [内容快照目录]:生成所审改动的清单;给了快照目录时
+# 同时把可保存的内容复制进去。清单首行是格式标记,第二行 "head<TAB><sha>";其后每行
+#   <类型><TAB><可执行位><TAB><内容哈希或链接目标><TAB><内容可保存 1|0><TAB><路径>
+# 类型 F = 普通文件、L = 符号链接、D = 已删除、O = 其它;按路径排序。路径与
+# 链接目标一律经 enc_field 编码,链接目标按完整字节读取(含末尾换行)。
+# 大小超过 snap_limit、不可读、或路径含制表符/换行/回车的文件不保存内容(第 4 列为 0)。
+# 内容哈希对所有可读的普通文件都计算(含路径特殊的文件):内容一变,清单记录
+# 必变,这类文件在轮间差异里会被保守地列为"未快照"。
+# 复制完成后重算副本的哈希并与清单逐个比对:复制期间文件被改写(副本与清单
+# 记录的内容不是同一版本)即失败,不会留下与清单不符的快照。
+# 哈希与复制按批交给 sha1sum / cp(xargs),不为每个文件单独启动进程。
+build_manifest() {
+  local man=$1 snap=${2:-}
+  local p type mode hash saved field rec size name rc head_sha copied
+  local -a paths=() regular=() sizable=() keep=()
+  local -A sizes=() hashes=() kept=()
+  review_paths > "$scratch/paths" || return 1
+  mapfile -d '' -t paths < "$scratch/paths"
+  for p in "${paths[@]}"; do
+    if [ ! -L "$p" ] && [ -f "$p" ]; then
+      regular+=("$p")
+      case "$p" in *$'\t'*|*$'\n'*|*$'\r'*) ;; *) sizable+=("$p") ;; esac
+    fi
+  done
+  if [ "${#sizable[@]}" -gt 0 ]; then
+    printf '%s\0' "${sizable[@]}" | xargs -0 -r stat --printf '%s\t%n\0' -- > "$scratch/sizes" || return 1
+    while IFS=$'\t' read -r -d '' size name; do sizes["$name"]=$size; done < "$scratch/sizes"
+  fi
+  if [ "${#regular[@]}" -gt 0 ]; then
+    rc=0
+    printf './%s\0' "${regular[@]}" | xargs -0 -r sha1sum -z -- > "$scratch/hashes" 2>/dev/null || rc=$?
+    case "$rc" in 0|123) ;; *) return 1 ;; esac
+    while IFS= read -r -d '' rec; do hashes["${rec#*  ./}"]=${rec%%  *}; done < "$scratch/hashes"
+  fi
+  for p in "${sizable[@]}"; do
+    if [ -r "$p" ] && [ -n "${hashes[$p]:-}" ] && [ "${sizes[$p]:-$((snap_limit + 1))}" -le "$snap_limit" ]; then
+      keep+=("$p"); kept["$p"]=1
+    fi
+  done
+  if [ -n "$snap" ] && [ "${#keep[@]}" -gt 0 ]; then
+    printf '%s\0' "${keep[@]}" | xargs -0 -r cp --parents -p -t "$snap" -- || return 1
+    ( cd "$snap" && printf './%s\0' "${keep[@]}" | xargs -0 -r sha1sum -z -- ) > "$scratch/snaphashes" 2>/dev/null \
+      || return 1
+    copied=0
+    while IFS= read -r -d '' rec; do
+      name=${rec#*  ./}
+      if [ "${hashes[$name]:-}" != "${rec%%  *}" ]; then
+        echo "内容快照与清单不一致:$name 在生成快照期间被改写" >&2; return 1
+      fi
+      copied=$((copied + 1))
+    done < "$scratch/snaphashes"
+    if [ "$copied" -ne "${#keep[@]}" ]; then
+      echo "内容快照不完整:应保存 ${#keep[@]} 个文件,实际核对到 $copied 个" >&2; return 1
+    fi
+  fi
+  head_sha=$(git rev-parse HEAD) || return 1
+  {
+    printf '%s\n' "$manifest_magic"
+    printf 'head\t%s\n' "$head_sha"
+    for p in "${paths[@]}"; do
+      enc_field "$p"; field=$REPLY; saved=0; mode=-; hash=-
+      if [ -L "$p" ]; then
+        type=L
+        # 命令替换会剥掉末尾换行:追加哨兵字符再去掉,只删 readlink 自己加的那个换行
+        hash=$(readlink -- "$p" && printf x) || return 1
+        hash=${hash%x}; hash=${hash%$'\n'}
+        enc_field "$hash"; hash=$REPLY
+      elif [ ! -e "$p" ]; then
+        type=D
+      elif [ -f "$p" ]; then
+        type=F
+        if [ -x "$p" ]; then mode=x; fi
+        hash=${hashes[$p]:-unreadable}
+        saved=${kept[$p]:-0}
+      else
+        type=O
+      fi
+      printf '%s\t%s\t%s\t%s\t%s\n' "$type" "$mode" "$hash" "$saved" "$field"
+    done
+  } > "$man" || return 1
+}
+
+# write_snapshot <NN>:写本轮的清单 .review-raw-NN.manifest 与内容快照
+# .review-raw-NN.snap/,并清理更早的快照目录。
+write_snapshot() {
+  local n=$1 man="$task_dir/.review-raw-$1.manifest" snap="$task_dir/.review-raw-$1.snap" d k
+  if [ -e "$snap" ] && [ ! -d "$snap" ]; then
+    echo "内容快照路径已被占用且不是目录:$task_rel/${snap##*/}" >&2; return 1
+  fi
+  rm -rf "$snap" "$man" || return 1
+  mkdir -p "$snap" || return 1
+  build_manifest "$man" "$snap" || return 1
+  # 只保留最近两轮的内容快照
+  for d in "$task_dir"/.review-raw-*.snap; do
+    [ -d "$d" ] || continue
+    k=${d##*/.review-raw-}; k=${k%.snap}
+    [[ "$k" =~ ^[0-9]+$ ]] || continue
+    if [ "$((10#$k))" -lt "$((10#$n - 1))" ]; then rm -rf "$d"; fi
+  done
+  return 0
+}
+
+# kind_label <类型> <链接目标>:轮间差异里对一侧文件类型的说明
+kind_label() {
+  case "$1" in
+    file) echo 普通文件 ;;
+    link) echo "符号链接(→ $2)" ;;
+    absent) echo 不存在 ;;
+    *) echo 其它类型 ;;
+  esac
+}
+
+# round_delta <上一轮 NN> <本轮 NN>:比对两轮清单。stdout 输出变化文件列表
+# (markdown 列表,每行一项;无变化时无输出),并把逐文件的 unified diff 写入
+# .review-raw-<本轮>.delta.diff。某一轮"所审内容"的取法:
+#   快照里有 → 快照副本;清单标为已删除,或清单没有它且 HEAD 中也没有 → 不存在;
+#   清单没有它而 HEAD 中有(当时与 HEAD 相同)→ HEAD 版本;内容未保存(清单标为
+#   未快照,或 HEAD 中的版本超过 snap_limit)→ 不出 diff。
+# 存在性、文件类型、可执行位三项元数据对每个变化文件都独立判定并列出,与内容
+# 是否可得无关:新增或删除空文件、只改可执行位、符号链接与普通文件互换都会列出
+# (互换时普通文件一侧的内容照常出 diff);内容未保存的文件同样标明新增、删除或
+# 可执行位变化,只是不出 diff。
+# 列表与 diff 标签显示的是真实路径;路径含控制字符时显示编码形式并带标注
+# (见 disp_field)。
+round_delta() {
+  local pn=$1 cn=$2
+  local pman="$task_dir/.review-raw-$1.manifest" cman="$task_dir/.review-raw-$2.manifest"
+  local psnap="$task_dir/.review-raw-$1.snap" csnap="$task_dir/.review-raw-$2.snap"
+  local delta="$task_dir/.review-raw-$2.delta.diff"
+  local type mode hash saved path key real name label pk ck pf cf drc i=0
+  local pkind pmode phash psrc ckind cmode chash csrc
+  local -A prec=() crec=() seen=()
+  local -a keys=() list=() notes=()
+  while IFS=$'\t' read -r type mode hash saved path; do
+    case "$type" in head|rawf-manifest) continue ;; esac
+    prec["$path"]="$type"$'\t'"$mode"$'\t'"$hash"$'\t'"$saved"; seen["$path"]=1
+  done < "$pman"
+  while IFS=$'\t' read -r type mode hash saved path; do
+    case "$type" in head|rawf-manifest) continue ;; esac
+    crec["$path"]="$type"$'\t'"$mode"$'\t'"$hash"$'\t'"$saved"; seen["$path"]=1
+  done < "$cman"
+  if [ "${#seen[@]}" -gt 0 ]; then
+    mapfile -t keys < <(printf '%s\n' "${!seen[@]}" | LC_ALL=C sort)
+  fi
+  : > "$scratch/diffs"
+
+  # side <清单记录或空> <真实路径>:取该轮"所审内容"的元数据,不取内容——
+  #   sk  类型:file | absent | link | other
+  #   sm  可执行位(x | -);sh  链接目标(编码后)
+  #   sc  普通文件的内容来源:snap(该轮快照里有副本)| head(HEAD 中的版本)|
+  #       none(内容未保存)
+  local sk sm sh sc
+  side() {
+    local rec=$1 p=$2 t m h s hm
+    sm=-; sh=-; sc=
+    if [ -z "$rec" ]; then
+      # 清单没有它:当时与 HEAD 相同,按 HEAD 中的类型取(不在 HEAD 中 = 不存在)。
+      # 路径加 ./ 前缀:以 : 开头的文件名不会被当成 pathspec 魔法
+      hm=$(git ls-tree HEAD -- "./$p" 2>/dev/null | awk '{ print $1; exit }')
+      case "$hm" in
+        '') sk=absent ;;
+        120000)
+          # blob 内容就是链接目标:按完整字节读取(哨兵防止末尾换行被剥掉),再编码
+          sk=link
+          sh=$(git show "HEAD:$p" && printf x) || return 1
+          sh=${sh%x}; enc_field "$sh"; sh=$REPLY ;;
+        100644|100755)
+          sk=file
+          if [ "$hm" = 100755 ]; then sm=x; fi
+          # HEAD 中的版本同样受 snap_limit 约束:超过即内容未保存
+          if [ "$(git cat-file -s "HEAD:$p" 2>/dev/null || echo 0)" -gt "$snap_limit" ]; then
+            sc=none
+          else
+            sc=head
+          fi ;;
+        *) sk=other ;;
+      esac
+      return 0
+    fi
+    IFS=$'\t' read -r t m h s <<< "$rec"
+    sm=$m; sh=$h
+    case "$t" in
+      D) sk=absent ;;
+      L) sk=link ;;
+      F) sk=file; if [ "$s" = 1 ]; then sc=snap; else sc=none; fi ;;
+      *) sk=other ;;
+    esac
+  }
+
+  for key in "${keys[@]}"; do
+    pk=${prec[$key]:-}; ck=${crec[$key]:-}
+    # 记录比较不含"内容可保存"一列
+    [ "${pk%$'\t'*}" = "${ck%$'\t'*}" ] && continue
+    i=$((i + 1))
+    # 清单里的键是编码后的路径;取内容、查 HEAD 用解码后的真实路径
+    dec_field "$key"; real=$REPLY
+    case "$real" in
+      *$'\t'*|*$'\n'*|*$'\r'*) label=$key; name="\`$key\`〔含控制字符,按 %XX 编码显示〕" ;;
+      *) label=$real; name="\`$real\`" ;;
+    esac
+    side "$pk" "$real" || return 1
+    pkind=$sk; pmode=$sm; phash=$sh; psrc=$sc
+    side "$ck" "$real" || return 1
+    ckind=$sk; cmode=$sm; chash=$sh; csrc=$sc
+    # 清单说有副本而快照里找不到(快照被外力动过):按内容未保存处理,不中止
+    if [ "$psrc" = snap ] && [ ! -f "$psnap/$real" ]; then psrc=none; fi
+    if [ "$csrc" = snap ] && [ ! -f "$csnap/$real" ]; then csrc=none; fi
+    # 路径含控制字符的文件一律不出 diff(无论内容来自快照还是 HEAD):diff 标签
+    # 因此只会是真实路径,不会出现两个文件共用一个标签
+    if [ "$label" != "$real" ]; then
+      if [ "$pkind" = file ]; then psrc=none; fi
+      if [ "$ckind" = file ]; then csrc=none; fi
+    fi
+
+    notes=()
+    # 一、存在性与文件类型
+    if [ "$pkind" = link ] && [ "$ckind" = link ]; then
+      if [ "$phash" != "$chash" ]; then
+        disp_field "$phash"; pf=$REPLY; disp_field "$chash"
+        notes+=("元数据变化:符号链接目标 $pf → $REPLY")
+      fi
+    elif [ "$pkind" != "$ckind" ]; then
+      case "$pkind>$ckind" in
+        'absent>file') notes+=(新增) ;;
+        'file>absent') notes+=(删除) ;;
+        *)
+          disp_field "$phash"; pf=$REPLY; disp_field "$chash"
+          notes+=("类型变化:$(kind_label "$pkind" "$pf") → $(kind_label "$ckind" "$REPLY")") ;;
+      esac
+    fi
+    # 二、可执行位(两侧都是普通文件时)
+    if [ "$pkind" = file ] && [ "$ckind" = file ] && [ "$pmode" != "$cmode" ]; then
+      notes+=("元数据变化:可执行位 $pmode → $cmode")
+    fi
+    # 三、内容:有一侧是普通文件就比内容,另一侧不是普通文件时按不存在处理;
+    #     任一普通文件侧的内容未保存 → 不出 diff,只注明
+    if [ "$pkind" = file ] || [ "$ckind" = file ]; then
+      if { [ "$pkind" = file ] && [ "$psrc" = none ]; } || { [ "$ckind" = file ] && [ "$csrc" = none ]; }; then
+        if [ "$ckind" = file ]; then
+          notes+=("未快照:内容未保存,整份按本轮变化对待")
+        else
+          notes+=("未快照:原内容未保存,不出 diff")
+        fi
+      else
+        pf=/dev/null; cf=/dev/null
+        if [ "$pkind" = file ]; then
+          if [ "$psrc" = snap ]; then pf="$psnap/$real"
+          else pf="$scratch/head-p$i"; git show "HEAD:$real" > "$pf" || return 1; fi
+        fi
+        if [ "$ckind" = file ]; then
+          if [ "$csrc" = snap ]; then cf="$csnap/$real"
+          else cf="$scratch/head-c$i"; git show "HEAD:$real" > "$cf" || return 1; fi
+        fi
+        drc=0
+        diff -u --label "上一轮/$label" --label "本轮/$label" "$pf" "$cf" >> "$scratch/diffs" || drc=$?
+        [ "$drc" -le 1 ] || return 1
+        if [ "$pkind" = file ] && [ "$ckind" = file ]; then
+          if [ "$drc" -eq 1 ]; then notes+=(内容变化); fi
+        elif [ "$drc" -eq 0 ]; then
+          notes+=(空文件)
+        fi
+      fi
+    fi
+    [ "${#notes[@]}" -gt 0 ] || continue
+    list+=("- $name($(IFS=';'; printf '%s' "${notes[*]}"))")
+  done
+  {
+    printf '# 轮间差异:第 %s 轮所审内容 → 第 %s 轮所审内容\n\n' "$pn" "$cn"
+    printf '路径按真实路径显示;含控制字符的路径以 %%XX 编码显示(%%09 制表符、%%0A 换行、%%0D 回车、%%25 百分号)并带标注。\n\n'
+    printf '## 变化文件\n\n'
+    if [ "${#list[@]}" -eq 0 ]; then echo "无"; else printf '%s\n' "${list[@]}"; fi
+    printf '\n## diff\n\n'
+    cat "$scratch/diffs"
+  } > "$delta" || return 1
+  [ "${#list[@]}" -eq 0 ] || printf '%s\n' "${list[@]}"
+}
+
 # --- 受管进程集合与终止 ---------------------------------------------------
 # codex 经 setsid 启动,成为新会话与新进程组首进程;受管集合 = 同会话 ∪
 # 同进程组 ∪ 自身。中间进程退出、后代改挂 init 后 sid/pgid 不变,仍能命中。
@@ -135,13 +680,34 @@ positive_int() {
 }
 
 # --- 主流程 ---------------------------------------------------------------
+# 退出码 1 只有一个含义:已发布一份 fail 评审。脚本在 set -e 下运行,任何未被
+# 显式处理的命令失败都会让它以该命令的退出码(常常就是 1)结束——那不是评审
+# 结论。没有发布评审文件却以 1 结束时,一律改为 3(执行异常)。这道总闸在主流程
+# 的第一步注册,覆盖进入项目目录、取锁等启动阶段的命令。
+codex_pid=
+scratch=
+published=0
+cleanup() {
+  local rc=$?
+  [ -n "$codex_pid" ] && kill_codex_tree "$codex_pid"
+  [ -n "$scratch" ] && rm -rf "$scratch"
+  if [ "$rc" -eq 1 ] && [ "$published" != 1 ]; then
+    echo "review.sh 中途异常中止,未发布评审文件;按评审执行异常处理(exit 3),排查上方报错后重跑" >&2
+    exit 3
+  fi
+  return 0
+}
+trap cleanup EXIT
+trap 'exit 143' TERM
+trap 'exit 130' INT
+
 for tool in flock setsid pgrep; do
   command -v "$tool" >/dev/null \
     || { echo "需要 util-linux(flock、setsid)与 procps(pgrep):缺少 $tool" >&2; exit 3; }
 done
-for tool in sha1sum xargs; do
+for tool in sha1sum xargs diff cmp; do
   command -v "$tool" >/dev/null \
-    || { echo "需要 coreutils(sha1sum)与 findutils(xargs):缺少 $tool" >&2; exit 3; }
+    || { echo "需要 coreutils(sha1sum)、findutils(xargs)与 diffutils(diff、cmp):缺少 $tool" >&2; exit 3; }
 done
 command -v codex >/dev/null || { echo "codex CLI 未安装或不在 PATH" >&2; exit 3; }
 
@@ -152,8 +718,9 @@ positive_int RAWF_REVIEW_IDLE_SECONDS "$idle_limit" || exit 3
 positive_int RAWF_REVIEW_MAX_SECONDS "$max_limit" || exit 3
 positive_int RAWF_REVIEW_POLL_SECONDS "$poll" || exit 3
 
-proj="${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel)}"
-cd "$proj"
+proj="${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel 2>/dev/null)}" \
+  || { echo "无法定位项目根(CLAUDE_PROJECT_DIR 未设置,当前目录也不在 git 仓库内)" >&2; exit 3; }
+cd "$proj" 2>/dev/null || { echo "无法进入项目目录:$proj" >&2; exit 3; }
 
 task_rel=$(cat .ai/.current-task 2>/dev/null) || { echo "无进行中任务(.ai/.current-task 不存在)" >&2; exit 3; }
 task_dir="$proj/$task_rel"
@@ -208,12 +775,6 @@ case "$flock_rc" in
 esac
 printf 'script=%s\n' "$$" > "$lock"
 
-codex_pid=
-cleanup() { [ -n "$codex_pid" ] && kill_codex_tree "$codex_pid"; return 0; }
-trap cleanup EXIT
-trap 'exit 143' TERM
-trap 'exit 130' INT
-
 # nullglob 数组计数:无匹配为 0,避免 ls 管道在 set -e/pipefail 下以
 # 非预期退出码崩溃(会与"评审结论 fail"的退出码 1 冲突)
 shopt -s nullglob
@@ -229,10 +790,11 @@ if ls "$task_dir"/review-round-"$nn"-*.md >/dev/null 2>&1; then
   exit 3
 fi
 
-# A 档证据机器核验(docs/decisions/t0010):结构不完整的证据不送评审——
-# 格式问题由脚本判定并直接开出补交清单,不消耗 codex 评审轮次;通过的报告
-# 注入 prompt,评审者只核内容不核格式。plan 未声明 evidence_format(历史
-# 任务)→ 跳过,占位改为提示评审者自行核对格式。
+# 证据机器核验(docs/decisions/t0010、t0015):证据由机器判定,评审者不核——
+# 记录与 plan 用例表的对应、每条用例结果为 pass、A 档证据结构完整且归属本用例、
+# 退出码为 0、B/C 档证据栏非空。任一不满足即不送评审,由脚本直接开出补交
+# 清单,不消耗 codex 评审轮次;通过的报告注入 prompt,仅供评审者了解哪些用例
+# 已留证。
 # stdout(报告表)与 stderr(补交清单 / 错误诊断)按产生顺序合并捕获:
 # 通过时 stderr 为空,注入 prompt 的就是纯报告;失败时整段原样转 stderr
 ev_rc=0
@@ -242,18 +804,106 @@ case "$ev_rc" in
   1)
     { echo "证据核验未通过(evidence-check),评审未启动;按补交清单补齐证据或修正实现记录后重跑 review.sh(当前轮尚未评审,不开新轮):"; echo "$ev_report"; } >&2
     exit 3 ;;
-  2) ev_report="(历史任务:plan 未声明 evidence_format: v1,未经机器核验;A 档证据的格式——命令、完整输出、退出码——由评审按 review-standards.md 自行核对)" ;;
   *) echo "evidence-check 执行异常(退出码 $ev_rc):$ev_report" >&2; exit 3 ;;
 esac
+# 报告每条用例一行,用例很多时会很长:超过 inline_budget 就落盘(文件名命中
+# .review-raw-* 的忽略与指纹排除模式),指令里只留路径与结论行
+ev_inline=$ev_report
+ev_file="$task_dir/.review-raw-$nn.evidence.md"
+if [ "$(printf '%s' "$ev_report" | wc -c)" -gt "$inline_budget" ]; then
+  # 只有需要落盘时才要求这个路径可用:先清掉同轮上一次留下的,清不掉(被目录
+  # 占用、无权限)或写不进去都按执行异常处理
+  if [ -e "$ev_file" ] || [ -L "$ev_file" ]; then
+    rm -f "$ev_file" 2>/dev/null \
+      || { echo "无法清理证据核验报告的落盘路径 $task_rel/${ev_file##*/}(被目录占用或无权限);处置后重跑" >&2; exit 3; }
+  fi
+  printf '%s\n' "$ev_report" > "$ev_file" \
+    || { echo "无法写出证据核验报告 $task_rel/${ev_file##*/}" >&2; exit 3; }
+  ev_inline="(证据核验报告较长,未内联;全文见 $task_rel/${ev_file##*/}。$(printf '%s\n' "$ev_report" | { grep '^结论:' || true; } | tail -n 1))"
+elif [ -f "$ev_file" ] && [ ! -L "$ev_file" ]; then
+  # 报告已内联:同轮上一次留下的落盘文件不再被引用,顺手清掉;清不掉不影响评审
+  rm -f "$ev_file" 2>/dev/null || true
+fi
+
+# 本轮所审改动的清单与内容快照;第 02 轮起据此生成轮间差异。临时文件放项目外
+# (不计入指纹),随脚本退出清理。
+scratch=$(mktemp -d) || { echo "无法创建临时目录" >&2; exit 3; }
+write_snapshot "$nn" \
+  || { echo "本轮清单或内容快照生成失败,评审未启动、不消耗轮次;排查上方报错后重跑" >&2; exit 3; }
+
+# build_round_context:生成 {{ROUND_CONTEXT}}。首行固定为"本轮模式:…"。
+# 第 01 轮全量评审;第 02 轮起,上一轮的评审文件、清单、内容快照都在且 HEAD
+# 未变 → 修复核验(附变化文件列表与轮间差异文件路径),否则回退为全量评审。
+build_round_context() {
+  local n=$((10#$nn)) prev prev_man prev_snap prev_review='' f why='' cur_head list shown total kept
+  if [ "$n" -eq 1 ]; then
+    printf '本轮模式:全量评审\n\n本轮为第 01 轮(首轮)。'
+    return 0
+  fi
+  prev=$(printf '%02d' "$((n - 1))")
+  prev_man="$task_dir/.review-raw-$prev.manifest"
+  prev_snap="$task_dir/.review-raw-$prev.snap"
+  for f in "$task_dir"/review-round-"$prev"-*.md; do
+    [ -f "$f" ] && { prev_review=${f##*/}; break; }
+  done
+  cur_head=$(git rev-parse HEAD) || return 1
+  if [ -z "$prev_review" ]; then why="未找到第 $prev 轮评审文件"
+  elif [ ! -f "$prev_man" ]; then why="无上一轮清单"
+  elif [ ! -d "$prev_snap" ]; then why="无上一轮内容快照"
+  elif ! manifest_readable "$prev_man"; then why="上一轮清单是旧格式,无法按当前格式解读"
+  elif [ "$(sed -n 's/^head\t//p' "$prev_man" | head -n 1)" != "$cur_head" ]; then why="HEAD 自上一轮评审以来已变化"
+  fi
+  if [ -n "$why" ]; then
+    printf '本轮模式:全量评审(%s,无法给出轮间差异)\n\n本轮为第 %s 轮。' "$why" "$nn"
+    if [ -n "$prev_review" ]; then
+      printf '上一轮评审:%s/%s——其中的阻断问题须逐项核验是否已解决。' "$task_rel" "$prev_review"
+    fi
+    return 0
+  fi
+  list=$(round_delta "$prev" "$nn") || return 1
+  # 指令经命令行参数传入,单个参数的长度有上限(Linux 约 128 KiB):变化文件列表
+  # 按字节数截断(与条数、路径长短无关),完整列表在轮间差异文件的「变化文件」节
+  total=$(grep -c . <<< "$list" || true)
+  shown=$(LC_ALL=C awk -v max="$inline_budget" '{ n += length($0) + 1; if (n > max) exit; print }' <<< "$list")
+  kept=$(grep -c . <<< "$shown" || true)
+  if [ "$kept" -lt "$total" ]; then
+    list="$shown"$'\n'"(共 $total 项,此处只列前 $kept 项;完整列表见下方轮间差异文件的「变化文件」节)"
+  fi
+  printf '本轮模式:修复核验\n\n本轮为第 %s 轮。上一轮评审:%s/%s——先逐项核验其中的阻断问题是否已解决。\n\n' \
+    "$nn" "$task_rel" "$prev_review"
+  printf '自上一轮评审以来的变化文件(机器比对两轮清单):\n\n%s\n\n' "${list:-无}"
+  printf '轮间差异(上一轮所审内容 → 本轮所审内容的 unified diff,即"本轮变化"):%s/.review-raw-%s.delta.diff' \
+    "$task_rel" "$nn"
+}
+round_context=$(build_round_context) \
+  || { echo "轮次上下文或轮间差异生成失败,评审未启动、不消耗轮次;排查上方报错后重跑" >&2; exit 3; }
 
 # bash 5.2 起 patsub_replacement 默认开启:替换文本里的 & 会被换成匹配原文、\& 丢
 # 反斜杠,证据报告(B/C 档证据格原文、%q 转义的 cmd)会被改写。关闭后再做占位
-# 替换(与 plan-review.sh 同一处理,见 docs/decisions/t0012)。
+# 替换(与 plan-review.sh 同一处理,见 docs/decisions/t0012)。ROUND_CONTEXT 与
+# EVIDENCE_REPORT 最后替换,其内容里出现的占位字样不会被二次展开。
 shopt -u patsub_replacement 2>/dev/null || true
 prompt=$(cat .ai-workflow/prompts/review.md)
 prompt="${prompt//\{\{TASK_DIR\}\}/$task_rel}"
 prompt="${prompt//\{\{ROUND\}\}/$nn}"
-prompt="${prompt//\{\{EVIDENCE_REPORT\}\}/$ev_report}"
+prompt="${prompt//\{\{ROUND_CONTEXT\}\}/$round_context}"
+prompt="${prompt//\{\{EVIDENCE_REPORT\}\}/$ev_inline}"
+# 总量兜底:两块可变长内容都已限长,正常情况下远低于上限;模板被大幅改写等
+# 情况下给出明确报错,而不是让 codex 启动时以 Argument list too long 失败
+prompt_bytes=$(printf '%s' "$prompt" | wc -c)
+if [ "$prompt_bytes" -gt "$prompt_limit" ]; then
+  echo "评审指令长 $prompt_bytes 字节,超过上限 $prompt_limit(指令经单个命令行参数传入,系统上限约 128 KiB);评审未启动、不消耗轮次。请精简 .ai-workflow/prompts/review.md" >&2
+  exit 3
+fi
+
+# 送审前复核:工作区须仍与本轮清单一致(快照生成之后到这一刻没有被改动)。
+# 评审结束后还会再核一次,见下方"所审内容一致性"。
+build_manifest "$scratch/manifest.pre" \
+  || { echo "送审前清单重算失败,评审未启动、不消耗轮次;排查上方报错后重跑" >&2; exit 3; }
+if ! cmp -s "$scratch/manifest.pre" "$task_dir/.review-raw-$nn.manifest"; then
+  echo "所审改动在本轮快照生成之后、送审之前发生了变化,评审未启动、不消耗轮次。请确认工作区不再变动后重跑。" >&2
+  exit 3
+fi
 
 pre_hash=$(workspace_hash) \
   || { echo "工作区指纹计算失败(评审前),评审未启动;排查上方报错后重跑" >&2; exit 3; }
@@ -322,6 +972,18 @@ if [ "$pre_hash" != "$post_hash" ]; then
   exit 3
 fi
 
+# 所审内容一致性:评审结束后按同一口径重算清单,必须与评审前保存的清单逐字节
+# 相同(同一个 HEAD、同一批文件、同样的类型/可执行位/内容哈希)。它把本轮的
+# 快照、轮间差异与即将发布的结论绑定到同一个工作区状态,补上指纹覆盖不到的
+# 两处:快照生成到指纹首次计算之间的窗口,以及指纹排除掉的 .claude/ 下的
+# skill 与 hook(它们属于评审对象,计入清单)。
+build_manifest "$scratch/manifest.post" \
+  || { echo "评审后清单重算失败,无法确认所审内容未变,本次评审无效;排查上方报错后重跑" >&2; exit 3; }
+if ! cmp -s "$scratch/manifest.post" "$task_dir/.review-raw-$nn.manifest"; then
+  echo "所审改动在本轮快照生成之后发生了变化(HEAD、文件内容、类型或可执行位;含 .claude/ 下的 skill 与 hook),本次评审无效、未发布评审文件。请确认工作区不再变动后重跑。" >&2
+  exit 3
+fi
+
 if [ "$codex_rc" -ne 0 ]; then
   echo "codex exec 执行失败(退出码 $codex_rc),评审未完成;检查 codex login/额度/网络后重跑" >&2
   exit 3
@@ -332,50 +994,31 @@ if [ ! -f "$raw" ]; then
   exit 3
 fi
 
-# 结构化解析:JSON 合法性 → 字段提取 → 按判定规则推导并交叉校验。
-# 判定规则(review-standards.md)是严重度清单的纯函数,脚本推导后与评审者
-# 自报 verdict 比对,矛盾的评审直接判无效,不被采纳。
+# 结构化解析:输入校验 → 路径归类 → 按判定规则推导结论。
+# 结论是评审输出与路径清单的纯函数,评审者不自报;结构不合法的输出一律不发布。
 if ! jq -e . "$raw" >/dev/null 2>&1; then
   echo "评审输出不是合法 JSON,原始输出保留在 $task_rel/$raw_name" >&2
   exit 3
 fi
-verdict=$(jq -r '.verdict // empty' "$raw")
+if ! validate_review_json "$raw"; then
+  echo "评审输出结构不合法(缺字段、字段类型错误或严重度取值非法),未发布评审文件,原始输出保留在 $task_rel/$raw_name;请重跑评审" >&2
+  exit 3
+fi
+classes=$(issue_classes "$raw") \
+  || { echo "问题路径归类失败,原始输出保留在 $task_rel/$raw_name" >&2; exit 3; }
+verdict=$(derive_verdict "$raw" "$classes") || verdict=
 case "$verdict" in
   pass|fail) ;;
   *)
-    echo "评审输出缺少合法 verdict 字段,原始输出保留在 $task_rel/$raw_name" >&2
+    echo "结论推导失败,原始输出保留在 $task_rel/$raw_name" >&2
     exit 3 ;;
 esac
-blocking=$(jq '[.issues // [] | .[] | select(.severity == "blocker" or .severity == "major")] | length' "$raw")
-if [ "$blocking" -gt 0 ]; then derived=fail; else derived=pass; fi
-if [ "$verdict" != "$derived" ]; then
-  echo "评审自报结论($verdict)与严重度清单推导($derived)矛盾,按判定规则该评审无效,原始输出保留在 $task_rel/$raw_name" >&2
-  exit 3
-fi
-
-# 渲染为与历史轮次同构的 markdown(问题按严重度排序,plan-blocker 置顶;
-# 范围核对单列一节,不计入 pass/fail,缺字段按空数组容错);
-# --arg render 1 为渲染调用的特征标记,便于测试注入,对 jq 语义无影响
-render_review() {
-  jq -r --arg render 1 --arg nn "$nn" '
-    def sev_rank: {"plan-blocker": 0, "blocker": 1, "major": 2, "minor": 3};
-    "# 评审:第 \($nn) 轮\n\n## 问题清单",
-    (if ((.issues // []) | length) == 0 then "无"
-     else ((.issues // []) | sort_by(sev_rank[.severity]) | .[]
-       | "- [\(.severity)] \(.id) \(.summary)\n  - 详情:\(.detail)")
-     end),
-    "\n## 范围核对",
-    (if ((.scope_findings // []) | length) == 0 then "无"
-     else ((.scope_findings // []) | .[] | "- \(.)") end),
-    "\n## 总评\n\(.overall)\n\nVERDICT: \(.verdict)"
-  ' "$raw"
-}
 
 # 原子发布:先在同目录(同文件系统)写全临时文件,mv -n 原子改名发布;
 # 渲染中途失败只污染临时文件(随即清理),不会留下半成品结论、不阻断重试。
 final="$task_dir/review-round-$nn-$verdict.md"
 tmp_out="$task_dir/.review-out-$nn.$$"
-if ! render_review > "$tmp_out"; then
+if ! render_review "$raw" "$nn" "$classes" > "$tmp_out"; then
   rm -f "$tmp_out"
   echo "渲染评审文件失败" >&2
   exit 3
@@ -385,5 +1028,6 @@ if ! mv -n "$tmp_out" "$final" || [ -e "$tmp_out" ]; then
   echo "评审结论已被并发发布($final 已存在),本次结果未覆盖" >&2
   exit 3
 fi
+published=1
 echo "review-round-$nn-$verdict.md"
 [ "$verdict" = "pass" ]

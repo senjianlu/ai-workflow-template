@@ -1,26 +1,39 @@
 {
   "type": "object",
   "additionalProperties": false,
-  "required": ["verdict", "issues", "scope_findings", "overall"],
+  "required": ["issues", "advisories", "scope_findings", "overall"],
   "properties": {
-    "verdict": { "type": "string", "enum": ["pass", "fail"] },
     "issues": {
       "type": "array",
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["severity", "id", "summary", "detail"],
+        "required": ["id", "severity", "category", "summary", "consequence", "detail"],
         "properties": {
+          "id": { "type": "string" },
           "severity": {
             "type": "string",
             "enum": ["plan-blocker", "major", "minor"]
           },
-          "id": { "type": "string" },
+          "category": {
+            "type": "string",
+            "enum": [
+              "premise",
+              "requirement",
+              "contract",
+              "convention",
+              "feasibility",
+              "acceptance",
+              "other"
+            ]
+          },
           "summary": { "type": "string" },
+          "consequence": { "type": "string" },
           "detail": { "type": "string" }
         }
       }
     },
+    "advisories": { "type": "array", "items": { "type": "string" } },
     "scope_findings": { "type": "array", "items": { "type": "string" } },
     "overall": { "type": "string" }
   }

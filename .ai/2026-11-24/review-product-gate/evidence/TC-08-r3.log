@@ -1,0 +1,71 @@
+# rawf-evidence v1
+tc: TC-08
+label: r3
+cmd: bash .ai/2026-11-24/review-product-gate/assets/tests/run.sh tc08
+cwd: /home/rabbir/Projects/ai-workflow-template/.claude/worktrees/review-product-gate
+git_head: 2f82b1262ab3cfe50369fb3c32f7a83b28802dcb dirty
+started: 2026-11-24T17:07:09+09:00
+--- output ---
+    | Reading additional input from stdin...
+    | 2026-11-24T08:07:15.001744Z ERROR codex_models_manager::manager: failed to refresh available models: request timed out
+    | review-round-01-fail.md
+[OK] review.sh 退出码为 0 或 1(实际 1)
+[OK] review.sh 发布一份评审文件
+---- 评审文件(仅供留档,不对内容做断言)----
+# 评审:第 01 轮
+
+## 问题清单
+- [plan-blocker] R-01 方案指定用列表对象作为字典键，但 Python 列表不可哈希。
+  - 位置:.ai/2026-01-01/t/plan.md:22
+  - 失败场景:按方案实现后，调用 average([2, 4]) 时，以该列表查询或写入缓存会抛出 TypeError，调用方无法获得平均值 3。
+  - 详情:当前实现未加入缓存。方案需要先删除缓存要求，或重新定义缓存键以及列表内容变化时的缓存行为。
+- [blocker] R-02 average 对空列表仍会抛出除零异常。
+  - 位置:src/calc.py:2
+  - 失败场景:调用 average([]) 时，函数计算 0 / 0 并抛出 ZeroDivisionError，违背了返回 0 的要求。
+  - 详情:在计算平均值之前判断列表是否为空，空列表直接返回 0。
+
+## 测试缺口(不计入 pass/fail)
+- T-01 src/calc.py:2 缺少空列表输入的覆盖，现有测试无法检出 average([]) 抛出异常而非返回 0。
+
+## 建议(不计入 pass/fail)
+- A-01 .ai/2026-01-01/t/implementation-round-01.md:3 实现记录缺少「与方案的偏差」表，建议在确认缓存方案后记录最终决定。
+
+## 范围核对
+无
+
+## 总评
+本轮静态评审确认，空列表返回 0 的交付要求尚未实现，方案中的缓存键也需要修订。评审期间未运行测试。
+
+VERDICT: fail
+----
+    | Reading additional input from stdin...
+    | plan-review-round-01-fail.md
+[OK] plan-review.sh 退出码为 0 或 1(实际 1)
+[OK] plan-review.sh 发布一份评审文件
+---- plan 评审文件(仅供留档,不对内容做断言)----
+# Plan 评审:第 01 轮
+
+## 问题清单
+- [major] R-01 方案使用不可哈希的列表对象作为字典缓存键。
+  - 类别:contract
+  - 后果:任何进入缓存查找或写入路径的列表都会触发 TypeError。即使空列表提前返回 0，现有调用 average([2, 4]) 进入缓存路径后也会报错，原本应返回 3。
+  - 详情:plan.md 第 21–23 行指定将列表对象本身作为模块级字典的键。Python 的 list 无法作为字典键，缓存的数据模型必须改动。建议删除缓存设计，只为真正的空列表提前返回 0，其余输入沿用现有计算。现有实现见 [src/calc.py](/tmp/tmp.BUlXWjLyV2/real/src/calc.py:1)，现有调用见 [tests/test_calc.py](/tmp/tmp.BUlXWjLyV2/real/tests/test_calc.py:5)。
+
+## 建议(不计入 pass/fail)
+- A-01 plan.md 第 28 行的 TC-01 只写了运行单元测试并通过。建议明确断言 average([]) == 0，并保留现有的非空列表断言。
+
+## 范围核对
+- plan.md 第 21–23 行新增模块级结果缓存，超出空列表返回 0 的需求。方案没有说明缓存为何是交付所必需的，第 18–19 行的「非目标」也未排除该项。
+- plan.md 第 15–16 行纳入 tests/test_calc.py，用于覆盖新增的空列表行为，属于本次变更的验证范围。
+
+## 总评
+达成需求方面，空列表提前返回 0 符合需求原文。契约与正确性方面，列表键会使所有进入缓存路径的调用抛出异常。前提方面，现有实现直接计算平均值，现有的非空列表调用预期返回 3。既有约定方面，方案包含「需求原文」和「非目标」两节，未发现其他与仓库约定的冲突。可实施性方面，空列表分支可直接实现，缓存设计需要调整。范围自省方面，单元测试与交付相关，新增缓存缺少实现必需的理由。总评建议将方案收敛为新增空列表分支并保留现有计算路径。
+
+VERDICT: fail
+----
+失败断言数:0
+
+--- end ---
+exit: 0
+finished: 2026-11-24T17:09:58+09:00
+bytes: 3882

@@ -1,0 +1,98 @@
+# rawf-evidence v1
+tc: TC-04
+label: r5
+cmd: bash .ai/2026-11-24/review-product-gate/assets/tests/run.sh tc04
+cwd: /home/rabbir/Projects/ai-workflow-template/.claude/worktrees/review-product-gate
+git_head: 2f82b1262ab3cfe50369fb3c32f7a83b28802dcb dirty
+started: 2026-11-24T17:34:19+09:00
+--- output ---
+[OK] (合规) evidence-check(exit 0)
+[OK] (合规) B 档行为采信
+[OK] (合规) C 档行为采信
+[OK] (合规) A 档行为 OK
+[OK] (exit1) evidence-check(exit 1)
+[OK] (exit1) 报告含 EXIT-NONZERO
+[OK] (exit1) review.sh 拒绝启动(exit 3)
+[OK] (exit1) 桩未被调用
+[OK] (exit1) 无评审文件
+[OK] (exit1) 修复后 review.sh(exit 0)
+[OK] (exit1) 修复后桩被调用一次
+[OK] (exit1) 修复后只发布一份评审文件
+[OK] (multi) evidence-check(exit 1)
+[OK] (multi) 报告含 EXIT-NONZERO
+[OK] (multi) review.sh 拒绝启动(exit 3)
+[OK] (multi) 桩未被调用
+[OK] (multi) 无评审文件
+[OK] (multi) 修复后 review.sh(exit 0)
+[OK] (multi) 修复后桩被调用一次
+[OK] (multi) 修复后只发布一份评审文件
+[OK] (notpass) evidence-check(exit 1)
+[OK] (notpass) 报告含 NOT-PASS
+[OK] (notpass) review.sh 拒绝启动(exit 3)
+[OK] (notpass) 桩未被调用
+[OK] (notpass) 无评审文件
+[OK] (notpass) 修复后 review.sh(exit 0)
+[OK] (notpass) 修复后桩被调用一次
+[OK] (notpass) 修复后只发布一份评审文件
+[OK] (mismatch) evidence-check(exit 1)
+[OK] (mismatch) 报告含 TC-MISMATCH
+[OK] (mismatch) review.sh 拒绝启动(exit 3)
+[OK] (mismatch) 桩未被调用
+[OK] (mismatch) 无评审文件
+[OK] (mismatch) 修复后 review.sh(exit 0)
+[OK] (mismatch) 修复后桩被调用一次
+[OK] (mismatch) 修复后只发布一份评审文件
+[OK] (dup-record) evidence-check(exit 1)
+[OK] (dup-record) 报告含 DUP-ID
+[OK] (dup-record) review.sh 拒绝启动(exit 3)
+[OK] (dup-record) 桩未被调用
+[OK] (dup-record) 无评审文件
+[OK] (dup-record) 修复后 review.sh(exit 0)
+[OK] (dup-record) 修复后桩被调用一次
+[OK] (dup-record) 修复后只发布一份评审文件
+[OK] (dup-plan) evidence-check(exit 1)
+[OK] (dup-plan) 报告含 DUP-ID
+[OK] (dup-plan) review.sh 拒绝启动(exit 3)
+[OK] (dup-plan) 桩未被调用
+[OK] (dup-plan) 无评审文件
+[OK] (dup-plan) 修复后 review.sh(exit 0)
+[OK] (dup-plan) 修复后桩被调用一次
+[OK] (dup-plan) 修复后只发布一份评审文件
+[OK] (noformat) evidence-check(exit 1)
+[OK] (noformat) 报告含 NO-FORMAT
+[OK] (noformat) review.sh 拒绝启动(exit 3)
+[OK] (noformat) 桩未被调用
+[OK] (noformat) 无评审文件
+[OK] (noformat) 修复后 review.sh(exit 0)
+[OK] (noformat) 修复后桩被调用一次
+[OK] (noformat) 修复后只发布一份评审文件
+[OK] (b-empty) evidence-check(exit 1)
+[OK] (b-empty) 报告含 NO-EVIDENCE
+[OK] (b-empty) review.sh 拒绝启动(exit 3)
+[OK] (b-empty) 桩未被调用
+[OK] (b-empty) 无评审文件
+[OK] (b-empty) 修复后 review.sh(exit 0)
+[OK] (b-empty) 修复后桩被调用一次
+[OK] (b-empty) 修复后只发布一份评审文件
+[OK] (c-empty) evidence-check(exit 1)
+[OK] (c-empty) 报告含 NO-EVIDENCE
+[OK] (c-empty) review.sh 拒绝启动(exit 3)
+[OK] (c-empty) 桩未被调用
+[OK] (c-empty) 无评审文件
+[OK] (c-empty) 修复后 review.sh(exit 0)
+[OK] (c-empty) 修复后桩被调用一次
+[OK] (c-empty) 修复后只发布一份评审文件
+[OK] (badtier) evidence-check(exit 1)
+[OK] (badtier) 报告含 BAD-TIER
+[OK] (badtier) review.sh 拒绝启动(exit 3)
+[OK] (badtier) 桩未被调用
+[OK] (badtier) 无评审文件
+[OK] (badtier) 修复后 review.sh(exit 0)
+[OK] (badtier) 修复后桩被调用一次
+[OK] (badtier) 修复后只发布一份评审文件
+失败断言数:0
+
+--- end ---
+exit: 0
+finished: 2026-11-24T17:34:36+09:00
+bytes: 3358

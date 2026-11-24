@@ -1,0 +1,40 @@
+# rawf-evidence v1
+tc: TC-05
+label: r5
+cmd: bash .ai/2026-11-24/review-product-gate/assets/tests/run.sh tc05
+cwd: /home/rabbir/Projects/ai-workflow-template/.claude/worktrees/review-product-gate
+git_head: 2f82b1262ab3cfe50369fb3c32f7a83b28802dcb dirty
+started: 2026-11-24T17:34:36+09:00
+--- output ---
+[OK] (p1) plan-review.sh(exit 0)
+[OK] (p1) 发布 plan-review-round-01-pass.md
+[OK] (1) acceptance 类 major 降为建议
+[OK] (1) __minors 含该降级条目
+[OK] (p2) plan-review.sh(exit 1)
+[OK] (p2) 发布 plan-review-round-01-fail.md
+[OK] (2) contract 类 major 留在问题清单
+[OK] (p3) plan-review.sh(exit 0)
+[OK] (p3) 发布 plan-review-round-01-pass.md
+[OK] (3) 缺实现后果的 major 降为建议
+[OK] (p4) plan-review.sh(exit 0)
+[OK] (p4) 发布 plan-review-round-01-pass.md
+[OK] (4) acceptance 类 plan-blocker 降为建议
+[OK] (p5) plan-review.sh(exit 1)
+[OK] (p5) 发布 plan-review-round-01-fail.md
+[OK] (5) premise 类 plan-blocker 留在问题清单
+[OK] (p6) plan-review.sh(exit 1)
+[OK] (p6) 发布 plan-review-round-01-fail.md
+[OK] (6) 中间有空行的实现后果不被当作空白
+[OK] (多轮) 第 1 轮(exit 0)
+[OK] (多轮) 第 2 轮(exit 0)
+[OK] (多轮) 含第 1 轮 minor
+[OK] (多轮) 含第 1 轮建议
+[OK] (多轮) 含第 2 轮 minor
+[OK] (多轮) 含第 2 轮建议
+[OK] (旧格式) 只输出其 minor
+失败断言数:0
+
+--- end ---
+exit: 0
+finished: 2026-11-24T17:34:39+09:00
+bytes: 1059

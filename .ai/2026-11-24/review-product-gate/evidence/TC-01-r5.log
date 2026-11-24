@@ -1,0 +1,71 @@
+# rawf-evidence v1
+tc: TC-01
+label: r5
+cmd: bash .ai/2026-11-24/review-product-gate/assets/tests/run.sh tc01
+cwd: /home/rabbir/Projects/ai-workflow-template/.claude/worktrees/review-product-gate
+git_head: 2f82b1262ab3cfe50369fb3c32f7a83b28802dcb dirty
+started: 2026-11-24T17:33:54+09:00
+--- output ---
+[OK] (i) review.sh(exit 0)
+[OK] (i) 发布 review-round-01-pass.md
+[OK] (i) R-01 在建议节并带非产品路径标记
+[OK] (i) R-02 在建议节并带非产品路径标记
+[OK] (i) R-03 在建议节并带非产品路径标记
+[OK] (i) 问题清单不含这三条
+[OK] (ii) review.sh(exit 1)
+[OK] (ii) 发布 review-round-01-fail.md
+[OK] (ii) R-01 在问题清单
+[OK] (iii) review.sh(exit 0)
+[OK] (iii) 发布 review-round-01-pass.md
+[OK] (iii) R-01 在建议节并带缺失败场景标记
+[OK] (iv) review.sh(exit 0)
+[OK] (iv) 发布 review-round-01-pass.md
+[OK] (iv) minor 在建议节并带非产品路径标记
+[OK] (iv) minor 不在问题清单
+[OK] (v) review.sh(exit 0)
+[OK] (v) 发布 review-round-01-pass.md
+[OK] (v) 指向 plan.md 的 plan-blocker 置顶在问题清单
+[OK] (v) 指向测试文件的 plan-blocker 在建议节
+[OK] (v) 范围核对节照常渲染
+[OK] (vi) review.sh(exit 1)
+[OK] (vi) 发布 review-round-01-fail.md
+[OK] (vi) 产品路径例外下的问题留在问题清单
+[OK] (vii) review.sh(exit 1)
+[OK] (vii) 发布 review-round-01-fail.md
+[OK] (vii) 无法定位的路径按产品路径处理
+[OK] (viii) review.sh(exit 1)
+[OK] (viii) R-01 归为产品路径,在问题清单
+[OK] (viii) R-02 归为产品路径,在问题清单
+[OK] (viii) R-03 归为产品路径,在问题清单
+[OK] (viii) R-04 归为产品路径,在问题清单
+[OK] (viii) R-05 在建议节并带非产品路径标记
+[OK] (viii) R-05 不在问题清单
+[OK] (ix) review.sh(exit 0)
+[OK] (ix) 发布 review-round-01-pass.md
+[OK] (ix) 测试缺口恰 3 条
+[OK] (ix) 测试缺口编号 T-01 ~ T-03
+[OK] (ix) 自拟建议恰 5 条
+[OK] (ix) 自拟建议编号到 A-05
+[OK] (ix) 注明另有 3 条未列出
+[OK] (ix) 降级条目 R-01 保留
+[OK] (ix) 降级条目 R-02 保留
+[OK] (x) review.sh(exit 1)
+[OK] (x) 发布 review-round-01-fail.md
+[OK] (x) 中间有空行的失败场景不被当作空白
+[OK] (xi) review.sh(exit 1)
+[OK] (xi) 发布 review-round-01-fail.md
+[OK] (xi) R-01 是产品路径,留在问题清单
+[OK] (xi) R-02 是产品路径,留在问题清单
+[OK] (xi) R-03 是产品路径,留在问题清单
+[OK] (xi) R-04 是产品路径,留在问题清单
+[OK] (xi) R-05 是非产品路径,降为建议
+[OK] (xi) R-06 是非产品路径,降为建议
+[OK] (xi) R-07 是非产品路径,降为建议
+[OK] (xi) R-08 是非产品路径,降为建议
+[OK] (xi) R-09 是非产品路径,降为建议
+失败断言数:0
+
+--- end ---
+exit: 0
+finished: 2026-11-24T17:34:04+09:00
+bytes: 2427

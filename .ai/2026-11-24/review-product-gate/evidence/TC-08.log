@@ -1,0 +1,73 @@
+# rawf-evidence v1
+tc: TC-08
+label: 
+cmd: bash .ai/2026-11-24/review-product-gate/assets/tests/run.sh tc08
+cwd: /home/rabbir/Projects/ai-workflow-template/.claude/worktrees/review-product-gate
+git_head: 2f82b1262ab3cfe50369fb3c32f7a83b28802dcb dirty
+started: 2026-11-24T16:18:23+09:00
+--- output ---
+    | Reading additional input from stdin...
+    | 2026-11-24T07:18:29.601823Z ERROR codex_models_manager::manager: failed to refresh available models: request timed out
+    | 2026-11-24T07:18:29.635241Z ERROR codex_models_manager::manager: failed to refresh available models: request timed out
+    | review-round-01-fail.md
+[OK] review.sh 退出码为 0 或 1(实际 1)
+[OK] review.sh 发布一份评审文件
+---- 评审文件(仅供留档,不对内容做断言)----
+# 评审:第 01 轮
+
+## 问题清单
+- [plan-blocker] R-01 方案要求将列表对象直接用作字典键，但 Python 列表不可哈希。
+  - 位置:.ai/2026-01-01/t/plan.md:22
+  - 失败场景:按方案缓存 average([2, 4]) 的结果时，字典访问会抛出 TypeError，调用方无法得到平均值 3。
+  - 详情:需要先修订方案，去掉本次空列表支持所不需要的缓存，或重新定义缓存键及列表变更后的行为。
+- [blocker] R-02 average 对空列表仍抛出 ZeroDivisionError。
+  - 位置:src/calc.py:2
+  - 失败场景:调用 average([]) 时，sum(values) 和 len(values) 都是 0，执行除法后抛出 ZeroDivisionError，未返回约定的 0。
+  - 详情:在计算平均值前判断列表是否为空，为空时直接返回 0。
+
+## 测试缺口(不计入 pass/fail)
+- T-01 src/calc.py:2 的空列表返回行为未被覆盖，现有测试仅传入非空列表，无法发现空列表触发的除零异常。
+
+## 建议(不计入 pass/fail)
+无
+
+## 范围核对
+无
+
+## 总评
+本轮唯一交付行为尚未实现，空列表仍会触发除零异常。方案中的列表键缓存也需要修订，否则加入缓存会使原本可用的非空列表调用报错。
+
+VERDICT: fail
+----
+    | Reading additional input from stdin...
+    | 2026-11-24T07:20:01.390694Z ERROR codex_models_manager::manager: failed to refresh available models: request timed out
+    | 2026-11-24T07:20:20.187127Z ERROR codex_api::endpoint::responses_websocket: failed to connect to Responses WebSocket stage=Unknown
+    | plan-review-round-01-fail.md
+[OK] plan-review.sh 退出码为 0 或 1(实际 1)
+[OK] plan-review.sh 发布一份评审文件
+---- plan 评审文件(仅供留档,不对内容做断言)----
+# Plan 评审:第 01 轮
+
+## 问题清单
+- [major] R-01 方案指定的模块级字典无法以列表对象作为键。
+  - 类别:feasibility
+  - 后果:照方案实现后，非空列表在读取或写入缓存时会触发 TypeError。当前能返回 3 的 average([2, 4]) 将改为抛出异常，已实现的缓存逻辑必须撤掉或重新设计。
+  - 详情:plan.md 第 22 行指定用列表对象作为字典键，第 23 行也指出列表不可哈希。src/calc.py 第 1 至 2 行直接计算均值，tests/test_calc.py 第 5 行确认了非空列表的现有行为。删除缓存设计，在函数入口对空列表返回 0，其余输入沿用现有计算。
+
+## 建议(不计入 pass/fail)
+- A-01 plan.md 第 28 行的 TC-01 只写了运行单元测试，现有 tests/test_calc.py 第 5 行只断言非空列表。建议明确加入 average([]) == 0 的断言，并保留现有断言。
+
+## 范围核对
+- plan.md 第 22 至 23 行的模块级结果缓存超出空列表返回 0 的需求，方案未说明它是实现所必需的，第 18 至 19 行的「非目标」也未排除缓存。
+
+## 总评
+需求达成方面，入口判空并返回 0 覆盖了需求原文。契约与正确性方面，缓存路径会破坏现有的非空列表调用。前提方面，现有函数直接用总和除以长度，空列表确会触发除零异常。既有约定方面，方案包含「需求原文」和「非目标」两节，现有测试要求保留非空列表的计算结果。可实施性方面，入口判空可直接实现，指定的列表键无法用于字典。范围方面，模块级缓存超出需求，方案未说明其必要性。总评是保留空列表分支，并移除会破坏现有调用的缓存设计。
+
+VERDICT: fail
+----
+失败断言数:0
+
+--- end ---
+exit: 0
+finished: 2026-11-24T16:21:11+09:00
+bytes: 3978

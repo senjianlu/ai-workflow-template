@@ -1,0 +1,41 @@
+# rawf-evidence v1
+tc: TC-10
+label: 
+cmd: bash .ai/2026-11-24/review-product-gate/assets/tests/run.sh tc10
+cwd: /home/rabbir/Projects/ai-workflow-template/.claude/worktrees/review-product-gate
+git_head: 2f82b1262ab3cfe50369fb3c32f7a83b28802dcb dirty
+started: 2026-11-24T16:18:17+09:00
+--- output ---
+[OK] 以非 root 身份运行
+[OK] big1 恰为 1048576 字节
+[OK] big2 恰为 1048577 字节
+[OK] 第 1 轮(exit 1)
+[OK] 第 2 轮(exit 0)
+[OK] 轮间差异文件存在
+[OK] a:含第 2 轮改的那一行
+[OK] a:只有一处改动(一删一增)
+[OK] a:第 1 轮的改动不在增删行里
+[OK] b:差异是第 1 轮改动的撤回(删 B-r1)
+[OK] b:差异是第 1 轮改动的撤回(增 B-orig)
+[OK] d:以 HEAD 版本为基线(删 D-orig)
+[OK] d:以 HEAD 版本为基线(增 D-r2)
+[OK] c:整份为删除
+[OK] c:没有新增行
+[OK] c:列表标为删除
+[OK] f:整份为新增
+[OK] f:没有删除行
+[OK] f:列表标为新增
+[OK] 1048576 字节的文件有 diff
+[OK] 1048577 字节的文件不出 diff
+[OK] 1048577 字节的文件列为未快照
+[OK] 1048577 字节的文件注明整份按本轮变化对待
+[OK] 不可读文件不出 diff
+[OK] 不可读文件列为未快照
+[OK] 第 2 轮正常调用桩
+[OK] 第 2 轮发布评审文件
+失败断言数:0
+
+--- end ---
+exit: 0
+finished: 2026-11-24T16:18:19+09:00
+bytes: 955

@@ -1,0 +1,69 @@
+# rawf-evidence v1
+tc: TC-08
+label: r2
+cmd: bash .ai/2026-11-24/review-product-gate/assets/tests/run.sh tc08
+cwd: /home/rabbir/Projects/ai-workflow-template/.claude/worktrees/review-product-gate
+git_head: 2f82b1262ab3cfe50369fb3c32f7a83b28802dcb dirty
+started: 2026-11-24T16:49:27+09:00
+--- output ---
+    | Reading additional input from stdin...
+    | review-round-01-fail.md
+[OK] review.sh 退出码为 0 或 1(实际 1)
+[OK] review.sh 发布一份评审文件
+---- 评审文件(仅供留档,不对内容做断言)----
+# 评审:第 01 轮
+
+## 问题清单
+- [plan-blocker] R-01 方案要求以列表对象作为字典键，但 Python 列表不可哈希。
+  - 位置:.ai/2026-01-01/t/plan.md:22
+  - 失败场景:按方案实现后，调用 average([2, 4]) 时，缓存查询或写入会抛出 TypeError，调用方无法得到平均值 3。
+  - 详情:必须修订方案中的缓存约定。当前需求只要求空列表返回 0，可从方案中移除缓存，保留直接计算。
+- [blocker] R-02 average 对空列表执行除零，未交付空列表返回 0 的行为。
+  - 位置:src/calc.py:2
+  - 失败场景:调用 average([]) 时，sum(values) 和 len(values) 都为 0，函数抛出 ZeroDivisionError，调用方收不到约定的返回值 0。
+  - 详情:在执行除法前判断列表是否为空，空列表直接返回 0，非空列表继续按现有公式计算。
+
+## 测试缺口(不计入 pass/fail)
+- T-01 src/calc.py:2 的空列表路径没有测试覆盖，测试无法发现 average([]) 抛出 ZeroDivisionError。
+
+## 建议(不计入 pass/fail)
+- A-01 .ai/2026-01-01/t/implementation-round-01.md:6 缺少「与方案的偏差」记录，建议记录当前实现省略缓存及其原因。
+
+## 范围核对
+无
+
+## 总评
+本轮静态评审确认，空列表仍会触发除零异常，方案中的缓存键设计也需要修订。未运行测试。
+
+VERDICT: fail
+----
+    | Reading additional input from stdin...
+    | plan-review-round-01-fail.md
+[OK] plan-review.sh 退出码为 0 或 1(实际 1)
+[OK] plan-review.sh 发布一份评审文件
+---- plan 评审文件(仅供留档,不对内容做断言)----
+# Plan 评审:第 01 轮
+
+## 问题清单
+- [plan-blocker] R-01 方案指定用列表对象作为模块级字典的键，但 Python 的 list 不可哈希。
+  - 类别:feasibility
+  - 后果:按方案实现后，非空列表在查询或写入缓存时会抛出 TypeError，现有调用 average([2, 4]) 将无法返回 3。
+  - 详情:.ai/2026-01-01/t/plan.md:21 的「实现方案」指定以列表对象为键。src/calc.py:1 当前直接计算平均值，tests/test_calc.py:5 明确要求 average([2, 4]) 返回 3。删除缓存设计，保留空列表提前返回和既有平均值计算。
+
+## 建议(不计入 pass/fail)
+- A-01 「测试用例」TC-01 的预期结果仅写了「通过」，建议明确断言 average([]) 返回 0，并保留已有的非空列表断言。
+
+## 范围核对
+- 「实现方案」第 22–23 行新增模块级结果缓存，超出空列表返回 0 的需求。方案未说明缓存为何是实现所必需，可将结果缓存列入「非目标」。
+
+## 总评
+达成需求方面，空列表提前返回 0 覆盖了需求原文。契约与正确性方面，缓存路径会让现有非空列表调用抛出异常。前提方面，现有函数和测试均支持方案所述的列表入参。既有约定方面，方案包含「需求原文」和「非目标」，与现有计算行为的冲突已归入 R-01。可实施性方面，指定的字典键无法用于缓存查询或写入。范围自省方面，缓存超出需求且缺少必要性说明。总评建议移除模块级缓存，将实现限于空列表提前返回。
+
+VERDICT: fail
+----
+失败断言数:0
+
+--- end ---
+exit: 0
+finished: 2026-11-24T16:52:03+09:00
+bytes: 3433

@@ -6,14 +6,17 @@
 # 轮次(docs/decisions/t0012)。工作区其它文件无禁改约束。
 # 退出码:0=pass 1=fail 3=评审执行异常。
 #
-# 判定语义以 .ai-workflow/review-standards.md「plan 阶段评审」小节为权威:
-# 存在任一 plan-blocker 或 major → fail;仅 minor 或无问题 → pass。
-# 轮次上限默认 5;用户明确要求放宽时在 plan.md frontmatter 记
-# plan_review_max_rounds(正整数),以该值为准(见 docs/decisions/t0003、t0012)。
+# 判定语义以 .ai-workflow/review-standards.md「plan 阶段评审」小节为权威
+# (docs/decisions/t0015):评审者不自报结论。脚本先校验输出结构,再把类别不可
+# 阻断(acceptance / other)或缺实现后果的 plan-blocker / major 降为建议;余下
+# 有 plan-blocker 或 major → fail,否则 pass。
+# 轮次上限默认 3;用户明确要求放宽时在 plan.md frontmatter 记
+# plan_review_max_rounds(正整数),以该值为准(见 docs/decisions/t0003、t0015)。
 #
-# 分轮模式(docs/decisions/t0012):第 1、2 轮全量穷尽评审;第 3 轮起收敛评审
-# (只核上一轮问题与本轮修订部分,未修订部分只报 plan-blocker)。脚本据此生成
-# prompt 的 {{ROUND_CONTEXT}}:模式行 + 上一轮评审文件 + 两轮快照间的修订 diff。
+# 分轮模式(docs/decisions/t0015):第 1 轮全量评审(调查按需);第 2 轮起核验
+# 评审(只核上一轮阻断问题与本轮修订部分,未修订部分只有 plan-blocker 可阻断)。
+# 脚本据此生成 prompt 的 {{ROUND_CONTEXT}}:模式行 + 上一轮评审文件 + 两轮快照
+# 间的修订 diff(快照机制见 docs/decisions/t0012)。
 #
 # 卡死治理(docs/decisions/t0009,与 review.sh 同构):codex 的 stdin 接
 # /dev/null;--json 事件流落盘作进度信号,静默超过 RAWF_REVIEW_IDLE_SECONDS
@@ -23,19 +26,77 @@
 set -euo pipefail
 
 # --- 渲染与原子发布(封装为函数,兼作可控测试点)-------------------------
-# render_review <raw_json> <nn>:把结构化输出渲染为与实现层评审同构的 md
-# (范围核对单列一节,不计入 pass/fail,缺字段按空数组容错)。
+# validate_review_json <raw_json>:最低输入校验。评审者不再自报 verdict,结论完全
+# 由脚本推导,结构不合法的输出(空对象、缺字段、类型错误、非法取值)必须在这里
+# 拦下,不得渲染成 pass。
+validate_review_json() {
+  jq -e '
+    def strs: type == "array" and all(.[]; type == "string");
+    # 枚举按"是字符串且与某一项严格相等"判定(index 会把数组当作子序列查找)
+    def one_of($xs): . as $v | ($v | type) == "string" and any($xs[]; . == $v);
+    # 键集合必须与 schema 完全一致:缺字段、多字段(如旧版的 verdict)都不合法
+    def keys_are($xs): keys == ($xs | sort);
+    (type == "object")
+    and keys_are(["issues", "advisories", "scope_findings", "overall"])
+    and ((.issues | type) == "array")
+    and all(.issues[];
+          type == "object"
+          and keys_are(["id", "severity", "category", "summary", "consequence", "detail"])
+          and ([.id, .summary, .consequence, .detail] | all(.[]; type == "string"))
+          and (.severity | one_of(["plan-blocker", "major", "minor"]))
+          and (.category | one_of(["premise", "requirement", "contract", "convention",
+                                   "feasibility", "acceptance", "other"])))
+    and (.advisories | strs) and (.scope_findings | strs)
+    and ((.overall | type) == "string")
+  ' "$1" >/dev/null 2>&1
+}
+
+# jq 前导:推导每条 issue 的降级原因(_why 为空串 = 留在问题清单)与结论。
+# plan-blocker 与 major 一视同仁:类别不可阻断(acceptance / other),或实现后果
+# 为空白 → 降为建议;余下有 plan-blocker 或 major → fail。minor 不受影响。
+# shellcheck disable=SC2016  # jq 程序里的 $ 是 jq 变量
+jq_derive='
+  # 空白 = 不含任何非空白字符(不依赖 ^ / $ 的行锚点语义)
+  def blank: test("\\S") | not;
+  def oneline: gsub("\\s*\\n\\s*"; " ");
+  def pad2: tostring | if length < 2 then "0" + . else . end;
+  def sev_rank: {"plan-blocker": 0, "major": 1, "minor": 2};
+  def gating: ["premise", "requirement", "contract", "convention", "feasibility"];
+  .issues |= map(. + {_why: (
+      if .severity == "minor" then ""
+      elif (.category as $c | gating | index($c)) == null then "\(.category) 类不可阻断"
+      elif (.consequence | blank) then "缺实现后果"
+      else "" end)})
+  | .kept = [ .issues[] | select(._why == "") ]
+  | .demoted = [ .issues[] | select(._why != "") ]
+  | .verdict = (if any(.kept[]; .severity == "plan-blocker" or .severity == "major")
+                then "fail" else "pass" end)
+'
+
+# derive_verdict <raw_json>:输出 pass | fail。
+derive_verdict() {
+  jq -r "$jq_derive | .verdict" "$1"
+}
+
+# render_review <raw_json> <nn>:把结构化输出渲染为与实现层评审同构的 md。问题
+# 清单按严重度排序;评审者自拟建议取前 5 条(编号 A-NN),超出部分只注明条数;
+# 脚本降级的条目保留原编号并带标记,不受条数限制;范围核对单列一节。
 render_review() {
-  jq -r --arg nn "$2" '
-    def sev_rank: {"plan-blocker": 0, "major": 1, "minor": 2};
+  # shellcheck disable=SC2016
+  jq -r --arg nn "$2" "$jq_derive"'
+    | def csq: (if (.consequence | blank) then "" else "\n  - 后果:\(.consequence | oneline)" end);
+      def item: "\(.summary | oneline)\n  - 类别:\(.category)\(csq)\n  - 详情:\(.detail | oneline)";
     "# Plan 评审:第 \($nn) 轮\n\n## 问题清单",
-    (if ((.issues // []) | length) == 0 then "无"
-     else ((.issues // []) | sort_by(sev_rank[.severity]) | .[]
-       | "- [\(.severity)] \(.id) \(.summary)\n  - 详情:\(.detail)")
-     end),
+    (if (.kept | length) == 0 then "无"
+     else (.kept | sort_by(sev_rank[.severity]) | .[] | "- [\(.severity)] \(.id) \(item)") end),
+    "\n## 建议(不计入 pass/fail)",
+    (if ((.advisories | length) + (.demoted | length)) == 0 then "无" else empty end),
+    (.advisories[0:5] | to_entries[] | "- A-\(.key + 1 | pad2) \(.value | oneline)"),
+    (if (.advisories | length) > 5
+     then "(另有 \((.advisories | length) - 5) 条超出上限未列出,见原始输出)" else empty end),
+    (.demoted[] | "- [\(.severity)] \(.id) 〔降级:\(._why)〕\(item)"),
     "\n## 范围核对",
-    (if ((.scope_findings // []) | length) == 0 then "无"
-     else ((.scope_findings // []) | .[] | "- \(.)") end),
+    (if (.scope_findings | length) == 0 then "无" else (.scope_findings[] | "- \(oneline)") end),
     "\n## 总评\n\(.overall)\n\nVERDICT: \(.verdict)"
   ' "$1"
 }
@@ -59,7 +120,7 @@ publish_round() {
 }
 
 # resolve_max_rounds <plan.md>:解析轮次上限。只认首个 --- 块(frontmatter)
-# 内行首的 plan_review_max_rounds: 字段;字段未出现 → 缺省 5;字段出现但值
+# 内行首的 plan_review_max_rounds: 字段;字段未出现 → 缺省 3;字段出现但值
 # 非正整数(含空值)→ 报错返回 3(该字段仅在用户明确要求放宽时写入,不应
 # 出现拼写外的形态)。awk 以 "F=" 前缀标记"字段命中",与"未出现"区分——
 # 二者在裸值形态下同为空串,无法直接分辨。
@@ -72,7 +133,7 @@ resolve_max_rounds() {
                print "F=" $0; exit }
              n >= 2 { exit }' "$1")
   if [ -z "$hit" ]; then
-    echo 5
+    echo 3
     return 0
   fi
   val=${hit#F=}
@@ -84,9 +145,11 @@ resolve_max_rounds() {
   fi
 }
 
-# list_minors <task_dir>:按轮次顺序汇总全部 plan-review-round-*.md 中的 minor,
-# 每条一行 "| NN/R-xx | 概要 |";无任何 minor 时输出"无"。供 rawf-implement 在
-# 第 1 轮实现前做跨轮交接(收敛轮降级的问题也在其中,不只看最后一轮)。只读。
+# list_minors <task_dir>:按轮次顺序汇总全部 plan-review-round-*.md 中的非阻断
+# 条目(minor、评审者自拟建议、脚本降级的条目),每条一行
+# "| plan/NN/<编号> | <类别>:<概要> |";无则输出"无"。供 rawf-implement 在第 1 轮
+# 实现前做跨轮交接(不只看最后一轮)。1.5.0 之前的旧格式评审文件没有建议节,
+# 只提取出 minor。只读。
 list_minors() {
   local td=${1:-} f nn out all=
   [ -d "$td" ] || { echo "任务目录不存在:$td" >&2; return 3; }
@@ -95,11 +158,16 @@ list_minors() {
   shopt -u nullglob
   for f in "${files[@]}"; do
     nn=${f##*/plan-review-round-}; nn=${nn%%-*}
-    out=$(awk -v nn="$nn" '/^- \[minor\] R-[0-9]+ / {
-            id = $3; line = $0
-            sub(/^- \[minor\] R-[0-9]+ /, "", line)
-            gsub(/\|/, "\\|", line)
-            printf "| %s/%s | %s |\n", nn, id, line }' "$f")
+    out=$(awk -v ref="plan/$nn" '
+      function row(id, text) { gsub(/\|/, "\\|", text); printf "| %s/%s | %s |\n", ref, id, text }
+      /^## / { sec = $0; next }
+      sec ~ /^## 问题清单/ && /^- \[minor\] R-[0-9]+ / {
+        t = $0; sub(/^- \[minor\] R-[0-9]+ /, "", t); row($3, "minor:" t); next }
+      sec ~ /^## 建议/ && /^- A-[0-9]+ / {
+        t = $0; sub(/^- A-[0-9]+ /, "", t); row($2, "建议:" t); next }
+      sec ~ /^## 建议/ && /^- \[[a-z-]+\] R-[0-9]+ / {
+        t = $0; sub(/^- \[[a-z-]+\] R-[0-9]+ /, "", t); row($3, "降级" $2 ":" t); next }
+    ' "$f")
     [ -n "$out" ] && all+="$out"$'\n'
   done
   if [ -z "$all" ]; then echo "无"; else printf '%s' "$all"; fi
@@ -107,7 +175,7 @@ list_minors() {
 
 # 测试可控入口:直接调用发布函数(绕过轮次计数),验证 mv -n 不覆盖行为;
 # __resolve_max_rounds 同理,验证上限解析的缺省/合法/非法分支;
-# __minors 为跨轮 minor 汇总的工具入口(rawf-implement 使用)。
+# __minors 为跨轮 minor 与建议汇总的工具入口(rawf-implement 使用)。
 if [ "${1:-}" = "__publish_round" ]; then
   shift
   publish_round "$@"
@@ -244,7 +312,7 @@ trap 'exit 143' TERM
 trap 'exit 130' INT
 
 # 轮次:count=已有 plan-review-round-*.md 数量;nn=count+1。
-# 机器上限:缺省 5,可被 plan.md frontmatter 的用户授权值放宽;
+# 机器上限:缺省 3,可被 plan.md frontmatter 的用户授权值放宽;
 # count>=上限直接拒绝,交人工。
 max_rounds=$(resolve_max_rounds "$plan") || exit 3
 shopt -s nullglob
@@ -265,13 +333,12 @@ cp "$plan" "$snap" || { echo "无法写出 plan 快照 $task_rel/${snap##*/}" >&
 snap_sum=$(sha256sum < "$snap" | cut -d' ' -f1)
 
 # build_round_context:生成 {{ROUND_CONTEXT}}。首行固定为"本轮模式:…"。
-# 第 1、2 轮全量穷尽;第 3 轮起有上一轮快照 → 收敛评审,无快照(升级前的
-# 历史轮次)→ 回退为全量穷尽。
-full_rounds=2
+# 第 01 轮全量评审;第 02 轮起有上一轮快照 → 核验评审,无快照(升级前的历史
+# 轮次,或快照已被清理)→ 回退为全量评审。
 build_round_context() {
   local n=$((10#$nn)) prev prev_snap prev_review='' mode d f drc=0
   if [ "$n" -eq 1 ]; then
-    printf '本轮模式:全量穷尽评审\n\n本轮为第 01 轮(首轮)。'
+    printf '本轮模式:全量评审\n\n本轮为第 01 轮(首轮)。'
     return 0
   fi
   prev=$(printf '%02d' "$((n - 1))")
@@ -279,25 +346,23 @@ build_round_context() {
   for f in "$task_dir"/plan-review-round-"$prev"-*.md; do
     [ -f "$f" ] && { prev_review=${f##*/}; break; }
   done
-  if [ "$n" -le "$full_rounds" ]; then
-    mode=全量穷尽评审
-  elif [ -f "$prev_snap" ]; then
-    mode=收敛评审
+  if [ -f "$prev_snap" ]; then
+    mode=核验评审
   else
-    mode='全量穷尽评审(无上一轮快照)'
+    mode='全量评审(无上一轮快照)'
   fi
   printf '本轮模式:%s\n\n本轮为第 %s 轮。' "$mode" "$nn"
   if [ -n "$prev_review" ]; then
-    printf '上一轮评审:%s/%s——先逐项核验其中的 plan-blocker/major 是否已解决。\n\n' "$task_rel" "$prev_review"
+    printf '上一轮评审:%s/%s——先逐项核验其中的阻断问题是否已解决。\n\n' "$task_rel" "$prev_review"
   else
-    printf '上一轮评审:未找到第 %s 轮评审文件,按全量穷尽评审。\n\n' "$prev"
+    printf '上一轮评审:未找到第 %s 轮评审文件。\n\n' "$prev"
   fi
   if [ ! -f "$prev_snap" ]; then
-    printf '无上一轮快照(该轮评审早于快照机制),无法区分修订与未修订部分,本轮不提供修订 diff。'
+    printf '无上一轮快照,无法区分修订与未修订部分,本轮不提供修订 diff。'
     return 0
   fi
   # diff 退出码:0 = 无差异,1 = 有差异,其它 = 执行失败(快照不可读、diff 异常等)。
-  # 失败不得当作"未修订"——那会让收敛轮把真实修订当成未修订部分而降级其问题
+  # 失败不得当作"未修订"——那会让核验轮把真实修订当成未修订部分而降级其问题
   d=$(diff -u --label "第 $prev 轮所审 plan.md" --label "本轮所审 plan.md" "$prev_snap" "$snap") || drc=$?
   if [ "$drc" -gt 1 ]; then
     echo "修订 diff 生成失败(diff 退出码 $drc,上一轮快照 $task_rel/${prev_snap##*/});评审未启动、不消耗轮次,排查后重跑" >&2
@@ -307,11 +372,7 @@ build_round_context() {
     printf 'plan.md 自第 %s 轮评审以来未修订。' "$prev"
     return 0
   fi
-  if [ "$mode" = 收敛评审 ]; then
-    printf '自第 %s 轮评审以来的修订如下;diff 中的改动即本轮的"修订部分",其余为"未修订部分":\n\n' "$prev"
-  else
-    printf '自第 %s 轮评审以来的修订如下(供定位;本轮仍全量评审):\n\n' "$prev"
-  fi
+  printf '自第 %s 轮评审以来的修订如下;diff 中的改动即本轮的"修订部分",其余为"未修订部分":\n\n' "$prev"
   # shellcheck disable=SC2016  # 反引号是 markdown 代码栅栏的字面量,不需要展开
   printf '```diff\n%s\n```' "$d"
 }
@@ -384,24 +445,23 @@ if [ "$codex_rc" -ne 0 ]; then
 fi
 [ -f "$raw" ] || { echo "codex 退出 0 但未产出评审输出文件,评审未完成;请重跑评审" >&2; exit 3; }
 
-# 结构化解析 + 交叉校验:JSON 合法性 → verdict → 按严重度清单推导并比对。
+# 结构化解析:输入校验 → 按判定规则推导结论。结论是评审输出的纯函数,评审者
+# 不自报;结构不合法的输出一律不发布。
 if ! jq -e . "$raw" >/dev/null 2>&1; then
   echo "评审输出不是合法 JSON,原始输出保留在 $task_rel/.plan-review-raw-$nn.json" >&2
   exit 3
 fi
-verdict=$(jq -r '.verdict // empty' "$raw")
+if ! validate_review_json "$raw"; then
+  echo "评审输出结构不合法(缺字段、字段类型错误或严重度/类别取值非法),未发布评审文件,原始输出保留在 $task_rel/.plan-review-raw-$nn.json;请重跑评审" >&2
+  exit 3
+fi
+verdict=$(derive_verdict "$raw") || verdict=
 case "$verdict" in
   pass|fail) ;;
   *)
-    echo "评审输出缺少合法 verdict 字段,原始输出保留在 $task_rel/.plan-review-raw-$nn.json" >&2
+    echo "结论推导失败,原始输出保留在 $task_rel/.plan-review-raw-$nn.json" >&2
     exit 3 ;;
 esac
-blocking=$(jq '[.issues // [] | .[] | select(.severity == "plan-blocker" or .severity == "major")] | length' "$raw")
-if [ "$blocking" -gt 0 ]; then derived=fail; else derived=pass; fi
-if [ "$verdict" != "$derived" ]; then
-  echo "评审自报结论($verdict)与严重度清单推导($derived)矛盾,按判定规则该评审无效,原始输出保留在 $task_rel/.plan-review-raw-$nn.json" >&2
-  exit 3
-fi
 
 # 版本一致性:评审期间 plan.md 被改过,则评审者读到的内容与修订 diff 不再对应,
 # 本轮结论作废——不发布评审文件,轮次号不被消耗(重跑仍为同一 NN)

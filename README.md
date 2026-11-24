@@ -85,25 +85,36 @@ implementation-round-NN.md、review-round-NN-<pass|fail>.md、summary.md,
 - gate-review.sh(Stop):最新实现轮未经评审前,不许结束回合;评审进行中
   (当前任务的 .review-lock 被 flock 持有)则放行——评审后台运行,完成通知
   唤回 Claude,不原地等待
-- review.sh:codex exec --output-schema 结构化评审;脚本按严重度清单推导
-  pass/fail 并与评审自报结论交叉校验,JSON 渲染为评审文件;同轮已有评审
-  文件则拒绝重评(历史只增不改);codex 的 stdin 接 /dev/null,--json 事件流
+- review.sh:codex exec --output-schema 结构化评审;**评审只拦产品缺陷,结论
+  由脚本推导**——评审者不自报 pass/fail,脚本先校验输出结构,再按问题的文件
+  路径归类,把指向测试、任务记录、文档或写不出失败场景的问题降为建议,余下
+  有 blocker/major 即 fail(docs/decisions/t0015);JSON 渲染为评审文件;同轮
+  已有评审文件则拒绝重评(历史只增不改);codex 的 stdin 接 /dev/null,--json 事件流
   作进度信号,静默 15 分钟 / 总时长 60 分钟的看门狗按会话终止 codex 并
   exit 3(环境变量 RAWF_REVIEW_IDLE_SECONDS / RAWF_REVIEW_MAX_SECONDS 可调);
   互斥锁为 flock 文件,随进程退出自动释放(见 docs/decisions/t0009)
 - 评审以只读沙箱直审原仓库(无副本,零复制开销;见 docs/decisions/t0005);
-  评审者不运行任何测试,测试真实性走证据协议(档位制见 docs/decisions/t0006):
+  评审者不运行任何测试,也不核证据(档位制见 docs/decisions/t0006):
   A 档证据由 evidence.sh 包住命令产出 rawf-evidence v1 文件(命令 + 完整
-  输出 + 退出码),review.sh 启动前先跑 evidence-check.sh 以 plan 用例表为
-  基准机器核验结构完整性,不通过直接拒绝启动并开出补交清单(不消耗评审
-  轮次);评审者只核证据内容(命令对不对、退出码与正文是否符合预期),
-  不再就格式提意见(docs/decisions/t0010);完整性哈希(含未跟踪文件内容/
-  类型/可执行位)保留为双保险,评审期间主工作区被动过即判评审无效
-- plan 评审分轮:第 1、2 轮按五个固定维度全量穷尽评审(一次列全、含 minor),
-  第 3 轮起收敛评审(只核上一轮问题与修订部分,未修订部分只报 plan-blocker);
-  脚本每轮快照 plan.md 并注入修订 diff,评审期间 plan.md 被改则本轮作废;
-  默认上限 5 轮;plan 阶段 major 按"留到实现阶段是否返工"判定,跨轮 minor
-  由实现阶段经 `plan-review.sh __minors` 汇总交接(docs/decisions/t0012)
+  输出 + 退出码),以 exit 0 表示用例通过;review.sh 启动前先跑
+  evidence-check.sh 以 plan 用例表为基准机器核验——记录与用例逐条对应、
+  结果为 pass、A 档证据完整且归属本用例且退出码为 0、B/C 档证据栏非空,
+  不通过直接拒绝启动并开出补交清单(不消耗评审轮次);命令是否真的验证了
+  用例、用例是否充分由开发侧自证(docs/decisions/t0010、t0015);完整性哈希
+  (含未跟踪文件内容/类型/可执行位)保留为双保险,评审期间主工作区被动过
+  即判评审无效
+- 修复轮只审修复:review.sh 每轮保存所审改动的清单与内容快照,第 2 轮起
+  生成轮间差异并注入指令;评审者先核验上一轮的阻断问题,再审本轮变化,
+  与本轮变化无关的新发现只收 blocker、其余至多 minor
+- plan 评审只拦设计错误,分轮进行:第 1 轮全量评审(设计层问题一次列全,
+  调查按需),第 2 轮起核验评审(只核上一轮阻断问题与修订部分,未修订部分
+  只有 plan-blocker 可阻断);验收与用例表方面的意见是建议,不阻断;脚本
+  每轮快照 plan.md 并注入修订 diff,评审期间 plan.md 被改则本轮作废;默认
+  上限 3 轮;major 按"留到实现阶段是否返工"判定,跨轮 minor 与建议由实现
+  阶段经 `plan-review.sh __minors` 汇总交接(docs/decisions/t0012、t0015)
+- 建议由开发 AI 处置:评审文件的「测试缺口」「建议」两节不计入 pass/fail、
+  不触发修复轮,是否采纳由开发 AI 决定并留理由;收尾时经
+  `review.sh __minors` 汇总全部轮次的 minor 与建议呈给用户
 - 范围自省不量化、只提醒:plan 必填「需求原文」「非目标」,实现记录的偏差
   分收窄/替代/追加三类且追加须用户确认或入「停车场」,两级评审各有一个
   固定的范围核对问题,结论单列「范围核对」节、不计入 pass/fail,交用户裁决
@@ -157,5 +168,6 @@ TEMPLATE-VERSION 随之更新 → **需人工合并类**按升级指引逐文件
 - hook 不拦 Bash 重定向写文件(纪律靠 CLAUDE.md 硬规则)
 - plan 的 approved 状态由 Claude 在用户确认后翻转,存在理论上的
   误翻可能(approved_at 留有审计痕迹;可升级为仅人工翻转)
-- 评审者不复跑测试(只读沙箱),测试真实性依赖证据协议与开发侧纪律;
-  若出现证据造假案例,可新增决策引入抽查机制(取舍见 docs/decisions/t0005)
+- 评审者不复跑测试、不核证据,也不评价测试是否充分:机器只确认用例留了证
+  且退出码为 0,测试质量依赖开发侧纪律与用户抽查;若出现证据造假或测试
+  空转的案例,可新增决策引入抽查机制(取舍见 docs/decisions/t0005、t0015)

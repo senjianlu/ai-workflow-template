@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+# codex 桩:记录每次调用收到的指令,并把预置的评审 JSON 写到 --output-last-message。
+#   STUB_DIR      必填,项目外目录(写在夹具内会改动工作区指纹):calls 记调用次数,
+#                 prompt-<n>.txt 存第 n 次调用收到的指令
+#   STUB_OUT_SEQ  可选目录:存在 <n>.json 时,第 n 次调用用它
+#   STUB_OUT      可选文件:其余调用用它;两者都没有则不写输出文件
+#   STUB_TOUCH    可选文件路径:评审"进行中"向它追加一行,模拟并发写入
+out=; json=0
+args=("$@")
+for ((i = 0; i < ${#args[@]}; i++)); do
+  case "${args[i]}" in
+    --output-last-message|-o) out="${args[i + 1]}" ;;
+    --json) json=1 ;;
+  esac
+done
+d="${STUB_DIR:?STUB_DIR 未设置}"
+mkdir -p "$d"
+n=1
+[ -f "$d/calls" ] && n=$(($(wc -l < "$d/calls") + 1))
+echo "$n" >> "$d/calls"
+printf '%s' "${args[${#args[@]} - 1]}" > "$d/prompt-$n.txt"
+if [ "$json" = 1 ]; then
+  echo '{"type":"thread.started"}'
+  echo '{"type":"turn.completed"}'
+fi
+src=
+if [ -n "${STUB_OUT_SEQ:-}" ] && [ -f "$STUB_OUT_SEQ/$n.json" ]; then
+  src="$STUB_OUT_SEQ/$n.json"
+elif [ -n "${STUB_OUT:-}" ]; then
+  src="$STUB_OUT"
+fi
+if [ -n "${STUB_TOUCH:-}" ]; then echo "written during review" >> "$STUB_TOUCH"; fi
+if [ -n "$src" ] && [ -n "$out" ]; then cp "$src" "$out"; fi
+exit 0

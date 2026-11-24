@@ -1,0 +1,40 @@
+# rawf-evidence v1
+tc: TC-09
+label: r5
+cmd: bash .ai/2026-11-24/review-product-gate/assets/tests/run.sh tc09
+cwd: /home/rabbir/Projects/ai-workflow-template/.claude/worktrees/review-product-gate
+git_head: 2f82b1262ab3cfe50369fb3c32f7a83b28802dcb dirty
+started: 2026-11-24T17:35:03+09:00
+--- output ---
+[OK] CLAUDE.md 不再出现「5 轮」
+[OK] CLAUDE.md 不再出现「全量穷尽」
+[OK] AGENTS.md 不再出现「5 轮」
+[OK] AGENTS.md 不再出现「全量穷尽」
+[OK] README.md 不再出现「5 轮」
+[OK] README.md 不再出现「全量穷尽」
+[OK] .claude/skills/rawf-plan/SKILL.md 不再出现「5 轮」
+[OK] .claude/skills/rawf-plan/SKILL.md 不再出现「全量穷尽」
+[OK] .claude/skills/rawf-implement/SKILL.md 不再出现「5 轮」
+[OK] .claude/skills/rawf-implement/SKILL.md 不再出现「全量穷尽」
+[OK] .claude/skills/rawf-review/SKILL.md 不再出现「5 轮」
+[OK] .claude/skills/rawf-review/SKILL.md 不再出现「全量穷尽」
+[OK] .claude/skills/rawf-report/SKILL.md 不再出现「5 轮」
+[OK] .claude/skills/rawf-report/SKILL.md 不再出现「全量穷尽」
+[OK] t0015 存在
+[OK] t0003 顶部含指向 t0015 的标注
+[OK] t0005 顶部含指向 t0015 的标注
+[OK] t0006 顶部含指向 t0015 的标注
+[OK] t0010 顶部含指向 t0015 的标注
+[OK] t0012 顶部含指向 t0015 的标注
+[OK] CHANGELOG 有 [1.5.0] 条目
+[OK] 1.5.0 条目含「升级指引」
+[OK] 1.5.0 条目排在 1.4.1 之前
+[OK] TEMPLATE-VERSION 为 1.5.0
+[OK] 评审标准写明失败场景须在正常使用中可能出现
+[OK] 实现评审指令写明同一门槛
+失败断言数:0
+
+--- end ---
+exit: 0
+finished: 2026-11-24T17:35:03+09:00
+bytes: 1309

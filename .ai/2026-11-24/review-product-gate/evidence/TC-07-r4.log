@@ -1,0 +1,142 @@
+# rawf-evidence v1
+tc: TC-07
+label: r4
+cmd: bash .ai/2026-11-24/review-product-gate/assets/tests/run.sh tc07
+cwd: /home/rabbir/Projects/ai-workflow-template/.claude/worktrees/review-product-gate
+git_head: 2f82b1262ab3cfe50369fb3c32f7a83b28802dcb dirty
+started: 2026-11-24T17:22:58+09:00
+--- output ---
+[OK] (实现/empty-object) 非法输出(exit 3)
+[OK] (实现/empty-object) 不发布评审文件
+[OK] (实现/empty-object) 原始输出保留
+[OK] (实现/empty-object) 换成合法输出后同一轮可发布(exit 0)
+[OK] (实现/empty-object) 发布的是第 01 轮
+[OK] (实现/no-issues) 非法输出(exit 3)
+[OK] (实现/no-issues) 不发布评审文件
+[OK] (实现/no-issues) 原始输出保留
+[OK] (实现/no-issues) 换成合法输出后同一轮可发布(exit 0)
+[OK] (实现/no-issues) 发布的是第 01 轮
+[OK] (实现/issues-string) 非法输出(exit 3)
+[OK] (实现/issues-string) 不发布评审文件
+[OK] (实现/issues-string) 原始输出保留
+[OK] (实现/issues-string) 换成合法输出后同一轮可发布(exit 0)
+[OK] (实现/issues-string) 发布的是第 01 轮
+[OK] (实现/issue-missing-field) 非法输出(exit 3)
+[OK] (实现/issue-missing-field) 不发布评审文件
+[OK] (实现/issue-missing-field) 原始输出保留
+[OK] (实现/issue-missing-field) 换成合法输出后同一轮可发布(exit 0)
+[OK] (实现/issue-missing-field) 发布的是第 01 轮
+[OK] (实现/issue-wrong-type) 非法输出(exit 3)
+[OK] (实现/issue-wrong-type) 不发布评审文件
+[OK] (实现/issue-wrong-type) 原始输出保留
+[OK] (实现/issue-wrong-type) 换成合法输出后同一轮可发布(exit 0)
+[OK] (实现/issue-wrong-type) 发布的是第 01 轮
+[OK] (实现/bad-severity) 非法输出(exit 3)
+[OK] (实现/bad-severity) 不发布评审文件
+[OK] (实现/bad-severity) 原始输出保留
+[OK] (实现/bad-severity) 换成合法输出后同一轮可发布(exit 0)
+[OK] (实现/bad-severity) 发布的是第 01 轮
+[OK] (实现/non-string-in-array) 非法输出(exit 3)
+[OK] (实现/non-string-in-array) 不发布评审文件
+[OK] (实现/non-string-in-array) 原始输出保留
+[OK] (实现/non-string-in-array) 换成合法输出后同一轮可发布(exit 0)
+[OK] (实现/non-string-in-array) 发布的是第 01 轮
+[OK] (实现/line-not-integer) 非法输出(exit 3)
+[OK] (实现/line-not-integer) 不发布评审文件
+[OK] (实现/line-not-integer) 原始输出保留
+[OK] (实现/line-not-integer) 换成合法输出后同一轮可发布(exit 0)
+[OK] (实现/line-not-integer) 发布的是第 01 轮
+[OK] (实现/severity-array) 非法输出(exit 3)
+[OK] (实现/severity-array) 不发布评审文件
+[OK] (实现/severity-array) 原始输出保留
+[OK] (实现/severity-array) 换成合法输出后同一轮可发布(exit 0)
+[OK] (实现/severity-array) 发布的是第 01 轮
+[OK] (实现/extra-top-field) 非法输出(exit 3)
+[OK] (实现/extra-top-field) 不发布评审文件
+[OK] (实现/extra-top-field) 原始输出保留
+[OK] (实现/extra-top-field) 换成合法输出后同一轮可发布(exit 0)
+[OK] (实现/extra-top-field) 发布的是第 01 轮
+[OK] (实现/extra-issue-field) 非法输出(exit 3)
+[OK] (实现/extra-issue-field) 不发布评审文件
+[OK] (实现/extra-issue-field) 原始输出保留
+[OK] (实现/extra-issue-field) 换成合法输出后同一轮可发布(exit 0)
+[OK] (实现/extra-issue-field) 发布的是第 01 轮
+[OK] (实现) 合法空数组(exit 0)
+[OK] (实现) 合法空数组发布 pass 文件
+[OK] (plan/empty-object) 非法输出(exit 3)
+[OK] (plan/empty-object) 不发布评审文件
+[OK] (plan/empty-object) 原始输出保留
+[OK] (plan/empty-object) 换成合法输出后同一轮可发布(exit 0)
+[OK] (plan/empty-object) 发布的是第 01 轮
+[OK] (plan/no-issues) 非法输出(exit 3)
+[OK] (plan/no-issues) 不发布评审文件
+[OK] (plan/no-issues) 原始输出保留
+[OK] (plan/no-issues) 换成合法输出后同一轮可发布(exit 0)
+[OK] (plan/no-issues) 发布的是第 01 轮
+[OK] (plan/issues-string) 非法输出(exit 3)
+[OK] (plan/issues-string) 不发布评审文件
+[OK] (plan/issues-string) 原始输出保留
+[OK] (plan/issues-string) 换成合法输出后同一轮可发布(exit 0)
+[OK] (plan/issues-string) 发布的是第 01 轮
+[OK] (plan/issue-missing-field) 非法输出(exit 3)
+[OK] (plan/issue-missing-field) 不发布评审文件
+[OK] (plan/issue-missing-field) 原始输出保留
+[OK] (plan/issue-missing-field) 换成合法输出后同一轮可发布(exit 0)
+[OK] (plan/issue-missing-field) 发布的是第 01 轮
+[OK] (plan/issue-wrong-type) 非法输出(exit 3)
+[OK] (plan/issue-wrong-type) 不发布评审文件
+[OK] (plan/issue-wrong-type) 原始输出保留
+[OK] (plan/issue-wrong-type) 换成合法输出后同一轮可发布(exit 0)
+[OK] (plan/issue-wrong-type) 发布的是第 01 轮
+[OK] (plan/bad-severity) 非法输出(exit 3)
+[OK] (plan/bad-severity) 不发布评审文件
+[OK] (plan/bad-severity) 原始输出保留
+[OK] (plan/bad-severity) 换成合法输出后同一轮可发布(exit 0)
+[OK] (plan/bad-severity) 发布的是第 01 轮
+[OK] (plan/bad-category) 非法输出(exit 3)
+[OK] (plan/bad-category) 不发布评审文件
+[OK] (plan/bad-category) 原始输出保留
+[OK] (plan/bad-category) 换成合法输出后同一轮可发布(exit 0)
+[OK] (plan/bad-category) 发布的是第 01 轮
+[OK] (plan/non-string-in-array) 非法输出(exit 3)
+[OK] (plan/non-string-in-array) 不发布评审文件
+[OK] (plan/non-string-in-array) 原始输出保留
+[OK] (plan/non-string-in-array) 换成合法输出后同一轮可发布(exit 0)
+[OK] (plan/non-string-in-array) 发布的是第 01 轮
+[OK] (plan/category-array) 非法输出(exit 3)
+[OK] (plan/category-array) 不发布评审文件
+[OK] (plan/category-array) 原始输出保留
+[OK] (plan/category-array) 换成合法输出后同一轮可发布(exit 0)
+[OK] (plan/category-array) 发布的是第 01 轮
+[OK] (plan/severity-array) 非法输出(exit 3)
+[OK] (plan/severity-array) 不发布评审文件
+[OK] (plan/severity-array) 原始输出保留
+[OK] (plan/severity-array) 换成合法输出后同一轮可发布(exit 0)
+[OK] (plan/severity-array) 发布的是第 01 轮
+[OK] (plan/extra-top-field) 非法输出(exit 3)
+[OK] (plan/extra-top-field) 不发布评审文件
+[OK] (plan/extra-top-field) 原始输出保留
+[OK] (plan/extra-top-field) 换成合法输出后同一轮可发布(exit 0)
+[OK] (plan/extra-top-field) 发布的是第 01 轮
+[OK] (plan/extra-issue-field) 非法输出(exit 3)
+[OK] (plan/extra-issue-field) 不发布评审文件
+[OK] (plan/extra-issue-field) 原始输出保留
+[OK] (plan/extra-issue-field) 换成合法输出后同一轮可发布(exit 0)
+[OK] (plan/extra-issue-field) 发布的是第 01 轮
+[OK] (plan) 合法空数组(exit 0)
+[OK] (plan) 合法空数组发布 pass 文件
+[OK] review.schema.json 是合法 JSON
+[OK] review.schema.json 每个对象节点 additionalProperties=false 且 required 覆盖全部属性
+[OK] review.schema.json 不含 verdict
+[OK] plan-review.schema.json 是合法 JSON
+[OK] plan-review.schema.json 每个对象节点 additionalProperties=false 且 required 覆盖全部属性
+[OK] plan-review.schema.json 不含 verdict
+[OK] bash -n review.sh
+[OK] bash -n plan-review.sh
+[OK] bash -n evidence-check.sh
+失败断言数:0
+
+--- end ---
+exit: 0
+finished: 2026-11-24T17:23:19+09:00
+bytes: 6977

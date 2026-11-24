@@ -1,0 +1,75 @@
+# rawf-evidence v1
+tc: TC-08
+label: r4
+cmd: bash .ai/2026-11-24/review-product-gate/assets/tests/run.sh tc08
+cwd: /home/rabbir/Projects/ai-workflow-template/.claude/worktrees/review-product-gate
+git_head: 2f82b1262ab3cfe50369fb3c32f7a83b28802dcb dirty
+started: 2026-11-24T17:23:49+09:00
+--- output ---
+    | Reading additional input from stdin...
+    | review-round-01-fail.md
+[OK] review.sh 退出码为 0 或 1(实际 1)
+[OK] review.sh 发布一份评审文件
+---- 评审文件(仅供留档,不对内容做断言)----
+# 评审:第 01 轮
+
+## 问题清单
+- [plan-blocker] R-01 方案指定用列表对象作为字典键，缓存设计无法按约定实现。
+  - 位置:.ai/2026-01-01/t/plan.md:22
+  - 失败场景:按方案实现缓存后，调用 average([2, 4]) 会在用列表访问或写入缓存时抛出 TypeError，无法返回平均值 3。
+  - 详情:Python 的 list 不可哈希。应先修订方案，移除缓存要求，或明确可哈希且能反映当前列表内容的键规则。
+- [blocker] R-02 average 对空列表仍执行除法，本轮要求的返回值 0 无法交付。
+  - 位置:src/calc.py:2
+  - 失败场景:调用 average([]) 时，sum([]) 和 len([]) 均为 0，函数执行 0 / 0 后抛出 ZeroDivisionError。
+  - 详情:在计算平均值前判断列表是否为空，空列表直接返回 0，其余输入沿用现有公式。
+
+## 测试缺口(不计入 pass/fail)
+- T-01 src/calc.py:2 缺少覆盖 average([]) 返回 0 的测试，空输入触发除零异常的风险未被覆盖。
+
+## 建议(不计入 pass/fail)
+- A-01 .ai/2026-01-01/t/implementation-round-01.md:3 缺少「与方案的偏差」一节，当前实现省略了方案中的缓存步骤。
+
+## 范围核对
+无
+
+## 总评
+本轮唯一的产品交付场景仍会触发除零异常，方案指定的缓存键也无法使用。评审基于静态代码检查，未运行测试。
+
+VERDICT: fail
+----
+    | Reading additional input from stdin...
+    | plan-review-round-01-fail.md
+[OK] plan-review.sh 退出码为 0 或 1(实际 1)
+[OK] plan-review.sh 发布一份评审文件
+---- plan 评审文件(仅供留档,不对内容做断言)----
+# Plan 评审:第 01 轮
+
+## 问题清单
+- [plan-blocker] R-01 方案把 `list` 对象直接用作缓存字典的键，导致非空列表调用失败。
+  - 类别:contract
+  - 后果:照此实现，`average([2, 4])` 会在读取或写入缓存时抛出 `TypeError`，无法像现在一样返回 `3`。
+  - 详情:`.ai/2026-01-01/t/plan.md:22` 要求以列表对象作为模块级字典的键，但 Python 的 `list` 不可哈希。`src/calc.py:2` 当前直接计算平均值，`tests/test_calc.py:5` 明确断言该非空列表返回 `3`。删除缓存设计，只增加空列表返回 `0` 的分支，并保留原有计算路径。
+
+## 建议(不计入 pass/fail)
+- A-01 `.ai/2026-01-01/t/plan.md:28` 的 TC-01 只要求单元测试通过，建议明确断言 `average([]) == 0`，并保留现有的非空列表断言。
+
+## 范围核对
+- `.ai/2026-01-01/t/plan.md:22` 新增模块级结果缓存，超出空列表返回 `0` 的需求。方案未说明缓存为何是实现所必需的，第 18–19 行的「非目标」也未排除缓存。
+
+## 总评
+达成需求：空列表提前返回 `0` 的分支覆盖了需求原文。
+契约与正确性：缓存键设计会使现有非空列表调用抛出异常。
+前提：在 `src/calc.py:2` 的除法前处理空列表可以避免除零异常。
+既有约定：方案包含「需求原文」和「非目标」，缓存设计会破坏现有非空列表行为。
+可实施性：空列表分支可直接实现，字典无法按方案以列表对象为键存取结果。
+范围自省：新增缓存超出需求，方案未说明其必要性。
+总评：保留空列表分支和原有非空计算路径，即可交付需求。
+
+VERDICT: fail
+----
+失败断言数:0
+
+--- end ---
+exit: 0
+finished: 2026-11-24T17:25:33+09:00
+bytes: 3552

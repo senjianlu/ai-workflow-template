@@ -1,0 +1,60 @@
+# rawf-evidence v1
+tc: TC-03
+label: r3
+cmd: bash .ai/2026-11-24/review-product-gate/assets/tests/run.sh tc03
+cwd: /home/rabbir/Projects/ai-workflow-template/.claude/worktrees/review-product-gate
+git_head: 2f82b1262ab3cfe50369fb3c32f7a83b28802dcb dirty
+started: 2026-11-24T17:06:00+09:00
+--- output ---
+[OK] 第 1 轮(exit 1)
+[OK] 第 2 轮(exit 0)
+[OK] 第 1 轮指令模式为全量评审
+[OK] 第 2 轮指令模式为修复核验
+[OK] 第 2 轮指令含上一轮评审文件路径
+[OK] 第 2 轮指令含轮间差异文件路径
+[OK] 轮间差异文件存在
+[OK] 变化文件列表含 src/app.py
+[OK] 变化文件列表含 scripts/run.sh
+[OK] 变化文件列表含 src/other.py
+[OK] 变化文件列表含 .claude/skills/demo/SKILL.md
+[OK] 变化文件列表含 src/new.py
+[OK] 变化文件列表含 src/gone.py
+[OK] 变化文件列表含 link
+[OK] 变化文件列表恰 7 项
+[OK] 变化文件列表不含 .ai/ 下文件
+[OK] 可执行位一项标为元数据变化
+[OK] 符号链接一项标为元数据变化
+[OK] 第 1 轮指令不残留占位
+[OK] 第 2 轮指令不残留占位
+[OK] __minors 仍含第 1 轮的 minor
+[OK] (no-manifest) 第 2 轮(exit 0)
+[OK] (no-manifest) 第 2 轮模式为全量评审
+[OK] (no-manifest) 第 2 轮不是修复核验
+[OK] (no-review) 第 2 轮(exit 0)
+[OK] (no-review) 第 2 轮模式为全量评审
+[OK] (no-review) 第 2 轮不是修复核验
+[OK] (no-snap) 第 2 轮(exit 0)
+[OK] (no-snap) 第 2 轮模式为全量评审
+[OK] (no-snap) 第 2 轮不是修复核验
+[OK] (head-moved) 第 2 轮(exit 0)
+[OK] (head-moved) 第 2 轮模式为全量评审
+[OK] (head-moved) 第 2 轮不是修复核验
+[OK] (占名) 第 2 轮(exit 3)
+[OK] (占名) 桩未被再次调用
+[OK] (占名) 无第 2 轮评审文件
+[OK] (一致性) 评审期间 skill 被改(exit 3)
+[OK] (一致性) 提示所审改动发生了变化
+[OK] (一致性) 不发布评审文件
+[OK] (一致性) 不再变动后同一轮可重跑(exit 0)
+[OK] (一致性) 重跑发布第 01 轮
+[OK] (副本校验) 副本被改写(exit 3)
+[OK] (副本校验) 提示内容快照与清单不一致
+[OK] (副本校验) 桩未被调用
+[OK] (副本校验) 不发布评审文件
+[OK] (副本校验) 恢复正常 cp 后同一轮可重跑(exit 0)
+失败断言数:0
+
+--- end ---
+exit: 0
+finished: 2026-11-24T17:06:11+09:00
+bytes: 1948

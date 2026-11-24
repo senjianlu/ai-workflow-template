@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# cp 替身:先照常复制,再改写复制出来的第一个文件,模拟"算完哈希之后、复制之时
+# 文件已被别人改写"——副本与清单记录的内容不是同一版本。
+#   REAL_CP  必填,真实 cp 的路径
+"${REAL_CP:?REAL_CP 未设置}" "$@" || exit $?
+dir=
+args=("$@")
+for ((i = 0; i < ${#args[@]}; i++)); do
+  if [ "${args[i]}" = "-t" ]; then dir="${args[i + 1]}"; fi
+done
+if [ -n "$dir" ] && [ -d "$dir" ]; then
+  f=$(find "$dir" -type f | LC_ALL=C sort | head -n 1)
+  if [ -n "$f" ]; then echo "tampered while snapshotting" >> "$f"; fi
+fi
+exit 0

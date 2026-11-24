@@ -1,0 +1,43 @@
+# rawf-evidence v1
+tc: TC-06
+label: 
+cmd: bash .ai/2026-11-24/review-product-gate/assets/tests/run.sh tc06
+cwd: /home/rabbir/Projects/ai-workflow-template/.claude/worktrees/review-product-gate
+git_head: 2f82b1262ab3cfe50369fb3c32f7a83b28802dcb dirty
+started: 2026-11-24T16:18:01+09:00
+--- output ---
+[OK] 第 1 次(exit 1)
+[OK] 第 2 次(exit 1)
+[OK] 第 3 次(exit 1)
+[OK] 第 1 轮为全量评审
+[OK] 第 1 轮指令写明调查按需
+[OK] 第 1 轮指令含触发条件一(与最佳实践有出入)
+[OK] 第 1 轮指令含触发条件二(明显的逻辑问题)
+[OK] 第 1 轮指令写明范围扩张不可阻断
+[OK] 第 1 轮指令写明范围扩张只进范围核对
+[OK] 第 2 轮为核验评审
+[OK] 第 2 轮含上一轮评审文件路径
+[OK] 第 2 轮含修订 diff
+[OK] 第 2 轮的 diff 含本次修订
+[OK] 第 3 轮为核验评审
+[OK] 第 3 轮含上一轮评审文件路径
+[OK] 第 3 轮含修订 diff
+[OK] 第 3 轮的 diff 含本次修订
+[OK] 第 4 次(超限)(exit 3)
+[OK] 超限提示含 3 轮上限
+[OK] 超限时未调用桩
+[OK] (放宽) 第 1 次(exit 1)
+[OK] (放宽) 第 2 次(exit 1)
+[OK] (放宽) 第 3 次(exit 1)
+[OK] (放宽) 第 4 次(exit 1)
+[OK] (放宽) 第 4 轮确实调用了桩
+[OK] (放宽) 第 4 轮为核验评审
+[OK] (删快照) 第 1 次(exit 1)
+[OK] (删快照) 第 2 次(exit 1)
+[OK] (删快照) 第 2 轮回退为全量评审
+失败断言数:0
+
+--- end ---
+exit: 0
+finished: 2026-11-24T16:18:03+09:00
+bytes: 1095
