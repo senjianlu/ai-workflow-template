@@ -1,0 +1,33 @@
+# rawf-evidence v1
+tc: TC-08
+label: 
+cmd: bash .ai/2026-11-24/review-model-override/assets/tests/run.sh tc08
+cwd: /home/rabbir/Projects/ai-workflow-template/.claude/worktrees/snapshot-excludes-prompt-limit
+git_head: 7df8371119d84d4cab7cd23c775a35a4e1a48479 dirty
+started: 2026-11-24T18:29:43+09:00
+--- output ---
+[OK] CHANGELOG 有 [1.6.0] 条目
+[OK] 1.6.0 条目含「升级指引」
+[OK] 1.6.0 条目排在 1.5.1 之前
+[OK] TEMPLATE-VERSION 为 1.6.0
+[OK] README 有「维护者裁量」一段
+[OK] README 列出 plan_review_model
+[OK] CLAUDE.md 硬规则列出 plan_review_model
+[OK] README 列出 plan_review_effort
+[OK] CLAUDE.md 硬规则列出 plan_review_effort
+[OK] README 列出 impl_review_model
+[OK] CLAUDE.md 硬规则列出 impl_review_model
+[OK] README 列出 impl_review_effort
+[OK] CLAUDE.md 硬规则列出 impl_review_effort
+[OK] rawf-plan 写明 plan_review_model
+[OK] rawf-plan 写明 plan_review_effort
+[OK] rawf-review 写明 impl_review_model
+[OK] rawf-review 写明 impl_review_effort
+[OK] t0016 存在
+[OK] t0008 顶部有补注
+失败断言数:0
+
+--- end ---
+exit: 0
+finished: 2026-11-24T18:29:43+09:00
+bytes: 762

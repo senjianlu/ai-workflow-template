@@ -19,6 +19,43 @@ skill 目录及其内容哈希锁,consumer 可能持有自有条目,须经锁机
 
 每个版本条目必须含「升级指引」小节,逐文件标注归类与迁移动作。
 
+## [1.6.0] - 2026-11-24
+
+### Added
+
+- 评审模型的指定入口:用户点名时,在任务 plan.md frontmatter 写
+  `plan_review_model` / `plan_review_effort`(plan 评审)或 `impl_review_model` /
+  `impl_review_effort`(实现评审),两个评审脚本据此给 `codex exec` 加 `-m` 与
+  `-c model_reasoning_effort`。四个字段都是可选的、互相独立;都不写时用 Codex
+  自身配置的默认值,脚本调用 codex 的参数与 1.5.x 逐项相同。值的写法不对时
+  脚本拒绝启动;Codex 不支持该取值时按"codex exec 执行失败"处理。两种情况都
+  不消耗评审轮次。字段只在用户明确点名时写入(docs/decisions/t0016)。
+
+### Changed
+
+- README「版本与升级」的分级表下增加"维护者裁量"条款:闸门协议的不兼容变更,
+  在 consumer 按升级指引完成常规升级即可继续使用、不需要迁移存量内容时,可按
+  MINOR 发布,该版 CHANGELOG 条目开头须有「不兼容提示」。分级表本身不变;
+  t0008 顶部补注。
+
+### 升级指引
+
+- 可整体替换:`.ai-workflow/`(本版改了 scripts/review.sh、scripts/plan-review.sh
+  与 TEMPLATE-VERSION);`.claude/skills/rawf-plan`、`.claude/skills/rawf-review`;
+  `docs/decisions/t0016-review-model-override.md`(新增)、
+  `docs/decisions/t0008-template-versioning.md`。consumer 若按 `# TEMPLATE:` 注释
+  在 review.sh 里加过项目定制(`hash_excludes`、`nonproduct_globs` /
+  `product_globs`),或裁剪过 review-standards.md 末尾的「技术栈评审关注点」,
+  替换后须重新处理。
+- 需人工合并:
+  - `CLAUDE.md`——「硬规则」在"评审轮次上限默认值"一条之后新增"评审模型缺省用
+    Codex 默认配置"一条。
+  - `README.md`——「机制速览」在 plan 评审一条之后新增评审模型一条;「版本与
+    升级」分级表下新增"维护者裁量"一段。
+- 不需要迁移:既有任务的 plan.md 没有这四个字段,评审照旧用 Codex 默认模型。
+- hooks、settings.json、`.gitignore`、评审指令、评审输出 schema、评审文件格式、
+  review-standards.md、AGENTS.md、rawf-implement 与 rawf-report 未变。
+
 ## [1.5.1] - 2026-11-24
 
 ### Fixed

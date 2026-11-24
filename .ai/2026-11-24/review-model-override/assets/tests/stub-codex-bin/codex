@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# codex 桩的薄包装:把收到的参数(除最后一个,即指令)逐行记到
+# $STUB_DIR/args-<n>.txt,再把调用原样转交 1.5.0 任务已入库的桩
+# (.ai/2026-11-24/review-product-gate/assets/tests/stub-codex-bin/codex)。
+#   STUB_EXIT  可选:非零时记完参数即以该退出码结束、不写输出,模拟 codex 报错退出
+d="${STUB_DIR:?STUB_DIR 未设置}"
+mkdir -p "$d"
+n=1
+[ -f "$d/calls" ] && n=$(($(wc -l < "$d/calls") + 1))
+if [ "$#" -gt 1 ]; then
+  printf '%s\n' "${@:1:$#-1}" > "$d/args-$n.txt"
+else
+  : > "$d/args-$n.txt"
+fi
+if [ "${STUB_EXIT:-0}" != 0 ]; then
+  echo "$n" >> "$d/calls"
+  echo "stub: simulated codex failure" >&2
+  exit "$STUB_EXIT"
+fi
+exec "$(dirname "$0")/../../../../review-product-gate/assets/tests/stub-codex-bin/codex" "$@"

@@ -113,6 +113,11 @@ implementation-round-NN.md、review-round-NN-<pass|fail>.md、summary.md,
   评审期间 plan.md 被改则本轮作废;默认
   上限 3 轮;major 按"留到实现阶段是否返工"判定,跨轮 minor 与建议由实现
   阶段经 `plan-review.sh __minors` 汇总交接(docs/decisions/t0012、t0015)
+- 评审模型缺省用 Codex 自身配置的默认值;用户点名时在任务 plan.md frontmatter
+  写 `plan_review_model` / `plan_review_effort`(plan 评审)或
+  `impl_review_model` / `impl_review_effort`(实现评审),脚本据此给
+  `codex exec` 加 `-m` 与 `-c model_reasoning_effort`;字段只在用户明确点名时
+  写入,只对该任务有效(docs/decisions/t0016)
 - 建议由开发 AI 处置:评审文件的「测试缺口」「建议」两节不计入 pass/fail、
   不触发修复轮,是否采纳由开发 AI 决定并留理由;收尾时经
   `review.sh __minors` 汇总全部轮次的 minor 与建议呈给用户
@@ -134,6 +139,11 @@ implementation-round-NN.md、review-round-NN-<pass|fail>.md、summary.md,
 | MAJOR | 闸门协议不兼容变更:hook 行为、评审 schema/产物命名、流程步骤 |
 | MINOR | 向后兼容的新增能力:新标准栈、新 skill、新评审关注点 |
 | PATCH | 向后兼容的缺陷修复(含脚本/hook 的 bug fix 与文案修正) |
+
+**维护者裁量**:上表是默认分级。闸门协议有不兼容变更,但 consumer 收尾在途
+任务后、按该版升级指引完成常规升级(整体替换与人工合并)即可继续使用,
+不需要迁移存量任务产物或项目自有内容的,维护者可裁定按 MINOR 发布;该版
+CHANGELOG 条目开头必须有「不兼容提示」,写明不兼容之处与升级前提。先例:1.5.0。
 
 **发布纪律**:发版提交须同步更新 CHANGELOG.md 与
 `.ai-workflow/TEMPLATE-VERSION`,随后打 `v<版本>` tag 并创建同名

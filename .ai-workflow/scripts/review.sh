@@ -10,6 +10,9 @@
 # 问题的 file 做路径归类,把指向非产品路径或缺失败场景的问题降为建议,余下有
 # blocker/major 即 fail。每轮保存所审改动的清单与内容快照,第 2 轮起据此生成
 # 轮间差异,评审者只审修复(规则见 review-standards.md「分轮模式」)。
+# 评审模型缺省用 Codex 自身配置的默认值;用户明确点名时在 plan.md frontmatter 记
+# impl_review_model / impl_review_effort,脚本据此给 codex exec 加 -m 与
+# -c model_reasoning_effort(见 docs/decisions/t0016)。
 #
 # 卡死治理(docs/decisions/t0009):codex 的 stdin 接 /dev/null(codex 在 stdin
 # 非终端时必读到 EOF);--json 事件流落盘作进度信号,静默超过
@@ -717,6 +720,53 @@ positive_int() {
   return 1
 }
 
+# frontmatter_field <plan.md> <字段名>:取 frontmatter(首个 --- 块)内行首
+# "<字段名>:" 的值,去掉首尾空白。命中输出 "F=<值>"(值可为空串),未出现则无
+# 输出——"F=" 前缀用来区分"字段出现但值为空"与"字段未出现"。
+frontmatter_field() {
+  awk -v key="$2:" '/^---[[:space:]]*$/ { n++; next }
+       n == 1 && index($0, key) == 1 {
+         v = substr($0, length(key) + 1)
+         gsub(/^[[:space:]]+|[[:space:]]+$/, "", v)
+         print "F=" v; exit }
+       n >= 2 { exit }' "$1"
+}
+
+# resolve_model_args <plan.md> <模型字段> <强度字段>:把用户点名的评审模型与推理
+# 强度转成 codex exec 的参数,写入全局数组 model_args;生效的指定记在 model_note,
+# 启动 codex 前打印。字段未出现 → 不传对应参数,用 Codex 自身配置的默认值;两个
+# 字段互相独立。与 plan-review.sh 的同名函数相同,那边读 plan_review_* 两个字段。
+# 只校验形态(首字符限定同时避免值被 codex 当成命令行选项),不维护模型名与强度
+# 的枚举:取值是否受支持由 Codex 判定,不支持时 codex exec 以非零退出,按下方
+# "codex exec 执行失败"处理(exit 3、不发布、不消耗轮次)。字段只在用户明确点名
+# 时写入(docs/decisions/t0016)。
+model_args=(); model_note=
+resolve_model_args() {
+  local LC_ALL=C plan=$1 mkey=$2 ekey=$3 hit val
+  model_args=(); model_note=
+  hit=$(frontmatter_field "$plan" "$mkey") \
+    || { echo "无法读取 plan.md 的 frontmatter;评审未启动、不消耗轮次" >&2; return 3; }
+  if [ -n "$hit" ]; then
+    val=${hit#F=}
+    if ! [[ "$val" =~ ^[A-Za-z0-9][A-Za-z0-9._:/-]*$ ]]; then
+      echo "plan.md 的 $mkey 非法(须为不带引号的模型名:以字母或数字开头,只含字母、数字与 . _ : / -;实际为:${val:-空});评审未启动、不消耗轮次" >&2
+      return 3
+    fi
+    model_args+=(-m "$val"); model_note="$mkey=$val"
+  fi
+  hit=$(frontmatter_field "$plan" "$ekey") \
+    || { echo "无法读取 plan.md 的 frontmatter;评审未启动、不消耗轮次" >&2; return 3; }
+  if [ -n "$hit" ]; then
+    val=${hit#F=}
+    if ! [[ "$val" =~ ^[a-z]+$ ]]; then
+      echo "plan.md 的 $ekey 非法(须为不带引号的小写字母,如 low、medium、high;实际为:${val:-空});评审未启动、不消耗轮次" >&2
+      return 3
+    fi
+    model_args+=(-c "model_reasoning_effort=\"$val\""); model_note="${model_note:+$model_note,}$ekey=$val"
+  fi
+  return 0
+}
+
 # --- 主流程 ---------------------------------------------------------------
 # 退出码 1 只有一个含义:已发布一份 fail 评审。脚本在 set -e 下运行,任何未被
 # 显式处理的命令失败都会让它以该命令的退出码(常常就是 1)结束——那不是评审
@@ -844,6 +894,11 @@ case "$ev_rc" in
     exit 3 ;;
   *) echo "evidence-check 执行异常(退出码 $ev_rc):$ev_report" >&2; exit 3 ;;
 esac
+
+# 评审模型:在生成本轮任何产物之前解析,写法不对就不启动(plan.md 已由上面的
+# 证据核验确认存在)
+resolve_model_args "$task_dir/plan.md" impl_review_model impl_review_effort || exit 3
+
 # 报告每条用例一行,用例很多时会很长:超过 inline_budget 就落盘(文件名命中
 # .review-raw-* 的忽略与指纹排除模式),指令里只留路径与结论行
 ev_inline=$ev_report
@@ -973,7 +1028,9 @@ raw="$task_dir/$raw_name"
 events="$task_dir/.review-raw-$nn.events.jsonl"
 rm -f "$raw" "$events"   # 清除历史遗留输出,防陈旧结论被误用
 
-setsid codex exec --json --sandbox read-only -C "$proj" \
+# model_args 为空(字段都没写)时,下面的参数序列与 1.5.x 逐项相同
+[ -z "$model_note" ] || echo "评审模型按 plan.md frontmatter 的指定:$model_note" >&2
+setsid codex exec "${model_args[@]}" --json --sandbox read-only -C "$proj" \
   --output-schema "$proj/.ai-workflow/schemas/review.schema.json" \
   --output-last-message "$raw" "$prompt" </dev/null >"$events" &
 codex_pid=$!

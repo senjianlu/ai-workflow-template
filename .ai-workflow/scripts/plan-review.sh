@@ -12,6 +12,9 @@
 # 有 plan-blocker 或 major → fail,否则 pass。
 # 轮次上限默认 3;用户明确要求放宽时在 plan.md frontmatter 记
 # plan_review_max_rounds(正整数),以该值为准(见 docs/decisions/t0003、t0015)。
+# 评审模型缺省用 Codex 自身配置的默认值;用户明确点名时在 plan.md frontmatter 记
+# plan_review_model / plan_review_effort,脚本据此给 codex exec 加 -m 与
+# -c model_reasoning_effort(见 docs/decisions/t0016)。
 #
 # 分轮模式(docs/decisions/t0015):第 1 轮全量评审(调查按需);第 2 轮起核验
 # 评审(只核上一轮阻断问题与本轮修订部分,未修订部分只有 plan-blocker 可阻断)。
@@ -143,6 +146,53 @@ resolve_max_rounds() {
     echo "plan.md 的 plan_review_max_rounds 非法(须为正整数,实际为:${val:-空})" >&2
     return 3
   fi
+}
+
+# frontmatter_field <plan.md> <字段名>:取 frontmatter(首个 --- 块)内行首
+# "<字段名>:" 的值,去掉首尾空白。命中输出 "F=<值>"(值可为空串),未出现则无
+# 输出——"F=" 前缀用来区分"字段出现但值为空"与"字段未出现"。
+frontmatter_field() {
+  awk -v key="$2:" '/^---[[:space:]]*$/ { n++; next }
+       n == 1 && index($0, key) == 1 {
+         v = substr($0, length(key) + 1)
+         gsub(/^[[:space:]]+|[[:space:]]+$/, "", v)
+         print "F=" v; exit }
+       n >= 2 { exit }' "$1"
+}
+
+# resolve_model_args <plan.md> <模型字段> <强度字段>:把用户点名的评审模型与推理
+# 强度转成 codex exec 的参数,写入全局数组 model_args;生效的指定记在 model_note,
+# 启动 codex 前打印。字段未出现 → 不传对应参数,用 Codex 自身配置的默认值;两个
+# 字段互相独立。
+# 只校验形态(首字符限定同时避免值被 codex 当成命令行选项),不维护模型名与强度
+# 的枚举:取值是否受支持由 Codex 判定,不支持时 codex exec 以非零退出,按下方
+# "codex exec 执行失败"处理(exit 3、不发布、不消耗轮次)。字段只在用户明确点名
+# 时写入(docs/decisions/t0016)。
+model_args=(); model_note=
+resolve_model_args() {
+  local LC_ALL=C plan=$1 mkey=$2 ekey=$3 hit val
+  model_args=(); model_note=
+  hit=$(frontmatter_field "$plan" "$mkey") \
+    || { echo "无法读取 plan.md 的 frontmatter;评审未启动、不消耗轮次" >&2; return 3; }
+  if [ -n "$hit" ]; then
+    val=${hit#F=}
+    if ! [[ "$val" =~ ^[A-Za-z0-9][A-Za-z0-9._:/-]*$ ]]; then
+      echo "plan.md 的 $mkey 非法(须为不带引号的模型名:以字母或数字开头,只含字母、数字与 . _ : / -;实际为:${val:-空});评审未启动、不消耗轮次" >&2
+      return 3
+    fi
+    model_args+=(-m "$val"); model_note="$mkey=$val"
+  fi
+  hit=$(frontmatter_field "$plan" "$ekey") \
+    || { echo "无法读取 plan.md 的 frontmatter;评审未启动、不消耗轮次" >&2; return 3; }
+  if [ -n "$hit" ]; then
+    val=${hit#F=}
+    if ! [[ "$val" =~ ^[a-z]+$ ]]; then
+      echo "plan.md 的 $ekey 非法(须为不带引号的小写字母,如 low、medium、high;实际为:${val:-空});评审未启动、不消耗轮次" >&2
+      return 3
+    fi
+    model_args+=(-c "model_reasoning_effort=\"$val\""); model_note="${model_note:+$model_note,}$ekey=$val"
+  fi
+  return 0
 }
 
 # list_minors <task_dir>:按轮次顺序汇总全部 plan-review-round-*.md 中的非阻断
@@ -315,6 +365,8 @@ trap 'exit 130' INT
 # 机器上限:缺省 3,可被 plan.md frontmatter 的用户授权值放宽;
 # count>=上限直接拒绝,交人工。
 max_rounds=$(resolve_max_rounds "$plan") || exit 3
+# 评审模型:在生成本轮任何产物之前解析,写法不对就不启动
+resolve_model_args "$plan" plan_review_model plan_review_effort || exit 3
 shopt -s nullglob
 rounds=("$task_dir"/plan-review-round-*.md)
 shopt -u nullglob
@@ -423,7 +475,9 @@ raw="$task_dir/.plan-review-raw-$nn.json"
 events="$task_dir/.plan-review-raw-$nn.events.jsonl"
 rm -f "$raw" "$events"
 
-setsid codex exec --json --sandbox read-only -C "$proj" \
+# model_args 为空(四个字段都没写)时,下面的参数序列与 1.5.x 逐项相同
+[ -z "$model_note" ] || echo "评审模型按 plan.md frontmatter 的指定:$model_note" >&2
+setsid codex exec "${model_args[@]}" --json --sandbox read-only -C "$proj" \
   --output-schema "$proj/.ai-workflow/schemas/plan-review.schema.json" \
   --output-last-message "$raw" "$prompt" </dev/null >"$events" &
 codex_pid=$!

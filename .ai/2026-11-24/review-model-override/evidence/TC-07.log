@@ -1,0 +1,30 @@
+# rawf-evidence v1
+tc: TC-07
+label: 
+cmd: bash .ai/2026-11-24/review-model-override/assets/tests/run.sh tc07
+cwd: /home/rabbir/Projects/ai-workflow-template/.claude/worktrees/snapshot-excludes-prompt-limit
+git_head: 7df8371119d84d4cab7cd23c775a35a4e1a48479 dirty
+started: 2026-11-24T18:29:06+09:00
+--- output ---
+[OK] 1.5.0 任务的回归用例 tc03(exit 0)
+[OK] 1.5.0 tc03 没有失败断言
+[OK] 1.5.0 任务的回归用例 tc06(exit 0)
+[OK] 1.5.0 tc06 没有失败断言
+[OK] 1.5.0 任务的回归用例 tc10(exit 0)
+[OK] 1.5.0 tc10 没有失败断言
+[OK] 1.5.1 任务的回归用例 tc01(exit 0)
+[OK] 1.5.1 tc01 没有失败断言
+[OK] 1.5.1 任务的回归用例 tc02(exit 0)
+[OK] 1.5.1 tc02 没有失败断言
+[OK] 1.5.1 任务的回归用例 tc03(exit 0)
+[OK] 1.5.1 tc03 没有失败断言
+[OK] 1.5.1 任务的回归用例 tc06(exit 0)
+[OK] 1.5.1 tc06 没有失败断言
+[OK] bash -n review.sh
+[OK] bash -n plan-review.sh
+失败断言数:0
+
+--- end ---
+exit: 0
+finished: 2026-11-24T18:29:43+09:00
+bytes: 636

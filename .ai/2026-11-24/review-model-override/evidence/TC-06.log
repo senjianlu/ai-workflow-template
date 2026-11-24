@@ -1,0 +1,18 @@
+# rawf-evidence v1
+tc: TC-06
+label: 
+cmd: bash .ai/2026-11-24/review-model-override/assets/tests/run.sh tc06
+cwd: /home/rabbir/Projects/ai-workflow-template/.claude/worktrees/snapshot-excludes-prompt-limit
+git_head: 7df8371119d84d4cab7cd23c775a35a4e1a48479 dirty
+started: 2026-11-24T18:28:53+09:00
+--- output ---
+[OK] config.toml 里有默认模型
+[OK] 真实 codex 接受 -m 与 -c model_reasoning_effort(exit 0)
+[OK] 启动信息显示所指定的模型
+[OK] 启动信息显示 reasoning effort: low
+失败断言数:0
+
+--- end ---
+exit: 0
+finished: 2026-11-24T18:29:06+09:00
+bytes: 208

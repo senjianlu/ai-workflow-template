@@ -23,6 +23,12 @@ description: rawf 工作流第 4 步:通过 review.sh 调用 Codex 评审当前�
    - 含"旧版锁目录"(仅升级后首次可能出现)→ 确认 `pgrep -f 'codex exec'`
      为空后按提示 rmdir 该目录,重跑一次。
    - 其它 → 把 stderr 报给用户后停下,不要自行绕过。
+   评审模型默认不指定,用 Codex 默认模型。仅当**用户明确点名**实现评审的模型
+   或推理强度时,才在发起评审之前往 plan.md frontmatter 写
+   `impl_review_model: <模型名>` / `impl_review_effort: <强度>`(裸值,不加
+   引号;两个字段互相独立),并在实现记录中注明,不得自行写入。写法不对,或
+   Codex 不支持该取值(stderr 含"codex exec 执行失败")时脚本 exit 3、不消耗
+   轮次,归入上面的"其它"处理。
 2. 读取新生成的 review-round-<NN>-<pass|fail>.md,按顺序分流。结论由脚本
    根据「问题清单」推导:清单里有 blocker 或 major 即 fail。修复轮上限取
    plan.md frontmatter 的 `impl_fix_max_rounds`,字段缺失或非正整数一律按

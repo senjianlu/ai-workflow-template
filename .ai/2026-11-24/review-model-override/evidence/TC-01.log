@@ -1,0 +1,26 @@
+# rawf-evidence v1
+tc: TC-01
+label: 
+cmd: bash .ai/2026-11-24/review-model-override/assets/tests/run.sh tc01
+cwd: /home/rabbir/Projects/ai-workflow-template/.claude/worktrees/snapshot-excludes-prompt-limit
+git_head: 7df8371119d84d4cab7cd23c775a35a4e1a48479 dirty
+started: 2026-11-24T18:28:44+09:00
+--- output ---
+[OK] (plan) plan-review.sh(exit 0)
+[OK] (plan) 评审正常发布
+[OK] (plan) codex 的参数序列与固定序列逐项相同
+[OK] (plan) 参数里没有 -m
+[OK] (plan) 参数里没有 -c
+[OK] (plan) stderr 没有模型说明行
+[OK] (impl) review.sh(exit 0)
+[OK] (impl) 评审正常发布
+[OK] (impl) codex 的参数序列与固定序列逐项相同
+[OK] (impl) 参数里没有 -m
+[OK] (impl) 参数里没有 -c
+[OK] (impl) stderr 没有模型说明行
+失败断言数:0
+
+--- end ---
+exit: 0
+finished: 2026-11-24T18:28:45+09:00
+bytes: 473

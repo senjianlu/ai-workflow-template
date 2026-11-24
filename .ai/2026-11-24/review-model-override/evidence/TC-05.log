@@ -1,0 +1,26 @@
+# rawf-evidence v1
+tc: TC-05
+label: 
+cmd: bash .ai/2026-11-24/review-model-override/assets/tests/run.sh tc05
+cwd: /home/rabbir/Projects/ai-workflow-template/.claude/worktrees/snapshot-excludes-prompt-limit
+git_head: 7df8371119d84d4cab7cd23c775a35a4e1a48479 dirty
+started: 2026-11-24T18:28:51+09:00
+--- output ---
+[OK] (plan) codex 拒绝(exit 3)
+[OK] (plan) stderr 含 codex exec 执行失败
+[OK] (plan) 桩确实被调用过,且带着该模型
+[OK] (plan) 没有评审文件
+[OK] (plan) 恢复后重跑(exit 0)
+[OK] (plan) 发布的是第 01 轮
+[OK] (impl) codex 拒绝(exit 3)
+[OK] (impl) stderr 含 codex exec 执行失败
+[OK] (impl) 桩确实被调用过,且带着该模型
+[OK] (impl) 没有评审文件
+[OK] (impl) 恢复后重跑(exit 0)
+[OK] (impl) 发布的是第 01 轮
+失败断言数:0
+
+--- end ---
+exit: 0
+finished: 2026-11-24T18:28:53+09:00
+bytes: 488

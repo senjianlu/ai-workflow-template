@@ -1,0 +1,76 @@
+# rawf-evidence v1
+tc: TC-04
+label: 
+cmd: bash .ai/2026-11-24/review-model-override/assets/tests/run.sh tc04
+cwd: /home/rabbir/Projects/ai-workflow-template/.claude/worktrees/snapshot-excludes-prompt-limit
+git_head: 7df8371119d84d4cab7cd23c775a35a4e1a48479 dirty
+started: 2026-11-24T18:28:49+09:00
+--- output ---
+[OK] plan_review_model 写成「」(exit 3)
+[OK] plan_review_model 写成「」:stderr 指出字段名与非法
+[OK] plan_review_model 写成「」:桩未被调用
+[OK] plan_review_model 写成「」:没有评审文件
+[OK] plan_review_model 写成「gpt 6」(exit 3)
+[OK] plan_review_model 写成「gpt 6」:stderr 指出字段名与非法
+[OK] plan_review_model 写成「gpt 6」:桩未被调用
+[OK] plan_review_model 写成「gpt 6」:没有评审文件
+[OK] plan_review_model 写成「--oss」(exit 3)
+[OK] plan_review_model 写成「--oss」:stderr 指出字段名与非法
+[OK] plan_review_model 写成「--oss」:桩未被调用
+[OK] plan_review_model 写成「--oss」:没有评审文件
+[OK] plan_review_model 写成「"gpt-6"」(exit 3)
+[OK] plan_review_model 写成「"gpt-6"」:stderr 指出字段名与非法
+[OK] plan_review_model 写成「"gpt-6"」:桩未被调用
+[OK] plan_review_model 写成「"gpt-6"」:没有评审文件
+[OK] plan_review_effort 写成「」(exit 3)
+[OK] plan_review_effort 写成「」:stderr 指出字段名与非法
+[OK] plan_review_effort 写成「」:桩未被调用
+[OK] plan_review_effort 写成「」:没有评审文件
+[OK] plan_review_effort 写成「High」(exit 3)
+[OK] plan_review_effort 写成「High」:stderr 指出字段名与非法
+[OK] plan_review_effort 写成「High」:桩未被调用
+[OK] plan_review_effort 写成「High」:没有评审文件
+[OK] plan_review_effort 写成「high!」(exit 3)
+[OK] plan_review_effort 写成「high!」:stderr 指出字段名与非法
+[OK] plan_review_effort 写成「high!」:桩未被调用
+[OK] plan_review_effort 写成「high!」:没有评审文件
+[OK] (plan) 改成合法值后重跑(exit 0)
+[OK] (plan) 发布的是第 01 轮
+[OK] (plan) 只有一份评审文件
+[OK] impl_review_model 写成「」(exit 3)
+[OK] impl_review_model 写成「」:stderr 指出字段名与非法
+[OK] impl_review_model 写成「」:桩未被调用
+[OK] impl_review_model 写成「」:没有评审文件
+[OK] impl_review_model 写成「gpt 6」(exit 3)
+[OK] impl_review_model 写成「gpt 6」:stderr 指出字段名与非法
+[OK] impl_review_model 写成「gpt 6」:桩未被调用
+[OK] impl_review_model 写成「gpt 6」:没有评审文件
+[OK] impl_review_model 写成「--oss」(exit 3)
+[OK] impl_review_model 写成「--oss」:stderr 指出字段名与非法
+[OK] impl_review_model 写成「--oss」:桩未被调用
+[OK] impl_review_model 写成「--oss」:没有评审文件
+[OK] impl_review_model 写成「"gpt-6"」(exit 3)
+[OK] impl_review_model 写成「"gpt-6"」:stderr 指出字段名与非法
+[OK] impl_review_model 写成「"gpt-6"」:桩未被调用
+[OK] impl_review_model 写成「"gpt-6"」:没有评审文件
+[OK] impl_review_effort 写成「」(exit 3)
+[OK] impl_review_effort 写成「」:stderr 指出字段名与非法
+[OK] impl_review_effort 写成「」:桩未被调用
+[OK] impl_review_effort 写成「」:没有评审文件
+[OK] impl_review_effort 写成「High」(exit 3)
+[OK] impl_review_effort 写成「High」:stderr 指出字段名与非法
+[OK] impl_review_effort 写成「High」:桩未被调用
+[OK] impl_review_effort 写成「High」:没有评审文件
+[OK] impl_review_effort 写成「high!」(exit 3)
+[OK] impl_review_effort 写成「high!」:stderr 指出字段名与非法
+[OK] impl_review_effort 写成「high!」:桩未被调用
+[OK] impl_review_effort 写成「high!」:没有评审文件
+[OK] (impl) 改成合法值后重跑(exit 0)
+[OK] (impl) 发布的是第 01 轮
+[OK] (impl) 只有一份评审文件
+失败断言数:0
+
+--- end ---
+exit: 0
+finished: 2026-11-24T18:28:51+09:00
+bytes: 3550

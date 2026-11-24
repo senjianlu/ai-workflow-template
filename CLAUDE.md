@@ -41,6 +41,12 @@
   `plan_review_max_rounds` / `impl_fix_max_rounds`(正整数)覆盖默认值,
   并在摘要或实现记录中声明;不得未经用户提出而自行写入或建议性写入
   (机制见 docs/decisions/t0003)
+- **评审模型缺省用 Codex 默认配置**:用户没有点名时,plan 评审与实现评审都
+  不指定模型,不写任何字段。仅当**用户明确点名**模型或推理强度时,在当前任务
+  plan.md frontmatter 写对应阶段的字段(裸值,不加引号)——plan 评审
+  `plan_review_model` / `plan_review_effort`,实现评审 `impl_review_model` /
+  `impl_review_effort`——并在摘要或实现记录中声明;指定只对当前任务有效,
+  不得未经用户提出而自行写入或建议性写入(机制见 docs/decisions/t0016)
 - **评审进行中(review.sh 运行至返回,含后台等待期)禁止改动本项目任何
   文件,`.claude/` 除外**。脚本比对评审前后主工作区指纹,任何被计入的
   写入都会使评审无效并返回 exit 3;`.claude/`(如权限记录 settings.local.json)
