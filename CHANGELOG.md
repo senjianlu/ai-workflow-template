@@ -19,6 +19,43 @@ skill 目录及其内容哈希锁,consumer 可能持有自有条目,须经锁机
 
 每个版本条目必须含「升级指引」小节,逐文件标注归类与迁移动作。
 
+## [1.5.1] - 2026-11-24
+
+### Fixed
+
+- 评审快照套用项目的排除清单:review.sh 生成每轮清单与内容快照时,未跟踪文件
+  除了要未被 `.gitignore` 忽略,还要未被 `hash_excludes` 排除。此前登记在
+  `hash_excludes` 里、但没有被 `.gitignore` 忽略的构建产物目录,每轮评审仍会被
+  逐个算哈希并复制进任务目录。两套规则各自独立判断(排除清单里的反选模式不会
+  把已忽略的文件带回快照);`.claude/` 下的未跟踪文件只看 `.gitignore`(其下的
+  skill、hook 属于评审对象);已跟踪文件的改动不受影响。工作区指纹的口径不变。
+- plan 评审的指令限长:两轮 plan 之间的修订 diff 超过 16 KiB 时落盘为
+  `.plan-review-raw-NN.diff`,指令里只给路径与字节数;指令总长超过 100000 字节
+  时拒绝启动并给出明确报错。此前修订 diff 全文内联,plan 很长且改动很大时
+  codex 会以 `Argument list too long` 启动失败,原样重跑仍然失败。
+
+### Changed
+
+- 评审清单的 `head` 行增加第三列,记录纳入口径的摘要(`hash_excludes` 各项的
+  哈希)。两轮清单的口径不同时回退为全量评审,不再逐项比对。
+- 实现评审每一轮的指令都给出本轮清单的路径,评审对象以它为准:不在清单中的
+  未跟踪文件不属于评审对象。实现评审指令与评审标准各补了这一句。
+
+### 升级指引
+
+- 可整体替换:`.ai-workflow/`(本版改了 scripts/review.sh、scripts/plan-review.sh、
+  prompts/review.md、review-standards.md 与 TEMPLATE-VERSION)。consumer 若按
+  `# TEMPLATE:` 注释在 review.sh 的 `hash_excludes` 里加过项目排除项,替换后须
+  重新加回——加回之后它们对评审快照同样生效,不必再把同一批构建产物目录另行
+  加进 `.gitignore`。review.sh 的 `nonproduct_globs` / `product_globs`、
+  review-standards.md 末尾的「技术栈评审关注点」若做过裁剪,同样需要重新处理。
+- 需人工合并:`README.md`——「机制速览」中 plan 评审一条,"注入修订 diff"之后
+  补了"(超过 16 KiB 时落盘,指令里只给路径)"。
+- 进行中的任务升级后,下一轮实现评审会回退为一次全量评审(1.5.0 写出的清单
+  没有口径摘要),之后恢复修复核验;无需额外操作。
+- hooks、settings.json、`.gitignore`、四个 rawf skill 未变。`.plan-review-raw-NN.diff`
+  命中既有的 `.ai/**/.plan-review-raw-*` 忽略规则。
+
 ## [1.5.0] - 2026-11-24
 
 > **不兼容提示**:本版改变了评审输出 schema、评审文件格式与证据判定规则,与

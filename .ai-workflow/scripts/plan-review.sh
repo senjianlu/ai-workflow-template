@@ -332,11 +332,16 @@ snap="$task_dir/.plan-review-raw-$nn.plan.md"
 cp "$plan" "$snap" || { echo "无法写出 plan 快照 $task_rel/${snap##*/}" >&2; exit 3; }
 snap_sum=$(sha256sum < "$snap" | cut -d' ' -f1)
 
+# 指令长度限值(与 review.sh 相同):单块内联内容的上限与拼好的指令的总量上限,
+# 单位字节。
+inline_budget=16384
+prompt_limit=100000
+
 # build_round_context:生成 {{ROUND_CONTEXT}}。首行固定为"本轮模式:…"。
 # 第 01 轮全量评审;第 02 轮起有上一轮快照 → 核验评审,无快照(升级前的历史
 # 轮次,或快照已被清理)→ 回退为全量评审。
 build_round_context() {
-  local n=$((10#$nn)) prev prev_snap prev_review='' mode d f drc=0
+  local n=$((10#$nn)) prev prev_snap prev_review='' mode d f drc=0 dfile dbytes
   if [ "$n" -eq 1 ]; then
     printf '本轮模式:全量评审\n\n本轮为第 01 轮(首轮)。'
     return 0
@@ -372,6 +377,25 @@ build_round_context() {
     printf 'plan.md 自第 %s 轮评审以来未修订。' "$prev"
     return 0
   fi
+  # 指令经单个命令行参数传给 codex(Linux 上单个参数约 128 KiB):修订 diff 超过
+  # inline_budget 字节就落盘(文件名命中 .plan-review-raw-* 忽略规则),上下文里只
+  # 给路径与字节数。落盘路径只在需要落盘时才要求可用:清不掉(被目录占用、无
+  # 权限)或写不进去 → 评审未启动、不消耗轮次。
+  dfile="$task_dir/.plan-review-raw-$nn.diff"
+  dbytes=$(printf '%s' "$d" | wc -c)
+  if [ "$dbytes" -gt "$inline_budget" ]; then
+    if [ -e "$dfile" ] || [ -L "$dfile" ]; then
+      rm -f "$dfile" 2>/dev/null \
+        || { echo "无法清理修订 diff 的落盘路径 $task_rel/${dfile##*/}(被目录占用或无权限);评审未启动、不消耗轮次,处置后重跑" >&2; return 3; }
+    fi
+    printf '%s\n' "$d" > "$dfile" \
+      || { echo "无法写出修订 diff $task_rel/${dfile##*/};评审未启动、不消耗轮次,排查后重跑" >&2; return 3; }
+    printf '自第 %s 轮评审以来的修订较长(%s 字节),未内联;全文见 %s/%s(第 %s 轮所审 plan.md → 本轮所审 plan.md 的 unified diff)。先读取该文件:其中的改动即本轮的"修订部分",其余为"未修订部分"。' \
+      "$prev" "$dbytes" "$task_rel" "${dfile##*/}" "$prev"
+    return 0
+  fi
+  # diff 已内联:同轮上一次留下的落盘文件不再被引用,顺手清掉;清不掉不影响评审
+  if [ -f "$dfile" ] && [ ! -L "$dfile" ]; then rm -f "$dfile" 2>/dev/null || true; fi
   printf '自第 %s 轮评审以来的修订如下;diff 中的改动即本轮的"修订部分",其余为"未修订部分":\n\n' "$prev"
   # shellcheck disable=SC2016  # 反引号是 markdown 代码栅栏的字面量,不需要展开
   printf '```diff\n%s\n```' "$d"
@@ -386,6 +410,13 @@ prompt=$(cat .ai-workflow/prompts/plan-review.md)
 prompt="${prompt//\{\{TASK_DIR\}\}/$task_rel}"
 prompt="${prompt//\{\{ROUND\}\}/$nn}"
 prompt="${prompt//\{\{ROUND_CONTEXT\}\}/$round_context}"
+# 总量兜底:修订 diff 已限长,正常情况下指令远低于上限;指令模板被大幅改写等
+# 情况下给出明确报错,而不是让 codex 启动时以 Argument list too long 失败
+prompt_bytes=$(printf '%s' "$prompt" | wc -c)
+if [ "$prompt_bytes" -gt "$prompt_limit" ]; then
+  echo "plan 评审指令长 $prompt_bytes 字节,超过上限 $prompt_limit(指令经单个命令行参数传入,系统上限约 128 KiB);评审未启动、不消耗轮次。请精简 .ai-workflow/prompts/plan-review.md" >&2
+  exit 3
+fi
 
 # 原始输出与事件流直接落在任务目录(已由 .gitignore 忽略),非法/异常时保留供排查。
 raw="$task_dir/.plan-review-raw-$nn.json"

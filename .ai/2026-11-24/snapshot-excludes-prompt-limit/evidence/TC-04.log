@@ -1,0 +1,22 @@
+# rawf-evidence v1
+tc: TC-04
+label: 
+cmd: bash .ai/2026-11-24/snapshot-excludes-prompt-limit/assets/tests/run.sh tc04
+cwd: /home/rabbir/Projects/ai-workflow-template/.claude/worktrees/snapshot-excludes-prompt-limit
+git_head: a9f98a04a0eb984d568ea0ad1e449c00c6d61840 dirty
+started: 2026-11-24T18:03:38+09:00
+--- output ---
+[OK] 上一个任务的回归用例 tc03(exit 0)
+[OK] tc03 没有失败断言
+[OK] 上一个任务的回归用例 tc06(exit 0)
+[OK] tc06 没有失败断言
+[OK] 上一个任务的回归用例 tc10(exit 0)
+[OK] tc10 没有失败断言
+[OK] bash -n review.sh
+[OK] bash -n plan-review.sh
+失败断言数:0
+
+--- end ---
+exit: 0
+finished: 2026-11-24T18:04:07+09:00
+bytes: 303

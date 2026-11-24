@@ -299,9 +299,21 @@ if [ "${1:-}" = "__minors" ]; then
 fi
 
 # --- 每轮所审改动的清单、内容快照与轮间差异 --------------------------------
-# 路径口径:相对 HEAD 有差异的已跟踪文件(含已删除)+ 未被 .gitignore 忽略的
-# 未跟踪文件;排除 .ai/(任务产物不是评审对象)、.claude/settings.local.json
-# 与 .claude/worktrees/。.claude/ 下的 skill、hook 属于评审对象,计入。
+# 路径口径(评审对象以这份清单为准):
+#   已跟踪文件  相对 HEAD 有差异的全部纳入(含已删除),不受任何排除清单影响
+#   未跟踪文件  须同时通过两套规则,各自独立判断、不合并进同一条命令——
+#     规则甲  git ls-files --others --exclude-standard:未被 .gitignore 等标准规则忽略
+#     规则乙  git ls-files --others + hash_excludes:未被项目的排除清单排除
+#             (与工作区指纹列未跟踪文件用的是同一种调用)
+#     纳入 = 通过规则甲,并且(位于 .claude/ 下,或通过规则乙)
+#   另排除 .ai/(任务产物不是评审对象)、.claude/settings.local.json 与
+#   .claude/worktrees/。
+# 两套规则分开判断:git 里命令行模式的优先级高于标准忽略规则,合并后排除清单里
+# 的反选模式(!…)会把 .gitignore 已忽略的文件重新带进快照。.claude/ 下的路径
+# 只看规则甲:其下的 skill、hook 属于评审对象,而排除清单里 dist/ 这类不带锚点
+# 的目录模式会命中 .claude/skills/dist/ 之类的嵌套目录(指纹排除 .claude/ 是因为
+# Claude Code 会在评审期间自动写 settings.local.json,与快照无关)。
+# 这里只定快照的口径;工作区指纹仍按 hash_excludes 原有的语义计算。
 # 以下函数依赖全局 proj、task_dir、task_rel、scratch,且 cwd = proj。
 review_pathspec=(':(exclude).ai' ':(exclude).claude/settings.local.json' ':(exclude).claude/worktrees')
 snap_limit=1048576   # 单文件内容快照上限(字节);超过即"未快照"
@@ -348,13 +360,35 @@ manifest_readable() {
   return 0
 }
 
+# snapshot_scope:本轮纳入口径的摘要 = hash_excludes 各项的哈希,记在清单 head 行
+# 的第三列。两轮口径不同时不能逐项比对清单(上一轮纳入、这一轮排除的文件会被
+# 报成"删除"),须回退为全量评审。摘要只覆盖数组里写的参数本身:项目若用
+# --exclude-from 引用规则文件,文件内容的变化不在摘要里。
+snapshot_scope() {
+  printf '%s\0' "${hash_excludes[@]}" | sha1sum | cut -d' ' -f1
+}
+
 review_paths() {
-  { git diff HEAD --no-renames --name-only -z -- . "${review_pathspec[@]}" \
-      && git ls-files --others --exclude-standard -z -- . "${review_pathspec[@]}"; } | sort -zu
+  local p
+  git diff HEAD --no-renames --name-only -z -- . "${review_pathspec[@]}" > "$scratch/rp-tracked" || return 1
+  git ls-files --others --exclude-standard -z -- . "${review_pathspec[@]}" \
+    | LC_ALL=C sort -z > "$scratch/rp-std" || return 1
+  git ls-files --others -z "${hash_excludes[@]}" -- . "${review_pathspec[@]}" \
+    | LC_ALL=C sort -z > "$scratch/rp-proj" || return 1
+  {
+    cat "$scratch/rp-tracked"
+    # 两边都允许的未跟踪文件
+    LC_ALL=C comm -z -12 "$scratch/rp-std" "$scratch/rp-proj"
+    # .claude/ 下的未跟踪文件只看规则甲
+    while IFS= read -r -d '' p; do
+      case "$p" in .claude/*) printf '%s\0' "$p" ;; esac
+    done < "$scratch/rp-std"
+  } | sort -zu
 }
 
 # build_manifest <清单输出文件> [内容快照目录]:生成所审改动的清单;给了快照目录时
-# 同时把可保存的内容复制进去。清单首行是格式标记,第二行 "head<TAB><sha>";其后每行
+# 同时把可保存的内容复制进去。清单首行是格式标记,第二行
+# "head<TAB><sha><TAB><纳入口径摘要>"(摘要见 snapshot_scope);其后每行
 #   <类型><TAB><可执行位><TAB><内容哈希或链接目标><TAB><内容可保存 1|0><TAB><路径>
 # 类型 F = 普通文件、L = 符号链接、D = 已删除、O = 其它;按路径排序。路径与
 # 链接目标一律经 enc_field 编码,链接目标按完整字节读取(含末尾换行)。
@@ -366,7 +400,7 @@ review_paths() {
 # 哈希与复制按批交给 sha1sum / cp(xargs),不为每个文件单独启动进程。
 build_manifest() {
   local man=$1 snap=${2:-}
-  local p type mode hash saved field rec size name rc head_sha copied
+  local p type mode hash saved field rec size name rc head_sha scope copied
   local -a paths=() regular=() sizable=() keep=()
   local -A sizes=() hashes=() kept=()
   review_paths > "$scratch/paths" || return 1
@@ -409,9 +443,13 @@ build_manifest() {
     fi
   fi
   head_sha=$(git rev-parse HEAD) || return 1
+  scope=$(snapshot_scope) || return 1
   {
     printf '%s\n' "$manifest_magic"
-    printf 'head\t%s\n' "$head_sha"
+    # head 行第三列是纳入口径的摘要。放在 head 行而不另起一行:1.5.0 的脚本把
+    # head 行的内容整体与当前 HEAD 比对,读到新清单时对不上、自然回退全量评审;
+    # 另起一行则会被它当成文件记录。
+    printf 'head\t%s\t%s\n' "$head_sha" "$scope"
     for p in "${paths[@]}"; do
       enc_field "$p"; field=$REPLY; saved=0; mode=-; hash=-
       if [ -L "$p" ]; then
@@ -705,9 +743,9 @@ for tool in flock setsid pgrep; do
   command -v "$tool" >/dev/null \
     || { echo "需要 util-linux(flock、setsid)与 procps(pgrep):缺少 $tool" >&2; exit 3; }
 done
-for tool in sha1sum xargs diff cmp; do
+for tool in sha1sum comm xargs diff cmp; do
   command -v "$tool" >/dev/null \
-    || { echo "需要 coreutils(sha1sum)、findutils(xargs)与 diffutils(diff、cmp):缺少 $tool" >&2; exit 3; }
+    || { echo "需要 coreutils(sha1sum、comm)、findutils(xargs)与 diffutils(diff、cmp):缺少 $tool" >&2; exit 3; }
 done
 command -v codex >/dev/null || { echo "codex CLI 未安装或不在 PATH" >&2; exit 3; }
 
@@ -832,12 +870,22 @@ write_snapshot "$nn" \
   || { echo "本轮清单或内容快照生成失败,评审未启动、不消耗轮次;排查上方报错后重跑" >&2; exit 3; }
 
 # build_round_context:生成 {{ROUND_CONTEXT}}。首行固定为"本轮模式:…"。
-# 第 01 轮全量评审;第 02 轮起,上一轮的评审文件、清单、内容快照都在且 HEAD
-# 未变 → 修复核验(附变化文件列表与轮间差异文件路径),否则回退为全量评审。
+# 第 01 轮全量评审;第 02 轮起,上一轮的评审文件、清单、内容快照都在,HEAD 未变
+# 且两轮清单的纳入口径相同 → 修复核验(附变化文件列表与轮间差异文件路径),
+# 否则回退为全量评审。每一轮的上下文末尾都给出本轮清单的路径。
 build_round_context() {
   local n=$((10#$nn)) prev prev_man prev_snap prev_review='' f why='' cur_head list shown total kept
+  local prev_head='' prev_scope='' cur_scope
+  # manifest_note:每一轮(含全量评审)都给出本轮清单的路径——评审对象以它为准,
+  # 全量评审的取材范围、修复核验的变化文件列表、送审前后的一致性比对用的是
+  # 同一份清单
+  manifest_note() {
+    printf '\n\n本轮所审改动的文件清单:%s/.review-raw-%s.manifest(每行最后一列是路径;路径里的 %%、制表符、换行、回车分别写作 %%25、%%09、%%0A、%%0D)。评审对象以它为准:工作区里不在清单中的未跟踪文件——被 .gitignore 忽略的,或项目登记在排除清单里的构建、运行期产物——不属于评审对象。' \
+      "$task_rel" "$nn"
+  }
   if [ "$n" -eq 1 ]; then
     printf '本轮模式:全量评审\n\n本轮为第 01 轮(首轮)。'
+    manifest_note
     return 0
   fi
   prev=$(printf '%02d' "$((n - 1))")
@@ -847,17 +895,24 @@ build_round_context() {
     [ -f "$f" ] && { prev_review=${f##*/}; break; }
   done
   cur_head=$(git rev-parse HEAD) || return 1
+  cur_scope=$(snapshot_scope) || return 1
+  if [ -f "$prev_man" ]; then
+    # head 行:head<TAB><sha>[<TAB><纳入口径摘要>];1.5.0 写出的清单没有第三列
+    IFS=$'\t' read -r _ prev_head prev_scope < <(grep -m 1 $'^head\t' "$prev_man") || true
+  fi
   if [ -z "$prev_review" ]; then why="未找到第 $prev 轮评审文件"
   elif [ ! -f "$prev_man" ]; then why="无上一轮清单"
   elif [ ! -d "$prev_snap" ]; then why="无上一轮内容快照"
   elif ! manifest_readable "$prev_man"; then why="上一轮清单是旧格式,无法按当前格式解读"
-  elif [ "$(sed -n 's/^head\t//p' "$prev_man" | head -n 1)" != "$cur_head" ]; then why="HEAD 自上一轮评审以来已变化"
+  elif [ "$prev_head" != "$cur_head" ]; then why="HEAD 自上一轮评审以来已变化"
+  elif [ "$prev_scope" != "$cur_scope" ]; then why="两轮清单的纳入口径不同(排除清单有变化,或上一轮清单由旧版脚本生成)"
   fi
   if [ -n "$why" ]; then
     printf '本轮模式:全量评审(%s,无法给出轮间差异)\n\n本轮为第 %s 轮。' "$why" "$nn"
     if [ -n "$prev_review" ]; then
       printf '上一轮评审:%s/%s——其中的阻断问题须逐项核验是否已解决。' "$task_rel" "$prev_review"
     fi
+    manifest_note
     return 0
   fi
   list=$(round_delta "$prev" "$nn") || return 1
@@ -874,6 +929,7 @@ build_round_context() {
   printf '自上一轮评审以来的变化文件(机器比对两轮清单):\n\n%s\n\n' "${list:-无}"
   printf '轮间差异(上一轮所审内容 → 本轮所审内容的 unified diff,即"本轮变化"):%s/.review-raw-%s.delta.diff' \
     "$task_rel" "$nn"
+  manifest_note
 }
 round_context=$(build_round_context) \
   || { echo "轮次上下文或轮间差异生成失败,评审未启动、不消耗轮次;排查上方报错后重跑" >&2; exit 3; }

@@ -1,0 +1,30 @@
+# rawf-evidence v1
+tc: TC-02
+label: 
+cmd: bash .ai/2026-11-24/snapshot-excludes-prompt-limit/assets/tests/run.sh tc02
+cwd: /home/rabbir/Projects/ai-workflow-template/.claude/worktrees/snapshot-excludes-prompt-limit
+git_head: a9f98a04a0eb984d568ea0ad1e449c00c6d61840 dirty
+started: 2026-11-24T18:03:35+09:00
+--- output ---
+[OK] (a) 第 1 轮(exit 1)
+[OK] (a) 第 2 轮(exit 1)
+[OK] (a) 第 2 轮指令内联了 diff(代码栅栏)
+[OK] (a) 内联的 diff 含追加的那一行
+[OK] (a) 没有落盘文件
+[OK] (b) plan 超过 32 KiB
+[OK] (b) 第 1 轮(exit 1)
+[OK] (b) 第 2 轮(exit 1)
+[OK] (b) 第 2 轮评审正常发布
+[OK] (b) 第 2 轮指令不含代码栅栏
+[OK] (b) 指令给出落盘文件路径
+[OK] (b) 落盘文件存在
+[OK] (b) 修订 diff 确实超过 16384 字节
+[OK] (b) 指令给出该文件的字节数
+[OK] (b) 指令不超过 65536 字节
+[OK] (b) 落盘内容与对两轮快照做 diff -u 的输出逐字节一致
+失败断言数:0
+
+--- end ---
+exit: 0
+finished: 2026-11-24T18:03:37+09:00
+bytes: 633

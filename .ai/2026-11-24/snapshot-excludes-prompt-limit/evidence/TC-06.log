@@ -1,0 +1,36 @@
+# rawf-evidence v1
+tc: TC-06
+label: 
+cmd: bash .ai/2026-11-24/snapshot-excludes-prompt-limit/assets/tests/run.sh tc06
+cwd: /home/rabbir/Projects/ai-workflow-template/.claude/worktrees/snapshot-excludes-prompt-limit
+git_head: a9f98a04a0eb984d568ea0ad1e449c00c6d61840 dirty
+started: 2026-11-24T18:04:07+09:00
+--- output ---
+[OK] (c) 第 1 轮(exit 1)
+[OK] (c) 第 1 轮清单含 .open-next/a.js
+[OK] (c) 第 1 轮后给排除清单加上 .open-next/
+[OK] (c) 第 2 轮(exit 0)
+[OK] (c) 第 2 轮评审正常发布
+[OK] (c) 第 2 轮回退为全量评审
+[OK] (c) 注明纳入口径不同
+[OK] (c) 不是修复核验
+[OK] (c) 指令附有上一轮评审文件路径
+[OK] (c) 指令附有本轮清单路径
+[OK] (c) 没有把 .open-next/a.js 列为删除
+[OK] (d) 第 1 轮(exit 1)
+[OK] (d) 第 1 轮清单含 .open-next/a.js
+[OK] (d) 上一轮清单的 head 行已去掉口径一列
+[OK] (d) 第 2 轮(exit 0)
+[OK] (d) 第 2 轮评审正常发布
+[OK] (d) 第 2 轮回退为全量评审
+[OK] (d) 注明纳入口径不同
+[OK] (d) 不是修复核验
+[OK] (d) 指令附有上一轮评审文件路径
+[OK] (d) 指令附有本轮清单路径
+[OK] (d) 没有把 .open-next/a.js 列为删除
+失败断言数:0
+
+--- end ---
+exit: 0
+finished: 2026-11-24T18:04:10+09:00
+bytes: 879

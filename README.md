@@ -109,7 +109,8 @@ implementation-round-NN.md、review-round-NN-<pass|fail>.md、summary.md,
 - plan 评审只拦设计错误,分轮进行:第 1 轮全量评审(设计层问题一次列全,
   调查按需),第 2 轮起核验评审(只核上一轮阻断问题与修订部分,未修订部分
   只有 plan-blocker 可阻断);验收与用例表方面的意见是建议,不阻断;脚本
-  每轮快照 plan.md 并注入修订 diff,评审期间 plan.md 被改则本轮作废;默认
+  每轮快照 plan.md 并注入修订 diff(超过 16 KiB 时落盘,指令里只给路径),
+  评审期间 plan.md 被改则本轮作废;默认
   上限 3 轮;major 按"留到实现阶段是否返工"判定,跨轮 minor 与建议由实现
   阶段经 `plan-review.sh __minors` 汇总交接(docs/decisions/t0012、t0015)
 - 建议由开发 AI 处置:评审文件的「测试缺口」「建议」两节不计入 pass/fail、

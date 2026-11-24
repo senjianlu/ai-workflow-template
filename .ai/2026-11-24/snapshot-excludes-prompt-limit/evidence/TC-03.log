@@ -1,0 +1,30 @@
+# rawf-evidence v1
+tc: TC-03
+label: 
+cmd: bash .ai/2026-11-24/snapshot-excludes-prompt-limit/assets/tests/run.sh tc03
+cwd: /home/rabbir/Projects/ai-workflow-template/.claude/worktrees/snapshot-excludes-prompt-limit
+git_head: a9f98a04a0eb984d568ea0ad1e449c00c6d61840 dirty
+started: 2026-11-24T18:03:37+09:00
+--- output ---
+[OK] (1) 第 1 轮(exit 1)
+[OK] (1) 落盘路径被占用(exit 3)
+[OK] (1) 提示无法清理落盘路径
+[OK] (1) 桩未被再次调用
+[OK] (1) 没有第 2 轮评审文件
+[OK] (1) 移走后重跑(exit 1)
+[OK] (1) 重跑发布的仍是第 02 轮
+[OK] (1) 重跑后 diff 已落盘
+[OK] (2) 第 1 轮(exit 1)
+[OK] (2) 第 2 轮照常评审(exit 1)
+[OK] (2) 第 2 轮评审正常发布
+[OK] (2) 占位目录未被动过
+[OK] (3) 指令超长(exit 3)
+[OK] (3) 提示指令超过长度上限
+[OK] (3) 桩未被调用
+[OK] (3) 没有评审文件
+失败断言数:0
+
+--- end ---
+exit: 0
+finished: 2026-11-24T18:03:38+09:00
+bytes: 560

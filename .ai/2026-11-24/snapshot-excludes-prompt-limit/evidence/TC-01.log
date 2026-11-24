@@ -1,0 +1,39 @@
+# rawf-evidence v1
+tc: TC-01
+label: 
+cmd: bash .ai/2026-11-24/snapshot-excludes-prompt-limit/assets/tests/run.sh tc01
+cwd: /home/rabbir/Projects/ai-workflow-template/.claude/worktrees/snapshot-excludes-prompt-limit
+git_head: a9f98a04a0eb984d568ea0ad1e449c00c6d61840 dirty
+started: 2026-11-24T18:03:34+09:00
+--- output ---
+[OK] (a) 追加排除项
+[OK] (a) review.sh(exit 0)
+[OK] (a) 评审正常发布
+[OK] (a) 清单没有 .open-next/a.js
+[OK] (a) 快照没有 .open-next/a.js
+[OK] (a) 清单没有 audit.log
+[OK] (a) 快照没有 audit.log
+[OK] (a) 清单有 build-out/b.js
+[OK] (a) 快照有 build-out/b.js
+[OK] (a) 清单有 .claude/skills/new/SKILL.md
+[OK] (a) 快照有 .claude/skills/new/SKILL.md
+[OK] (a) 清单有 .claude/skills/dist/SKILL.md
+[OK] (a) 快照有 .claude/skills/dist/SKILL.md
+[OK] (a) 清单有 .open-next/tracked.js
+[OK] (a) 快照有 .open-next/tracked.js
+[OK] (a) 指令给出本轮清单路径
+[OK] (a) 指令写明不在清单中的未跟踪文件不属于评审对象
+[OK] (b) dist/x.js 确实没有被 .gitignore 忽略
+[OK] (b) review.sh(exit 0)
+[OK] (b) 评审正常发布
+[OK] (b) 清单没有 dist/x.js
+[OK] (b) 快照没有 dist/x.js
+[OK] (b) 清单有被改动的 src/app.py
+[OK] (b) 指令给出本轮清单路径
+[OK] (b) 指令写明不在清单中的未跟踪文件不属于评审对象
+失败断言数:0
+
+--- end ---
+exit: 0
+finished: 2026-11-24T18:03:35+09:00
+bytes: 1024
